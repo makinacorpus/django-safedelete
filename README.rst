@@ -23,6 +23,7 @@ Example
 
     # Models
 
+    # We create a new mixin, with the given policy : Objects will be hard-deleted, or soft deleted if other objects would have been deleted too.
     SafeDeleteMixin = safedelete_mixin_factory(HARD_DELETE_NOCASCADE)
 
     class Article(SafeDeleteMixin):
