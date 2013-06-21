@@ -5,23 +5,58 @@ Django safedelete
 What is it ?
 ------------
 
-In a lot of projects, you don't want to delete objects from your database :
- - You may want to have the same behaviour as Django, and delete objects in cascade… But keeping them in your database.
- - Or perhaps you don't want to delete objects in cascade, so you just want to make them disappear without breaking anything.
- - Maybe you want to delete objects permanently, but if an object would delete other objects in cascade, you want to keep it in database.
+For various reasons, you may want not to delete objects from your database.
 
-This application can provide you mixins from which your objects will heritate…
+This Django application provides you with a base mixin for your models, that allows you transparently retrieve or delete your objects,
+without having them deleted from your database.
+
+You can choose what happens when you delete an object :
+ - it can be masked from your database (soft delete), in cascade or not
+ - it can be normally deleted (hard delete)
+ - it can be hard-deleted, but if its deletion would delete other objects, it will only be masked
+
+
+Example
+-------
+
+::
+    # Models
+
+    SafeDeleteMixin = safedelete_mixin_factory()
+
+    class Article(SafeDeleteMixin):
+        name = models.CharField(max_length=100)
+
+    class Order(SafeDeleteMixin):
+        name = models.CharField(max_length=100)
+        articles = models.ManyToManyField(Article)
+
+
+    # Example of use
+
+    >>> article1 = Article(name='article1')
+    >>> article1.save()
+
+    >>> article2 = Article(name='article2')
+    >>> article2.save()
+
+    >>> order = Order(name='order')
+    >>> order.save()
+    >>> order.articles.add(article1)
+
+    >>> article1.delete() # This article will be masked, but not deleted from the database as it is still referenced in an order.
+    >>> article2.delete() # This article will be deleted from the database.
+
 
 Documentation
 -------------
 
-::
-    
-    class Article(SafeDeleteMixin):
-        ...
+The documentation is available `here <http://django-safedelete.readthedocs.com>`_.
 
 Installation
 ------------
+
+Just install it.
 
 Licensing
 ---------
