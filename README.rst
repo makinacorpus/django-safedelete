@@ -20,6 +20,7 @@ Example
 -------
 
 ::
+
     # Models
 
     SafeDeleteMixin = safedelete_mixin_factory()
