@@ -1,3 +1,4 @@
+from .utils import DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK
 
 def queryset_delete(self):
     assert self.query.can_filter(), "Cannot use 'limit' or 'offset' with delete."
@@ -14,7 +15,8 @@ def queryset_undelete(self):
 queryset_undelete.alters_data = True
 
 
-def safedelete_manager_factory(superclass, allow_single_object_access):
+def safedelete_manager_factory(superclass, visibility):
+    assert visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
 
     class SafeDeleteManager(superclass):
 
@@ -40,12 +42,12 @@ def safedelete_manager_factory(superclass, allow_single_object_access):
             return queryset
 
         def filter(self, **kwargs):
-            if allow_single_object_access and 'pk' in kwargs:
+            if visibility == DELETED_VISIBLE_BY_PK and 'pk' in kwargs:
                 return self.all_with_deleted().filter(**kwargs)
             return self.get_query_set().filter(**kwargs)
 
         def get(self, **kwargs):
-            if allow_single_object_access:
+            if visibility == DELETED_VISIBLE_BY_PK:
                 return self.all_with_deleted().get(**kwargs)
             return self.get_query_set().get(**kwargs)
 

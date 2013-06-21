@@ -45,8 +45,11 @@ Example
     >>> order.save()
     >>> order.articles.add(article1)
 
-    >>> article1.delete() # This article will be masked, but not deleted from the database as it is still referenced in an order.
-    >>> article2.delete() # This article will be deleted from the database.
+    # This article will be masked, but not deleted from the database as it is still referenced in an order.
+    >>> article1.delete()
+
+    # This article will be deleted from the database.
+    >>> article2.delete()
 
 
 Documentation

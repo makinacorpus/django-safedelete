@@ -1,20 +1,30 @@
 from django.contrib.admin.util import NestedObjects
+import itertools
+import functools
+
+
+HARD_DELETE, SOFT_DELETE, SOFT_DELETE_CASCADE, HARD_DELETE_NOCASCADE = range(4)
+
+DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK = range(10,12)
+
+
 
 # FIXME: Normally we must be able to use the django Collector, not the NestedObject
 #        of the admin.
 #        but the django collector returns only the objects we give it, nothing more.
 #        Bug ?
 
-def count_related_objects(obj):
-    """ Count the objects that would be deleted if we delete "obj" (excluding obj) """
+def related_objects(obj):
+    """ Return a generator to the objects that would be deleted if we delete "obj" (excluding obj) """
     collector = NestedObjects(using=obj._default_manager._db)
     collector.collect([obj])
 
-    def count_nested(elem):
+    def flatten(elem):
         if isinstance(elem, list):
-            return sum(count_nested(i) for i in elem)
-        else:
-            return int(obj != elem)
+            return itertools.chain.from_iterable(map(flatten, elem))
+        elif obj != elem:
+            return (elem,)
+        return ()
 
-    return count_nested(collector.nested())
+    return flatten(collector.nested())
 
