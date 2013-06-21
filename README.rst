@@ -19,7 +19,7 @@ You can choose what happens when you delete an object :
 Example
 -------
 
-::
+.. code:: python
 
     # Models
 
