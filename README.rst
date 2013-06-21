@@ -5,9 +5,9 @@ Django safedelete
 What is it ?
 ------------
 
-For various reasons, you may want not to delete objects from your database.
+For various reasons, you may want to avoid deleting objects from your database.
 
-This Django application provides you with a base mixin for your models, that allows you transparently retrieve or delete your objects,
+This Django application provides you with a base mixin for your models, that allow you transparently retrieve or delete your objects,
 without having them deleted from your database.
 
 You can choose what happens when you delete an object :
@@ -23,7 +23,7 @@ Example
 
     # Models
 
-    SafeDeleteMixin = safedelete_mixin_factory()
+    SafeDeleteMixin = safedelete_mixin_factory(HARD_DELETE_NOCASCADE)
 
     class Article(SafeDeleteMixin):
         name = models.CharField(max_length=100)

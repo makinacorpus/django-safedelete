@@ -14,3 +14,4 @@ parts
 media/uploads
 tmp
 .DS_Store
+docs/_build/
