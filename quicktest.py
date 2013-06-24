@@ -24,39 +24,9 @@ class QuickDjangoTest(object):
 
     def __init__(self, *args, **kwargs):
         self.apps = args
-        # Get the version of the test suite
-        self.version = self.get_test_version()
-        # Call the appropriate one
-        if self.version == 'new':
-            self._new_tests()
-        else:
-            self._old_tests()
+        self.run_tests()
 
-    def get_test_version(self):
-        """
-        Figure out which version of Django's test suite we have to play with.
-        """
-        from django import VERSION
-        if VERSION[0] == 1 and VERSION[1] >= 2:
-            return 'new'
-        else:
-            return 'old'
-
-    def _old_tests(self):
-        """
-        Fire up the Django test suite from before version 1.2
-        """
-        settings.configure(DEBUG = True,
-           DATABASE_ENGINE = 'sqlite3',
-           DATABASE_NAME = os.path.join(self.DIRNAME, 'database.db'),
-           INSTALLED_APPS = self.INSTALLED_APPS + self.apps
-        )
-        from django.test.simple import run_tests
-        failures = run_tests(self.apps, verbosity=1)
-        if failures:
-            sys.exit(failures)
-
-    def _new_tests(self):
+    def run_tests(self):
         """
         Fire up the Django test suite developed for version 1.2
         """
@@ -76,7 +46,7 @@ class QuickDjangoTest(object):
         )
         from django.test.simple import DjangoTestSuiteRunner
         failures = DjangoTestSuiteRunner().run_tests(self.apps, verbosity=1)
-        if failures:
+        if failures: # pragma: no cover
             sys.exit(failures)
 
 if __name__ == '__main__':

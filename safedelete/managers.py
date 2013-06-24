@@ -1,25 +1,8 @@
 from .utils import DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK
+import types
 
 
-def queryset_delete(self):
-    """ Delete method to be added to a queryset instance. """
-    assert self.query.can_filter(), "Cannot use 'limit' or 'offset' with delete."
-    # TODO: Replace this by bulk update if we can
-    for obj in self.all():
-        obj.delete()
-    self._result_cache = None
-queryset_delete.alters_data = True
-
-
-def queryset_undelete(self):
-    """ Undelete method to be added to a queryset instance. """
-    assert self.query.can_filter(), "Cannot use 'limit' or 'offset' with undelete."
-    self.all().update(deleted=False)
-    self._result_cache = None
-queryset_undelete.alters_data = True
-
-
-def safedelete_manager_factory(superclass, visibility=DELETED_INVISIBLE):
+def safedelete_manager_factory(manager_superclass, queryset_superclass, visibility=DELETED_INVISIBLE):
     """
     Return a manager, inheriting from the "superclass" class.
 
@@ -29,30 +12,34 @@ def safedelete_manager_factory(superclass, visibility=DELETED_INVISIBLE):
 
     assert visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
 
-    class SafeDeleteManager(superclass):
+    class SafeDeleteQueryset(queryset_superclass):
+        def delete(self):
+            assert self.query.can_filter(), "Cannot use 'limit' or 'offset' with delete."
+            # TODO: Replace this by bulk update if we can
+            for obj in self.all():
+                obj.delete()
+            self._result_cache = None
+        delete.alters_data = True
 
-        # Cf. Bug XXX
-        #use_for_related_fields = False
+        def undelete(self):
+            assert self.query.can_filter(), "Cannot use 'limit' or 'offset' with undelete."
+            self.all().update(deleted=False)
+            self._result_cache = None
+        undelete.alters_data = True
+
+
+    class SafeDeleteManager(manager_superclass):
 
         def get_query_set(self):
-            queryset = super(SafeDeleteManager, self).get_query_set().filter(deleted=False)
-            queryset.delete = queryset_delete
-            queryset.undelete = queryset_undelete
-            return queryset
+            return self.all_with_deleted().filter(deleted=False)
 
         def all_with_deleted(self):
             """ Return a queryset to every objects, including deleted ones. """
-            queryset = super(SafeDeleteManager, self).get_query_set()
-            queryset.delete = queryset_delete
-            queryset.undelete = queryset_undelete
-            return queryset
+            return SafeDeleteQueryset(self.model, using=self._db)
 
-        def only_deleted(self):
+        def deleted_only(self):
             """ Return a queryset to only deleted objects. """
-            queryset = super(SafeDeleteManager, self).get_query_set().filter(deleted=True)
-            queryset.delete = queryset_delete
-            queryset.undelete = queryset_undelete
-            return queryset
+            return self.all_with_deleted().filter(deleted=True)
 
         def filter(self, **kwargs):
             if visibility == DELETED_VISIBLE_BY_PK and 'pk' in kwargs:

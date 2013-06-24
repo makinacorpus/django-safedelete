@@ -7,7 +7,8 @@ from .utils import (related_objects,
 
 def safedelete_mixin_factory(policy,
                              visibility=DELETED_INVISIBLE,
-                             manager_superclass=models.Manager):
+                             manager_superclass=models.Manager,
+                             queryset_superclass=models.query.QuerySet):
     """
     Return an abstract Django model, with a "deleted" attribute, and a custom default manager.
 
@@ -23,7 +24,7 @@ def safedelete_mixin_factory(policy,
 
         deleted = models.BooleanField(default=False)
 
-        objects = safedelete_manager_factory(manager_superclass, visibility)()
+        objects = safedelete_manager_factory(manager_superclass, queryset_superclass, visibility)()
 
         def save(self, keep_deleted=False, **kwargs):
             """
@@ -60,9 +61,6 @@ def safedelete_mixin_factory(policy,
                     self.delete(force_policy=SOFT_DELETE, **kwargs)
                 else:
                     self.delete(force_policy=HARD_DELETE, **kwargs)
-
-            else:
-                raise ValueError("Invalid policy for deletion.")
 
         class Meta:
             abstract = True

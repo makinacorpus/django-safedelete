@@ -82,6 +82,12 @@ class SimpleTest(TestCase):
         self.assertEqual(Article.objects.count(), 2)
         self.assertEqual(Article.objects.all_with_deleted().count(), 2)
 
+        self.articles[1].delete(force_policy=SOFT_DELETE)
+
+        self.assertEqual(Article.objects.count(), 1)
+        self.assertEqual(Article.objects.all_with_deleted().count(), 2)
+        self.assertEqual(Article.objects.filter(author=self.authors[2]).count(), 1)
+
     def test_hard_delete_nocascade(self):
         self.assertEqual(Author.objects.count(), 3)
 
@@ -147,3 +153,18 @@ class SimpleTest(TestCase):
         self.order.delete()
 
         self.assertRaises(Order.DoesNotExist, Order.objects.get, pk=self.order.id)
+
+    def test_queryset(self):
+        self.assertEqual(Category.objects.count(), 3)
+
+        Category.objects.all().delete()
+
+        self.assertEqual(Category.objects.count(), 0)
+
+        Category.objects.all().undelete() # Nonsense
+
+        self.assertEqual(Category.objects.count(), 0)
+        
+        Category.objects.deleted_only().undelete()
+
+        self.assertEqual(Category.objects.count(), 3)
