@@ -2,7 +2,7 @@ from django.db import models
 from django.test import TestCase
 
 from .models import (safedelete_mixin_factory, SoftDeleteMixin,
-                     HARD_DELETE, SOFT_DELETE_CASCADE, HARD_DELETE_NOCASCADE,
+                     HARD_DELETE, HARD_DELETE_NOCASCADE, SOFT_DELETE,
                      DELETED_VISIBLE_BY_PK)
 
 
@@ -13,7 +13,7 @@ class Author(safedelete_mixin_factory(HARD_DELETE_NOCASCADE)):
     name = models.CharField(max_length=200)
 
 
-class Category(safedelete_mixin_factory(SOFT_DELETE_CASCADE, visibility=DELETED_VISIBLE_BY_PK)):
+class Category(safedelete_mixin_factory(SOFT_DELETE, visibility=DELETED_VISIBLE_BY_PK)):
     name = models.CharField(max_length=200)
 
 
@@ -97,5 +97,53 @@ class SimpleTest(TestCase):
 
         self.assertEqual(Article.objects.count(), 3)
 
-    def test_soft_delete_cascade(self):
-        pass  # TODO
+    def test_save(self):
+        """
+        When we save an object, it will be re-inserted if it was deleted,
+        the same way as save() will re-insert a deleted object.
+        """
+
+        self.assertEqual(Order.objects.count(), 1)
+
+        self.order.delete()
+        self.assertEqual(Order.objects.count(), 0)
+
+        self.order.save()
+        self.assertEqual(Order.objects.count(), 1)
+
+    def test_undelete(self):
+        self.assertEqual(Order.objects.count(), 1)
+
+        self.order.delete()
+        self.assertEqual(Order.objects.count(), 0)
+
+        self.order.undelete()
+        self.assertEqual(Order.objects.count(), 1)
+
+    def test_access_by_pk(self):
+        """
+        Ensure that we can access to a deleted category when we access it by pk.
+        We can do that because we have set visibility=DELETED_VISIBLE_BY_PK
+        """
+
+        pk = self.categories[1].id
+
+        self.categories[1].delete()
+
+        self.assertRaises(Category.DoesNotExist, Category.objects.get, name=self.categories[1].name)
+
+        self.assertEqual(self.categories[1], Category.objects.get(pk=pk))
+
+        cat = Category.objects.filter(pk=pk)
+        self.assertEqual(len(cat), 1)
+        self.assertEqual(self.categories[1], cat[0])
+
+    def test_no_access_by_pk(self):
+        """
+        Ensure that if we try to access a deleted object by pk (with the default visibility),
+        we can't access it.
+        """
+
+        self.order.delete()
+
+        self.assertRaises(Order.DoesNotExist, Order.objects.get, pk=self.order.id)

@@ -19,7 +19,7 @@ This Django application provides you with a base mixin for your models, that all
 without having them deleted from your database.
 
 You can choose what happens when you delete an object :
- - it can be masked from your database (soft delete), in cascade or not
+ - it can be masked from your database (soft delete)
  - it can be normally deleted (hard delete)
  - it can be hard-deleted, but if its deletion would delete other objects, it will only be masked
 

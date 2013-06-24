@@ -1,7 +1,7 @@
 from django.db import models
 from .managers import safedelete_manager_factory
 from .utils import (related_objects,
-                    HARD_DELETE, SOFT_DELETE, SOFT_DELETE_CASCADE, HARD_DELETE_NOCASCADE,
+                    HARD_DELETE, SOFT_DELETE, HARD_DELETE_NOCASCADE,
                     DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
 
 
@@ -16,7 +16,7 @@ def safedelete_mixin_factory(policy,
     You can also make your manager inherits from another class (useful for GeoDjango, for instance).
     """
 
-    assert policy in (HARD_DELETE, SOFT_DELETE, SOFT_DELETE_CASCADE, HARD_DELETE_NOCASCADE)
+    assert policy in (HARD_DELETE, SOFT_DELETE, HARD_DELETE_NOCASCADE)
     assert visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
 
     class Model(models.Model):
@@ -26,26 +26,26 @@ def safedelete_mixin_factory(policy,
         objects = safedelete_manager_factory(manager_superclass, visibility)()
 
         def save(self, keep_deleted=False, **kwargs):
+            """
+            Save an object, un-deleting it if it was deleted.
+            If you want to keep it deleted, you can set the keep_deleted argument to True.
+            """
             if not keep_deleted:
                 self.deleted = False
             super(Model, self).save(**kwargs)
 
         def undelete(self):
             assert self.deleted
-            self.save(keep_deleted=True)
+            self.save()
 
         def delete(self, force_policy=None, **kwargs):
-            current_policy = policy if force_policy is None else force_policy
+            current_policy = policy if (force_policy is None) else force_policy
 
-            if current_policy in (SOFT_DELETE, SOFT_DELETE_CASCADE):
+            if current_policy == SOFT_DELETE:
 
                 # Only soft-delete the object, marking it as deleted.
                 self.deleted = True
                 super(Model, self).save(**kwargs)
-
-                if current_policy == SOFT_DELETE_CASCADE:
-                    for obj in related_objects(self):
-                        obj.delete(force_policy=SOFT_DELETE)
 
             elif current_policy == HARD_DELETE:
 
