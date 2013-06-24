@@ -1,14 +1,13 @@
 from django.db import models
 from .managers import safedelete_manager_factory
-from .utils import related_objects, HARD_DELETE, SOFT_DELETE, SOFT_DELETE_CASCADE, HARD_DELETE_NOCASCADE, DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK
+from .utils import (related_objects,
+                    HARD_DELETE, SOFT_DELETE, SOFT_DELETE_CASCADE, HARD_DELETE_NOCASCADE,
+                    DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
 
 
-
-def safedelete_mixin_factory(
-            policy,
-            visibility=DELETED_INVISIBLE,
-            manager_superclass=models.Manager
-        ):
+def safedelete_mixin_factory(policy,
+                             visibility=DELETED_INVISIBLE,
+                             manager_superclass=models.Manager):
     """
     Return an abstract Django model, with a "deleted" attribute, and a custom default manager.
 
@@ -20,13 +19,12 @@ def safedelete_mixin_factory(
     assert policy in (HARD_DELETE, SOFT_DELETE, SOFT_DELETE_CASCADE, HARD_DELETE_NOCASCADE)
     assert visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
 
-
     class Model(models.Model):
 
         deleted = models.BooleanField(default=False)
-        
+
         objects = safedelete_manager_factory(manager_superclass, visibility)()
-        
+
         def save(self, keep_deleted=False, **kwargs):
             if not keep_deleted:
                 self.deleted = False
@@ -34,7 +32,6 @@ def safedelete_mixin_factory(
 
         def undelete(self):
             assert self.deleted
-            self.date_removed = False
             self.save(keep_deleted=True)
 
         def delete(self, force_policy=None, **kwargs):
@@ -67,10 +64,8 @@ def safedelete_mixin_factory(
             else:
                 raise ValueError("Invalid policy for deletion.")
 
-        
         class Meta:
             abstract = True
-
 
     return Model
 

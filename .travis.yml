@@ -1,27 +1,54 @@
-# Tell Travis you want a Python environment to test in
 language: python
-# List the versions of Python you'd like to test against
+
 python:
   - 2.6
   - 2.7
-  - pypy
-# List the versions of Django you'd like to test against
+  - 3.2
+  - 3.3
+
 env:
+  - DJANGO_VERSION=1.3
   - DJANGO_VERSION=1.4
   - DJANGO_VERSION=1.5
-# Tell it the things it will need to install when it boots
+
 install: 
    # This is a dependency of our Django test script
  - pip install argparse --use-mirrors
-   # Install the dependencies the app itself has
-   # which in this case I choose to keep in a requirements file
+
+   # Install the dependencies of the app itself
  - pip install -r requirements.txt --use-mirrors
-   # Install whatever version of Django that's listed above
-   # Travis is currently working on
+
  - pip install -q Django==$DJANGO_VERSION --use-mirrors
+
  - pip install coverage
-# Tell Travis how to run the test script itself
-script: coverage run quicktest.py safedelete
+
+ - pip install pep8 --use-mirrors
+ - pip install pyflakes --use-mirrors
+
+before_script:
+    - "pep8 --ignore=E501 safedelete"
+    - pyflakes safedelete
+
+script:
+    - coverage run quicktest.py safedelete
+
 after_success:
  - pip install coveralls
  - coveralls
+
+
+# We need to exclude old versions of Django for tests with python 3.
+matrix:
+    exclude:
+        - python: 3.2
+        - env: DJANGO_VERSION=1.3
+    exclude:
+        - python: 3.3
+        - env: DJANGO_VERSION=1.3
+    exclude:
+        - python: 3.2
+        - env: DJANGO_VERSION=1.4
+    exclude:
+        - python: 3.3
+        - env: DJANGO_VERSION=1.4
+

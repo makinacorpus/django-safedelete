@@ -1,7 +1,9 @@
 from django.db import models
 from django.test import TestCase
 
-from .models import safedelete_mixin_factory, SoftDeleteMixin, HARD_DELETE, SOFT_DELETE_CASCADE, HARD_DELETE_NOCASCADE, DELETED_VISIBLE_BY_PK
+from .models import (safedelete_mixin_factory, SoftDeleteMixin,
+                     HARD_DELETE, SOFT_DELETE_CASCADE, HARD_DELETE_NOCASCADE,
+                     DELETED_VISIBLE_BY_PK)
 
 
 # MODELS (FOR TESTING)
@@ -10,13 +12,16 @@ from .models import safedelete_mixin_factory, SoftDeleteMixin, HARD_DELETE, SOFT
 class Author(safedelete_mixin_factory(HARD_DELETE_NOCASCADE)):
     name = models.CharField(max_length=200)
 
+
 class Category(safedelete_mixin_factory(SOFT_DELETE_CASCADE, visibility=DELETED_VISIBLE_BY_PK)):
     name = models.CharField(max_length=200)
+
 
 class Article(safedelete_mixin_factory(HARD_DELETE)):
     name = models.CharField(max_length=200)
     author = models.ForeignKey(Author)
     category = models.ForeignKey(Category, null=True, default=None)
+
 
 class Order(SoftDeleteMixin):
     name = models.CharField(max_length=100)
@@ -84,7 +89,7 @@ class SimpleTest(TestCase):
 
         self.assertEqual(Author.objects.count(), 2)
         self.assertEqual(Author.objects.all_with_deleted().count(), 2)
-        
+
         self.authors[1].delete()
 
         self.assertEqual(Author.objects.count(), 1)
@@ -93,4 +98,4 @@ class SimpleTest(TestCase):
         self.assertEqual(Article.objects.count(), 3)
 
     def test_soft_delete_cascade(self):
-        pass #TODO
+        pass  # TODO

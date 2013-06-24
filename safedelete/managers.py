@@ -1,5 +1,6 @@
 from .utils import DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK
 
+
 def queryset_delete(self):
     """ Delete method to be added to a queryset instance. """
     assert self.query.can_filter(), "Cannot use 'limit' or 'offset' with delete."
@@ -8,6 +9,7 @@ def queryset_delete(self):
         obj.delete()
     self._result_cache = None
 queryset_delete.alters_data = True
+
 
 def queryset_undelete(self):
     """ Undelete method to be added to a queryset instance. """
@@ -31,20 +33,20 @@ def safedelete_manager_factory(superclass, visibility=DELETED_INVISIBLE):
 
         # Cf. Bug XXX
         #use_for_related_fields = False
-        
+
         def get_query_set(self):
             queryset = super(SafeDeleteManager, self).get_query_set().filter(deleted=False)
             queryset.delete = queryset_delete
             queryset.undelete = queryset_undelete
             return queryset
-            
+
         def all_with_deleted(self):
             """ Return a queryset to every objects, including deleted ones. """
             queryset = super(SafeDeleteManager, self).get_query_set()
             queryset.delete = queryset_delete
             queryset.undelete = queryset_undelete
             return queryset
-        
+
         def only_deleted(self):
             """ Return a queryset to only deleted objects. """
             queryset = super(SafeDeleteManager, self).get_query_set().filter(deleted=True)
@@ -63,4 +65,3 @@ def safedelete_manager_factory(superclass, visibility=DELETED_INVISIBLE):
             return self.get_query_set().get(**kwargs)
 
     return SafeDeleteManager
-

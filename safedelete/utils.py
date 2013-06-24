@@ -1,12 +1,10 @@
 from django.contrib.admin.util import NestedObjects
 import itertools
-import functools
 
 
 HARD_DELETE, SOFT_DELETE, SOFT_DELETE_CASCADE, HARD_DELETE_NOCASCADE = range(4)
 
-DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK = range(10,12)
-
+DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK = range(10, 12)
 
 
 # FIXME: Normally we must be able to use the django Collector, not the NestedObject
@@ -27,4 +25,3 @@ def related_objects(obj):
         return ()
 
     return flatten(collector.nested())
-
