@@ -9,15 +9,20 @@ def safedelete_mixin_factory(
             visibility=DELETED_INVISIBLE,
             manager_superclass=models.Manager
         ):
+    """
+    Return an abstract Django model, with a "deleted" attribute, and a custom default manager.
+
+    The policy attribute define what happens when you delete an object, while visibility is
+    useful to define how deleted objects can be accessed.
+    You can also make your manager inherits from another class (useful for GeoDjango, for instance).
+    """
 
     assert policy in (HARD_DELETE, SOFT_DELETE, SOFT_DELETE_CASCADE, HARD_DELETE_NOCASCADE)
+    assert visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
+
 
     class Model(models.Model):
-        """
-        This base model provides date fields and functionality to enable logical
-        delete functionality in derived models.
-        """
-        
+
         deleted = models.BooleanField(default=False)
         
         objects = safedelete_manager_factory(manager_superclass, visibility)()
@@ -66,7 +71,9 @@ def safedelete_mixin_factory(
         class Meta:
             abstract = True
 
+
     return Model
 
 
+# Often used
 SoftDeleteMixin = safedelete_mixin_factory(SOFT_DELETE)
