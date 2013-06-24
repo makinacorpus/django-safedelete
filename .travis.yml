@@ -2,8 +2,9 @@
 language: python
 # List the versions of Python you'd like to test against
 python:
-  - "2.6"
-  - "2.7"
+  - 2.6
+  - 2.7
+  - pypy
 # List the versions of Django you'd like to test against
 env:
   - DJANGO_VERSION=1.4
@@ -18,5 +19,9 @@ install:
    # Install whatever version of Django that's listed above
    # Travis is currently working on
  - pip install -q Django==$DJANGO_VERSION --use-mirrors
+ - pip install coverage
 # Tell Travis how to run the test script itself
-script: python quicktest.py safedelete
+script: coverage run quicktest.py safedelete
+after_success:
+ - pip install coveralls
+ - coveralls
