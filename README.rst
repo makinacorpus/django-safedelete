@@ -2,6 +2,14 @@
 Django safedelete
 =================
 
+
+.. image:: https://travis-ci.org/makinacorpus/safedelete.png
+    :target: https://travis-ci.org/makinacorpus/safedelete
+
+.. image:: https://coveralls.io/repos/makinacorpus/safedelete/badge.png
+    :target: https://coveralls.io/r/makinacorpus/safedelete
+
+
 What is it ?
 ------------
 
@@ -58,10 +66,14 @@ Documentation
 
 The documentation is available `here <http://django-safedelete.readthedocs.com>`_.
 
+
 Installation
 ------------
 
-Just install it.
+The application don't have any special requirement.
+
+It have been tested with Django 1.3, 1.4 and 1.5, using python 2.6 and 2.7.
+It is also compatible with python 3, using Django 1.5.
 
 Licensing
 ---------
