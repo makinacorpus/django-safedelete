@@ -3,11 +3,11 @@ Django safedelete
 =================
 
 
-.. image:: https://travis-ci.org/makinacorpus/safedelete.png
-    :target: https://travis-ci.org/makinacorpus/safedelete
+.. image:: https://travis-ci.org/makinacorpus/django-safedelete.png
+    :target: https://travis-ci.org/makinacorpus/django-safedelete
 
-.. image:: https://coveralls.io/repos/makinacorpus/safedelete/badge.png
-    :target: https://coveralls.io/r/makinacorpus/safedelete
+.. image:: https://coveralls.io/repos/makinacorpus/django-safedelete/badge.png
+    :target: https://coveralls.io/r/makinacorpus/django-safedelete
 
 
 What is it ?
