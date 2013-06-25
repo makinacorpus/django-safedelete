@@ -21,7 +21,7 @@ from django.conf import settings
 
 sys.path.insert(0, os.path.abspath('..'))
 
-settings.configure(DEBUG = True, DATABASES = {})
+settings.configure(DEBUG = True, DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': '/tmp/db.sqlite', 'USER': '', 'PASSWORD': '', 'HOST': '', 'PORT': ''}})
 
 # -- General configuration -----------------------------------------------------
 
