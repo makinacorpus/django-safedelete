@@ -12,7 +12,7 @@ Contents:
    :maxdepth: 2
    :glob:
 
-   *.rst
+   models
 
 
 Indices and tables

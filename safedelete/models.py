@@ -10,11 +10,14 @@ def safedelete_mixin_factory(policy,
                              manager_superclass=models.Manager,
                              queryset_superclass=models.query.QuerySet):
     """
-    Return an abstract Django model, with a "deleted" attribute, and a custom default manager.
+    Return an abstract Django model, with a ``deleted`` field.
+    It will also have a custom default manager, and an overriden ``delete()`` method.
 
-    The policy attribute define what happens when you delete an object, while visibility is
+    The ``policy`` attribute define what happens when you delete an object, while ``visibility`` is
     useful to define how deleted objects can be accessed.
-    You can also make your manager inherits from another class (useful for GeoDjango, for instance).
+
+    You can also make your manager inherits from another class. In this case, you will probably have
+    to make the querysets also inherits from the QuerySet class the manager creates.
     """
 
     assert policy in (HARD_DELETE, SOFT_DELETE, HARD_DELETE_NOCASCADE)
