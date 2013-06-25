@@ -10,8 +10,9 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
+   :glob:
 
-   introduction
+   *.rst
 
 
 Indices and tables
