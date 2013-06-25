@@ -161,10 +161,10 @@ class SimpleTest(TestCase):
 
         self.assertEqual(Category.objects.count(), 0)
 
-        Category.objects.all().undelete() # Nonsense
+        Category.objects.all().undelete()  # Nonsense
 
         self.assertEqual(Category.objects.count(), 0)
-        
+
         Category.objects.deleted_only().undelete()
 
         self.assertEqual(Category.objects.count(), 3)
