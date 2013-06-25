@@ -1,5 +1,4 @@
 from .utils import DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK
-import types
 
 
 def safedelete_manager_factory(manager_superclass, queryset_superclass, visibility=DELETED_INVISIBLE):
