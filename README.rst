@@ -64,7 +64,7 @@ Example
 Documentation
 -------------
 
-The documentation is available `here <http://django-safedelete.readthedocs.com>`_.
+The documentation is available `here <http://django-safedelete.readthedocs.org>`_.
 
 
 Installation
