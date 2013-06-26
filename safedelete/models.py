@@ -1,4 +1,5 @@
 from django.db import models
+
 from .managers import safedelete_manager_factory
 from .utils import (related_objects,
                     HARD_DELETE, SOFT_DELETE, HARD_DELETE_NOCASCADE,

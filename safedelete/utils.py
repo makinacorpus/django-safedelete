@@ -1,5 +1,6 @@
-from django.contrib.admin.util import NestedObjects
 import itertools
+
+from django.contrib.admin.util import NestedObjects
 from django.db import router
 
 
