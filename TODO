@@ -1,5 +1,1 @@
- - faire de la doc
- - soumettre le tout à fle, mathieu, gaël
- - finir les tests
- - améliorer le code / l'orginasation… tout
  - problème : avec un GeoManager on a use_for_related_fields qui passe à True... :(
