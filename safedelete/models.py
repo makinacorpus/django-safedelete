@@ -11,14 +11,23 @@ def safedelete_mixin_factory(policy,
                              manager_superclass=models.Manager,
                              queryset_superclass=models.query.QuerySet):
     """
-    Return an abstract Django model, with a ``deleted`` field.
+    Returns an abstract Django model, with a ``deleted`` field.
     It will also have a custom default manager, and an overriden ``delete()`` method.
 
-    The ``policy`` attribute define what happens when you delete an object, while ``visibility`` is
-    useful to define how deleted objects can be accessed.
+    :param policy: define what happens when you delete an object. It can be one of ``HARD_DELETE``, ``SOFT_DELETE`` and ``HARD_DELETE_NOCASCADE``.
+    :param visibility: useful to define how deleted objects can be accessed. It can be ``DELETED_INVISIBLE`` (by default), or ``DELETED_VISIBLE_BY_PK``.
 
-    You can also make your manager inherits from another class. In this case, you will probably have
-    to make the querysets also inherits from the QuerySet class the manager creates.
+    :param manager_superclass: if you want, you can make your manager inherits from another class. Useful if you need to use a custom manager.
+    :param queryset_superclass: the manager that will be created will return a queryset instance, which class will inherits from this class.
+
+    :Example:
+
+        >>> my_mixin = safedelete_mixin_factory(policy=SOFT_DELETE)
+        >>> class MyModel(my_mixin):
+        ...     my_field = models.TextField()
+        ...
+        >>> # Now you have your model (with its ``deleted`` field, and custom manager and delete method)
+
     """
 
     assert policy in (HARD_DELETE, SOFT_DELETE, HARD_DELETE_NOCASCADE)
@@ -33,7 +42,7 @@ def safedelete_mixin_factory(policy,
         def save(self, keep_deleted=False, **kwargs):
             """
             Save an object, un-deleting it if it was deleted.
-            If you want to keep it deleted, you can set the keep_deleted argument to True.
+            If you want to keep it deleted, you can set the ``keep_deleted`` argument to ``True``.
             """
             if not keep_deleted:
                 self.deleted = False

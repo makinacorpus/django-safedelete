@@ -1,4 +1,3 @@
-=================
 Django safedelete
 =================
 
@@ -27,7 +26,7 @@ You can choose what happens when you delete an object :
 Example
 -------
 
-.. code:: python
+.. code-block:: python
 
     # Models
 
@@ -61,12 +60,6 @@ Example
     >>> article2.delete()
 
 
-Documentation
--------------
-
-The documentation is available `here <http://django-safedelete.readthedocs.org>`_.
-
-
 Installation
 ------------
 
@@ -74,6 +67,13 @@ The application don't have any special requirement.
 
 It have been tested with Django 1.3, 1.4 and 1.5, using python 2.6 and 2.7.
 It is also compatible with python 3, using Django 1.5.
+
+
+Documentation
+-------------
+
+The documentation is available `here <http://django-safedelete.readthedocs.org>`_.
+
 
 Licensing
 ---------
