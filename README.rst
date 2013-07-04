@@ -8,6 +8,9 @@ Django safedelete
 .. image:: https://coveralls.io/repos/makinacorpus/django-safedelete/badge.png
     :target: https://coveralls.io/r/makinacorpus/django-safedelete
 
+.. image:: https://drupal.org/files/imagecache/grid-3/Logo_slogan_300dpi.png
+    :target: http://www.makina-corpus.com
+
 
 What is it ?
 ------------
