@@ -17,7 +17,7 @@ What is it ?
 
 For various reasons, you may want to avoid deleting objects from your database.
 
-This Django application provides you with a base mixin for your models, that allow you transparently retrieve or delete your objects,
+This Django application provides a model mixin, that allows you to transparently retrieve or delete your objects,
 without having them deleted from your database.
 
 You can choose what happens when you delete an object :
@@ -66,7 +66,7 @@ Example
 Installation
 ------------
 
-The application don't have any special requirement.
+The application doesn't have any special requirement.
 
 It have been tested with Django 1.3, 1.4 and 1.5, using python 2.6 and 2.7.
 It is also compatible with python 3, using Django 1.5.
@@ -81,9 +81,9 @@ The documentation is available `here <http://django-safedelete.readthedocs.org>`
 Licensing
 ---------
 
-Please see the file LICENSE.
+Please see the LICENSE file.
 
 Contacts
 --------
 
-Please see the file AUTHORS.
+Please see the AUTHORS file.
