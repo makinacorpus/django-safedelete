@@ -1,5 +1,8 @@
 from distutils.core import setup
 
+with open('README.rst', 'r') as f:
+    long_description = f.read()
+
 version = "0.1.1"
 
 setup(
@@ -7,6 +10,7 @@ setup(
     packages = ['django-safedelete'],
     version = version,
     description = 'Make you objects invisible instead of deleting them from your database.',
+    long_description = long_description,
     author = 'Korantin Auguste',
     author_email = 'contact@palkeo.com',
     url = 'https://github.com/makinacorpus/django-safedelete',
