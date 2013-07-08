@@ -1,4 +1,5 @@
 from distutils.core import setup
+from pip.req import parse_requirements
 
 with open('README.rst', 'r') as f:
     long_description = f.read()
@@ -25,5 +26,5 @@ setup(
         "Development Status :: 4 - Beta",
     ],
     license='BSD',
-    requires= ['django >= 1.3']
+    requires=['Django (>= 1.3)']
 )
