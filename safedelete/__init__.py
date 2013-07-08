@@ -11,4 +11,3 @@ __all__ = ['safedelete_manager_factory',
            'HARD_DELETE_NOCASCADE',
            'DELETED_INVISIBLE',
            'DELETED_VISIBLE_BY_PK']
-
