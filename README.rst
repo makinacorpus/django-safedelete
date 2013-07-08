@@ -1,11 +1,6 @@
 Django safedelete
 =================
 
-.. image:: https://drupal.org/files/imagecache/grid-3/Logo_slogan_300dpi.png
-    :target: http://www.makina-corpus.com
-
-|
-
 .. image:: https://travis-ci.org/makinacorpus/django-safedelete.png
     :target: https://travis-ci.org/makinacorpus/django-safedelete
 
@@ -88,3 +83,7 @@ Contacts
 --------
 
 Please see the AUTHORS file.
+
+.. image:: https://drupal.org/files/imagecache/grid-3/Logo_slogan_300dpi.png
+    :target: http://www.makina-corpus.com
+
