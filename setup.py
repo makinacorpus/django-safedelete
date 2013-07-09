@@ -10,7 +10,7 @@ setup(
     name = 'django-safedelete',
     packages = ['django-safedelete'],
     version = version,
-    description = 'Make you objects invisible instead of deleting them from your database.',
+    description = 'Mask your objects instead of deleting them from your database.',
     long_description = long_description,
     author = 'Korantin Auguste',
     author_email = 'contact@palkeo.com',

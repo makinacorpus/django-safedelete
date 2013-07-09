@@ -6,7 +6,7 @@ Bonnes pratiques à l'écriture d'application Django
 Astuces générales
 =================
 
- - Readme
+ - Readme (en ReST)
  - Mettre un fichier `requirements.txt <http://www.pip-installer.org/en/latest/requirements.html>`_, avec toutes les bibliothèques dont a besoin l'application.
  - Vérifier le code avec pep8 et pyflakes (peut être fait automatiquement par Travis-CI).
 
@@ -14,7 +14,57 @@ Astuces générales
 Travis-CI
 =========
 
-Cf le ``.travis.yml`` du projet.
+::
+
+    language: python
+
+    python:
+        - 2.6
+        - 2.7
+        - 3.2
+        - 3.3
+
+    env:
+        - DJANGO_VERSION=1.3
+        - DJANGO_VERSION=1.4
+        - DJANGO_VERSION=1.5
+
+    install: 
+        # This is a dependency of our Django test script
+        - pip install argparse --use-mirrors
+
+        # Install the dependencies of the app itself
+        - pip install -r requirements.txt --use-mirrors
+
+        - pip install -q Django==$DJANGO_VERSION --use-mirrors
+
+        - pip install coverage
+
+        - pip install pep8 --use-mirrors
+        - pip install pyflakes --use-mirrors
+
+    before_script:
+        - "pep8 --ignore=E501 safedelete"
+        - pyflakes safedelete
+
+    script:
+        - coverage run quicktest.py safedelete
+
+    after_success:
+        - pip install coveralls
+        - coveralls
+
+    # We need to exclude old versions of Django for tests with python 3.
+    matrix:
+        exclude:
+            - python: 3.2
+              env: DJANGO_VERSION=1.3
+            - python: 3.3
+              env: DJANGO_VERSION=1.3
+            - python: 3.2
+              env: DJANGO_VERSION=1.4
+            - python: 3.3
+              env: DJANGO_VERSION=1.4
 
 
 Code coverage
