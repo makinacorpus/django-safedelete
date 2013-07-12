@@ -16,7 +16,7 @@ install:
  - pip install argparse --use-mirrors
 
    # Install the dependencies of the app itself
- - pip install -r requirements.txt --use-mirrors
+   # - pip install -r requirements.txt --use-mirrors
 
  - pip install -q Django==$DJANGO_VERSION --use-mirrors
 
