@@ -63,6 +63,7 @@ Installation
 ------------
 
 ::
+
     pip install django-safedelete
 
 The application doesn't have any special requirement.
