@@ -27,7 +27,6 @@ def safedelete_manager_factory(manager_superclass, queryset_superclass, visibili
         undelete.alters_data = True
 
     class SafeDeleteManager(manager_superclass):
-
         def get_query_set(self):
             return self.all_with_deleted().filter(deleted=False)
 

@@ -4,7 +4,8 @@ from pip.req import parse_requirements
 with open('README.rst', 'r') as f:
     long_description = f.read()
 
-version = "0.1.1"
+with open('VERSION', 'r') as f:
+    version = f.read().strip()
 
 setup(
     name = 'django-safedelete',
