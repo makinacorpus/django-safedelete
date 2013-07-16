@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup, find_packages
 
 with open('README.rst', 'r') as f:
     long_description = f.read()
@@ -8,7 +8,7 @@ with open('VERSION', 'r') as f:
 
 setup(
     name = 'django-safedelete',
-    packages = ['django-safedelete'],
+    packages = find_packages(),
     version = version,
     description = 'Mask your objects instead of deleting them from your database.',
     long_description = long_description,
@@ -26,5 +26,6 @@ setup(
         "Development Status :: 4 - Beta",
     ],
     license='BSD',
-    requires=['Django (>= 1.3)']
+    requires=['Django (>= 1.3)'],
+    include_package_data=True,
 )
