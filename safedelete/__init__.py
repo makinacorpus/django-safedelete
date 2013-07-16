@@ -13,4 +13,3 @@ __all__ = ['safedelete_manager_factory',
            'DELETED_VISIBLE_BY_PK']
 
 __version__ = "0.1.2"
-
