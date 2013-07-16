@@ -1,10 +1,15 @@
 from setuptools import setup, find_packages
 
+from django.conf import settings
+settings.configure()
+
+import safedelete
+
+
 with open('README.rst', 'r') as f:
     long_description = f.read()
 
-with open('VERSION', 'r') as f:
-    version = f.read().strip()
+version = safedelete.__version__
 
 setup(
     name = 'django-safedelete',
