@@ -38,14 +38,14 @@ def safedelete_manager_factory(manager_superclass, queryset_superclass, visibili
             """ Return a queryset to only deleted objects. """
             return self.all_with_deleted().filter(deleted=True)
 
-        def filter(self, **kwargs):
+        def filter(self, *args, **kwargs):
             if visibility == DELETED_VISIBLE_BY_PK and 'pk' in kwargs:
-                return self.all_with_deleted().filter(**kwargs)
-            return self.get_query_set().filter(**kwargs)
+                return self.all_with_deleted().filter(*args, **kwargs)
+            return self.get_query_set().filter(*args, **kwargs)
 
-        def get(self, **kwargs):
+        def get(self, *args, **kwargs):
             if visibility == DELETED_VISIBLE_BY_PK and 'pk' in kwargs:
-                return self.all_with_deleted().get(**kwargs)
-            return self.get_query_set().get(**kwargs)
+                return self.all_with_deleted().get(*args, **kwargs)
+            return self.get_query_set().get(*args, **kwargs)
 
     return SafeDeleteManager
