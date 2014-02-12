@@ -1,3 +1,5 @@
+from django.contrib import admin
+
 class SafeDeleteAdmin (admin.ModelAdmin):
     """
         from safedelete import admin.SafeDeleteAdmin
