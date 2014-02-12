@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-from django.conf import settings
+from django.conf.url import settings
 settings.configure()
 
 import safedelete
