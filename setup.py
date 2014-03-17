@@ -1,9 +1,15 @@
+import os
 from setuptools import setup, find_packages
 
-with open('README.rst', 'r') as f:
+
+here = os.path.abspath(os.path.dirname(__file__))
+
+with open(os.path.join(here, 'README.rst')) as f:
     long_description = f.read()
 
-version = "0.1.2"
+with open(os.path.join(here, 'VERSION')) as f:
+    version = f.read().strip()
+
 
 setup(
     name = 'django-safedelete',
