@@ -39,7 +39,7 @@ def safedelete_mixin_factory(policy,
 
         objects = safedelete_manager_factory(manager_superclass, queryset_superclass, visibility)()
 
-        def save(self, keep_deleted=False, **kwargs):
+        def save(self, keep_deleted=True, **kwargs):
             """
             Save an object, un-deleting it if it was deleted.
             If you want to keep it deleted, you can set the ``keep_deleted`` argument to ``True``.
