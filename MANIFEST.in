@@ -1,2 +1,2 @@
 include *.rst
-include LICENSE AUTHORS VERSION
+include LICENSE AUTHORS
