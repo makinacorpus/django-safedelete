@@ -1,6 +1,9 @@
+from django.contrib import admin
+from django.contrib.admin.sites import AdminSite
 from django.db import models
 from django.test import TestCase
 
+from .admin import SafeDeleteAdmin
 from .models import (safedelete_mixin_factory, SoftDeleteMixin,
                      HARD_DELETE, HARD_DELETE_NOCASCADE, SOFT_DELETE,
                      DELETED_VISIBLE_BY_PK)
@@ -26,6 +29,28 @@ class Article(safedelete_mixin_factory(HARD_DELETE)):
 class Order(SoftDeleteMixin):
     name = models.CharField(max_length=100)
     articles = models.ManyToManyField(Article)
+
+
+# ADMINMODEL (FOR TESTING)
+
+
+class CategoryAdmin(SafeDeleteAdmin):
+    pass
+
+
+# MOCKS
+
+
+class MockRequest(object):
+    pass
+
+
+class MockSuperUser(object):
+    def has_perm(self, perm):
+        return True
+
+request = MockRequest()
+request.user = MockSuperUser()
 
 
 # TESTS
@@ -168,3 +193,8 @@ class SimpleTest(TestCase):
         Category.objects.deleted_only().undelete()
 
         self.assertEqual(Category.objects.count(), 3)
+
+    def test_admin_model(self):
+        ma = CategoryAdmin(Category, AdminSite())
+        self.assertEqual(ma.get_fields(request), ['deleted', 'name'])
+        self.assertEqual(ma.get_list_filter(request), ('deleted',))
