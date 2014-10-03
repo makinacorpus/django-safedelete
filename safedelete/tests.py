@@ -226,11 +226,11 @@ class AdminTestCase(TestCase):
             # Django == 1.3
             self.assertEqual(changelist.get_filters(self.request)[0][0].title(), "deleted")
             self.assertEqual(changelist.get_query_set().count(), 3)
-        elif django.VERSION[1] == 4:
-            # Django == 1.4
+        elif django.VERSION[1] == 4 or django.VERSION[1] == 5:
+            # Django == 1.4 or 1.5
             self.assertEqual(changelist.get_filters(self.request)[0][0].title, "deleted")
             self.assertEqual(changelist.get_query_set(self.request).count(), 3)
         else:
-            # Django >= 1.5
+            # Django >= 1.6
             self.assertEqual(changelist.get_filters(self.request)[0][0].title, "deleted")
             self.assertEqual(changelist.queryset.count(), 3)
