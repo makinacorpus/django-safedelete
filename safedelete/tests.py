@@ -209,8 +209,9 @@ class SimpleTest(TestCase):
                 modeladmin.list_max_show_all, modeladmin.list_editable,
                 modeladmin
             )
-            self.assertEqual(changelist.get_filters(request)[0][0].title, u"deleted")
+            self.assertEqual(changelist.get_filters(request)[0][0].title, "deleted")
             if (hasattr(changelist, "queryset")):
+                # Django >= 1.5
                 self.assertEqual(changelist.queryset.count(), 3)
             else:
                 # Django 1.4
@@ -224,5 +225,5 @@ class SimpleTest(TestCase):
                 modeladmin.list_select_related, modeladmin.list_per_page,
                 modeladmin.list_editable, modeladmin
             )
-            self.assertEqual(changelist.get_filters(request)[0][0].title(), u"deleted")
+            self.assertEqual(changelist.get_filters(request)[0][0].title(), "deleted")
             self.assertEqual(changelist.get_query_set().count(), 3)
