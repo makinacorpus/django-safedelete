@@ -9,8 +9,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
 
         >>> from safedelete import admin.SafeDeleteAdmin
         >>> class ContactAdmin(SafeDeleteAdmin):
-        ...    list_display = ("first_name", "last_name", "email") \
-+ SafeDeleteAdmin.list_display
+        ...    list_display = ("first_name", "last_name", "email") + SafeDeleteAdmin.list_display
         ...    list_filter = ("last_name") + SafeDeleteAdmin.list_filter
     """
     list_display = ('deleted',)

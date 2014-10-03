@@ -1,3 +1,4 @@
+import django
 from django.contrib.admin.views.main import ChangeList
 from django.contrib.admin.sites import AdminSite
 from django.db import models
@@ -179,36 +180,57 @@ class SimpleTest(TestCase):
 
         self.assertEqual(Category.objects.count(), 3)
 
-    def test_admin_model(self):
+
+class AdminTestCase(TestCase):
+    def setUp(self):
+        self.author = Author.objects.create(name='author 0')
+        self.categories = (
+            Category.objects.create(name='category 0'),
+            Category.objects.create(name='category 1'),
+            Category.objects.create(name='category 2'),
+        )
+        self.articles = (
+            Article(name='article 0', author=self.author),
+            Article(name='article 1', author=self.author, category=self.categories[1]),
+            Article(name='article 2', author=self.author, category=self.categories[2]),
+        )
         self.categories[1].delete()
-        request_factory = RequestFactory()
-        request = request_factory.get('/', {})
-        modeladmin = CategoryAdmin(Category, AdminSite())
+        self.request_factory = RequestFactory()
+        self.request = self.request_factory.get('/', {})
+        self.modeladmin = CategoryAdmin(Category, AdminSite())
+
+    def get_changelist(self, request, model, modeladmin):
         if (hasattr(modeladmin, 'list_max_show_all')):
             # Django >= 1.4
-            changelist = ChangeList(
-                request, Category, modeladmin.list_display,
+            return ChangeList(
+                request, model, modeladmin.list_display,
                 modeladmin.list_display_links, modeladmin.list_filter,
                 modeladmin.date_hierarchy, modeladmin.search_fields,
                 modeladmin.list_select_related, modeladmin.list_per_page,
                 modeladmin.list_max_show_all, modeladmin.list_editable,
                 modeladmin
             )
-            self.assertEqual(changelist.get_filters(request)[0][0].title, "deleted")
-            if (hasattr(changelist, "queryset")):
-                # Django >= 1.5
-                self.assertEqual(changelist.queryset.count(), 3)
-            else:
-                # Django 1.4
-                self.assertEqual(changelist.get_query_set(request).count(), 3)
         else:
             # Django 1.3
-            changelist = ChangeList(
-                request, Category, modeladmin.list_display,
+            return ChangeList(
+                request, model, modeladmin.list_display,
                 modeladmin.list_display_links, modeladmin.list_filter,
                 modeladmin.date_hierarchy, modeladmin.search_fields,
                 modeladmin.list_select_related, modeladmin.list_per_page,
                 modeladmin.list_editable, modeladmin
             )
-            self.assertEqual(changelist.get_filters(request)[0][0].title(), "deleted")
+
+    def test_admin_model(self):
+        changelist = self.get_changelist(self.request, Category, self.modeladmin)
+        if django.VERSION[1] == 3:
+            # Django == 1.3
+            self.assertEqual(changelist.get_filters(self.request)[0][0].title(), "deleted")
             self.assertEqual(changelist.get_query_set().count(), 3)
+        elif django.VERSION[1] == 4:
+            # Django == 1.4
+            self.assertEqual(changelist.get_filters(self.request)[0][0].title, "deleted")
+            self.assertEqual(changelist.get_query_set(self.request).count(), 3)
+        else:
+            # Django >= 1.5
+            self.assertEqual(changelist.get_filters(self.request)[0][0].title, "deleted")
+            self.assertEqual(changelist.queryset.count(), 3)
