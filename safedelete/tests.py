@@ -199,19 +199,30 @@ class SimpleTest(TestCase):
         request_factory = RequestFactory()
         request = request_factory.get('/', {})
         modeladmin = CategoryAdmin(Category, AdminSite())
-        changelist = ChangeList(
-            request, Category, modeladmin.list_display,
-            modeladmin.list_display_links, modeladmin.list_filter,
-            modeladmin.date_hierarchy, modeladmin.search_fields,
-            modeladmin.list_select_related, modeladmin.list_per_page,
-            modeladmin.list_max_show_all, modeladmin.list_editable, modeladmin
-        )
-        self.assertEqual(
-            changelist.get_filters(request)[0][0].title,
-            u"deleted"
-        )
-        if hasattr(changelist, 'queryset'):
-            self.assertEqual(changelist.queryset.count(), 3)
+        if (hasattr(modeladmin, 'list_max_show_all')):
+            # Django >= 1.4
+            changelist = ChangeList(
+                request, Category, modeladmin.list_display,
+                modeladmin.list_display_links, modeladmin.list_filter,
+                modeladmin.date_hierarchy, modeladmin.search_fields,
+                modeladmin.list_select_related, modeladmin.list_per_page,
+                modeladmin.list_max_show_all, modeladmin.list_editable,
+                modeladmin
+            )
+            self.assertEqual(changelist.get_filters(request)[0][0].title, u"deleted")
+            if (hasattr(changelist, "queryset")):
+                self.assertEqual(changelist.queryset.count(), 3)
+            else:
+                # Django 1.4
+                self.assertEqual(changelist.get_query_set(request).count(), 3)
         else:
-            # Django 1.4
-            self.assertEqual(changelist.get_query_set(request).count(), 3)
+            # Django 1.3
+            changelist = ChangeList(
+                request, Category, modeladmin.list_display,
+                modeladmin.list_display_links, modeladmin.list_filter,
+                modeladmin.date_hierarchy, modeladmin.search_fields,
+                modeladmin.list_select_related, modeladmin.list_per_page,
+                modeladmin.list_editable, modeladmin
+            )
+            self.assertEqual(changelist.get_filters(request)[0][0].title(), u"deleted")
+            self.assertEqual(changelist.get_query_set().count(), 3)

@@ -29,7 +29,9 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         except:
             qs = self.model._default_manager.all()
 
-        ordering = self.get_ordering(request)
-        if ordering:
-            qs = qs.order_by(*ordering)
+        if hasattr(self, 'get_ordering'):
+            # Django >= 1.4
+            ordering = self.get_ordering(request)
+            if ordering:
+                qs = qs.order_by(*ordering)
         return qs

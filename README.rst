@@ -70,6 +70,7 @@ The application doesn't have any special requirement.
 
 It have been tested with Django 1.3, 1.4 and 1.5, using python 2.6 and 2.7.
 It is also compatible with python 3, using Django 1.5.
+It also has been tested with Django 1.7 using python 2.7 and python 3.
 
 
 Documentation
