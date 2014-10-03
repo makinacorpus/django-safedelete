@@ -28,6 +28,10 @@ def safedelete_manager_factory(manager_superclass, queryset_superclass, visibili
 
     class SafeDeleteManager(manager_superclass):
         def get_query_set(self):
+            # Deprecated in Django 1.7
+            return self.get_queryset()
+
+        def get_queryset(self):
             return self.all_with_deleted().filter(deleted=False)
 
         def all_with_deleted(self):

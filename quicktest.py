@@ -42,10 +42,28 @@ class QuickDjangoTest(object):
                     'PORT': '',
                 }
             },
+            MIDDLEWARE_CLASSES = (
+                'django.contrib.sessions.middleware.SessionMiddleware',
+                'django.middleware.common.CommonMiddleware',
+                'django.middleware.csrf.CsrfViewMiddleware',
+                'django.contrib.auth.middleware.AuthenticationMiddleware',
+                'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+                'django.contrib.messages.middleware.MessageMiddleware',
+                'django.middleware.clickjacking.XFrameOptionsMiddleware',
+            ),
             INSTALLED_APPS = self.INSTALLED_APPS + self.apps
         )
-        from django.test.simple import DjangoTestSuiteRunner
-        failures = DjangoTestSuiteRunner().run_tests(self.apps, verbosity=1)
+        # Setup is needed for Django >= 1.7
+        import django
+        if hasattr(django, 'setup'):
+            django.setup()
+        try:
+            from django.test.runner import DiscoverRunner
+            failures = DiscoverRunner().run_tests(self.apps, verbosity=1)
+        except ImportError:
+            # DjangoTestSuiteRunner has been deprecated in Django 1.7
+            from django.test.simple import DjangoTestSuiteRunner
+            failures = DjangoTestSuiteRunner().run_tests(self.apps, verbosity=1)
         if failures: # pragma: no cover
             sys.exit(failures)
 

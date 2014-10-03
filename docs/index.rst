@@ -11,3 +11,4 @@ Documentation
    :glob:
 
    models
+   admin

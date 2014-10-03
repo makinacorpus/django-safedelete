@@ -1,6 +1,10 @@
+import django
+from django.contrib.admin.views.main import ChangeList
+from django.contrib.admin.sites import AdminSite
 from django.db import models
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 
+from .admin import SafeDeleteAdmin
 from .models import (safedelete_mixin_factory, SoftDeleteMixin,
                      HARD_DELETE, HARD_DELETE_NOCASCADE, SOFT_DELETE,
                      DELETED_VISIBLE_BY_PK)
@@ -26,6 +30,13 @@ class Article(safedelete_mixin_factory(HARD_DELETE)):
 class Order(SoftDeleteMixin):
     name = models.CharField(max_length=100)
     articles = models.ManyToManyField(Article)
+
+
+# ADMINMODEL (FOR TESTING)
+
+
+class CategoryAdmin(SafeDeleteAdmin):
+    pass
 
 
 # TESTS
@@ -168,3 +179,58 @@ class SimpleTest(TestCase):
         Category.objects.deleted_only().undelete()
 
         self.assertEqual(Category.objects.count(), 3)
+
+
+class AdminTestCase(TestCase):
+    def setUp(self):
+        self.author = Author.objects.create(name='author 0')
+        self.categories = (
+            Category.objects.create(name='category 0'),
+            Category.objects.create(name='category 1'),
+            Category.objects.create(name='category 2'),
+        )
+        self.articles = (
+            Article(name='article 0', author=self.author),
+            Article(name='article 1', author=self.author, category=self.categories[1]),
+            Article(name='article 2', author=self.author, category=self.categories[2]),
+        )
+        self.categories[1].delete()
+        self.request_factory = RequestFactory()
+        self.request = self.request_factory.get('/', {})
+        self.modeladmin = CategoryAdmin(Category, AdminSite())
+
+    def get_changelist(self, request, model, modeladmin):
+        if (hasattr(modeladmin, 'list_max_show_all')):
+            # Django >= 1.4
+            return ChangeList(
+                request, model, modeladmin.list_display,
+                modeladmin.list_display_links, modeladmin.list_filter,
+                modeladmin.date_hierarchy, modeladmin.search_fields,
+                modeladmin.list_select_related, modeladmin.list_per_page,
+                modeladmin.list_max_show_all, modeladmin.list_editable,
+                modeladmin
+            )
+        else:
+            # Django 1.3
+            return ChangeList(
+                request, model, modeladmin.list_display,
+                modeladmin.list_display_links, modeladmin.list_filter,
+                modeladmin.date_hierarchy, modeladmin.search_fields,
+                modeladmin.list_select_related, modeladmin.list_per_page,
+                modeladmin.list_editable, modeladmin
+            )
+
+    def test_admin_model(self):
+        changelist = self.get_changelist(self.request, Category, self.modeladmin)
+        if django.VERSION[1] == 3:
+            # Django == 1.3
+            self.assertEqual(changelist.get_filters(self.request)[0][0].title(), "deleted")
+            self.assertEqual(changelist.get_query_set().count(), 3)
+        elif django.VERSION[1] == 4 or django.VERSION[1] == 5:
+            # Django == 1.4 or 1.5
+            self.assertEqual(changelist.get_filters(self.request)[0][0].title, "deleted")
+            self.assertEqual(changelist.get_query_set(self.request).count(), 3)
+        else:
+            # Django >= 1.6
+            self.assertEqual(changelist.get_filters(self.request)[0][0].title, "deleted")
+            self.assertEqual(changelist.queryset.count(), 3)
