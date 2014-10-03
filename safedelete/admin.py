@@ -20,6 +20,10 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         abstract = True
 
     def queryset(self, request):
+        # Deprecated in latest Django versions
+        return self.get_queryset(request)
+
+    def get_queryset(self, request):
         try:
             qs = self.model._default_manager.all_with_deleted()
         except:

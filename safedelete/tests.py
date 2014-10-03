@@ -1,6 +1,7 @@
+from django.contrib.admin.views.main import ChangeList
 from django.contrib.admin.sites import AdminSite
 from django.db import models
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 
 from .admin import SafeDeleteAdmin
 from .models import (safedelete_mixin_factory, SoftDeleteMixin,
@@ -194,6 +195,23 @@ class SimpleTest(TestCase):
         self.assertEqual(Category.objects.count(), 3)
 
     def test_admin_model(self):
-        ma = CategoryAdmin(Category, AdminSite())
-        self.assertEqual(ma.get_fields(request), ['deleted', 'name'])
-        self.assertEqual(ma.get_list_filter(request), ('deleted',))
+        self.categories[1].delete()
+        request_factory = RequestFactory()
+        request = request_factory.get('/', {})
+        modeladmin = CategoryAdmin(Category, AdminSite())
+        changelist = ChangeList(
+            request, Category, modeladmin.list_display,
+            modeladmin.list_display_links, modeladmin.list_filter,
+            modeladmin.date_hierarchy, modeladmin.search_fields,
+            modeladmin.list_select_related, modeladmin.list_per_page,
+            modeladmin.list_max_show_all, modeladmin.list_editable, modeladmin
+        )
+        self.assertEqual(
+            changelist.get_filters(request)[0][0].title,
+            u"deleted"
+        )
+        if hasattr(changelist, 'queryset'):
+            self.assertEqual(changelist.queryset.count(), 3)
+        else:
+            # Django 1.4
+            self.assertEqual(changelist.get_query_set(request).count(), 3)
