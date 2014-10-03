@@ -1,4 +1,3 @@
-from django.contrib import admin
 from django.contrib.admin.sites import AdminSite
 from django.db import models
 from django.test import TestCase
