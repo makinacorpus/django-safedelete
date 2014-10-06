@@ -1,4 +1,5 @@
 import django
+from django.contrib import admin
 from django.contrib.admin.views.main import ChangeList
 from django.contrib.admin.sites import AdminSite
 from django.db import models
@@ -197,6 +198,7 @@ class AdminTestCase(TestCase):
         self.categories[1].delete()
         self.request_factory = RequestFactory()
         self.request = self.request_factory.get('/', {})
+        self.modeladmin_default = admin.ModelAdmin(Category, AdminSite())
         self.modeladmin = CategoryAdmin(Category, AdminSite())
 
     def get_changelist(self, request, model, modeladmin):
@@ -221,16 +223,20 @@ class AdminTestCase(TestCase):
             )
 
     def test_admin_model(self):
+        changelist_default = self.get_changelist(self.request, Category, self.modeladmin_default)
         changelist = self.get_changelist(self.request, Category, self.modeladmin)
         if django.VERSION[1] == 3:
             # Django == 1.3
             self.assertEqual(changelist.get_filters(self.request)[0][0].title(), "deleted")
             self.assertEqual(changelist.get_query_set().count(), 3)
+            self.assertEqual(changelist_default.get_query_set().count(), 2)
         elif django.VERSION[1] == 4 or django.VERSION[1] == 5:
             # Django == 1.4 or 1.5
             self.assertEqual(changelist.get_filters(self.request)[0][0].title, "deleted")
             self.assertEqual(changelist.get_query_set(self.request).count(), 3)
+            self.assertEqual(changelist_default.get_query_set(self.request).count(), 2)
         else:
             # Django >= 1.6
             self.assertEqual(changelist.get_filters(self.request)[0][0].title, "deleted")
             self.assertEqual(changelist.queryset.count(), 3)
+            self.assertEqual(changelist_default.queryset.count(), 2)
