@@ -1,5 +1,7 @@
 from django.contrib import admin, messages
 from django.contrib.admin import helpers
+from django.contrib.admin.models import LogEntry, CHANGE
+from django.contrib.admin.options import get_content_type_for_model
 from django.contrib.admin.utils import model_ngettext
 from django.core.exceptions import PermissionDenied
 from django.template.response import TemplateResponse
@@ -45,6 +47,20 @@ class SafeDeleteAdmin(admin.ModelAdmin):
                 qs = qs.order_by(*ordering)
         return qs
 
+    def log_undeletion(self, request, object, object_repr):
+        """
+        Log that an object will be undeleted.
+
+        The default implementation creates an admin LogEntry object.
+        """
+        LogEntry.objects.log_action(
+            user_id=request.user.pk,
+            content_type_id=get_content_type_for_model(object).pk,
+            object_id=object.pk,
+            object_repr=object_repr,
+            action_flag=CHANGE
+        )
+
     def undelete_selected(self, request, queryset):
         """ Admin action to undelete objects in bulk with confirmation. """
         if not self.has_delete_permission(request):
@@ -55,9 +71,9 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         if request.POST.get('post'):
             n = queryset.count()
             if n:
-                #for obj in queryset:
-                #    obj_display = force_text(obj)
-                #    modeladmin.log_undeletion(request, obj, obj_display)
+                for obj in queryset:
+                    obj_display = force_text(obj)
+                    self.log_undeletion(request, obj, obj_display)
                 queryset.undelete()
                 self.message_user(
                     request,
