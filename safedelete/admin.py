@@ -1,4 +1,10 @@
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.contrib.admin import helpers
+from django.contrib.admin.utils import model_ngettext
+from django.core.exceptions import PermissionDenied
+from django.template.response import TemplateResponse
+from django.utils.encoding import force_text
+from django.utils.translation import ugettext_lazy as _
 
 
 class SafeDeleteAdmin(admin.ModelAdmin):
@@ -12,8 +18,12 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         ...    list_display = ("first_name", "last_name", "email") + SafeDeleteAdmin.list_display
         ...    list_filter = ("last_name") + SafeDeleteAdmin.list_filter
     """
+    undelete_selected_confirmation_template = "safedelete/undelete_selected_confirmation.html"
+
     list_display = ('deleted',)
     list_filter = ('deleted',)
+    exclude = ('deleted',)
+    actions = ('undelete_selected',)
 
     class Meta:
         abstract = True
@@ -34,3 +44,50 @@ class SafeDeleteAdmin(admin.ModelAdmin):
             if ordering:
                 qs = qs.order_by(*ordering)
         return qs
+
+    def undelete_selected(self, request, queryset):
+        """ Admin action to undelete objects in bulk with confirmation. """
+        if not self.has_delete_permission(request):
+            raise PermissionDenied
+        assert hasattr(queryset, 'undelete')
+
+        # Undeletion confirmed
+        if request.POST.get('post'):
+            n = queryset.count()
+            if n:
+                #for obj in queryset:
+                #    obj_display = force_text(obj)
+                #    modeladmin.log_undeletion(request, obj, obj_display)
+                queryset.undelete()
+                self.message_user(
+                    request,
+                    _("Successfully undeleted %(count)d %(items)s.") % {
+                        "count": n, "items": model_ngettext(self.opts, n)
+                    },
+                    messages.SUCCESS
+                )
+                # Return None to display the change list page again.
+                return None
+
+        opts = self.model._meta
+        if len(queryset) == 1:
+            objects_name = force_text(opts.verbose_name)
+        else:
+            objects_name = force_text(opts.verbose_name_plural)
+        title = _("Are you sure?")
+
+        context = {
+            'title': title,
+            'objects_name': objects_name,
+            'queryset': queryset,
+            "opts": opts,
+            'action_checkbox_name': helpers.ACTION_CHECKBOX_NAME,
+        }
+
+        return TemplateResponse(
+            request,
+            self.undelete_selected_confirmation_template,
+            context,
+            current_app=self.admin_site.name,
+        )
+    undelete_selected.short_description = _("Undelete selected %(verbose_name_plural)s.")
