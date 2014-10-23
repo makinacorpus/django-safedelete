@@ -27,7 +27,7 @@ def highlight_deleted(obj):
     if not getattr(obj, 'deleted', False):
         return obj
     else:
-        return '<span style="color:#ff3e3e; font-weight: normal; text-decoration:line-through;">{}</span>'.format(obj)
+        return '<span style="color:#ff3e3e; font-weight: normal; text-decoration:line-through;">{0}</span>'.format(obj)
 highlight_deleted.short_description = _("Name")
 highlight_deleted.allow_tags = True
 
