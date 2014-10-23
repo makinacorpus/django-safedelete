@@ -9,15 +9,27 @@ from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
 
+def highlight_deleted(obj):
+    """
+        Display in red lines when object is deleted.
+    """
+    if not getattr(obj, 'deleted', False):
+        return obj
+    else:
+        return '<span style="color:#ff3e3e; font-weight: normal; text-decoration:line-through;">{}</span>'.format(obj)
+highlight_deleted.short_description = _("Name")
+highlight_deleted.allow_tags = True
+
+
 class SafeDeleteAdmin(admin.ModelAdmin):
     """
     An abstract ModelAdmin which will include deleted objects in its listing.
 
     :Example:
 
-        >>> from safedelete import admin.SafeDeleteAdmin
+        >>> from safedelete.admin import SafeDeleteAdmin, highlight_deleted
         >>> class ContactAdmin(SafeDeleteAdmin):
-        ...    list_display = ("first_name", "last_name", "email") + SafeDeleteAdmin.list_display
+        ...    list_display = (highlight_deleted, "first_name", "last_name", "email") + SafeDeleteAdmin.list_display
         ...    list_filter = ("last_name") + SafeDeleteAdmin.list_filter
     """
     undelete_selected_confirmation_template = "safedelete/undelete_selected_confirmation.html"
