@@ -27,7 +27,7 @@ def highlight_deleted(obj):
     if not getattr(obj, 'deleted', False):
         return obj
     else:
-        return '<span style="color:#ff3e3e; font-weight: normal; text-decoration:line-through;">{0}</span>'.format(obj)
+        return '<span class="deleted">{0}</span>'.format(obj)
 highlight_deleted.short_description = _("Name")
 highlight_deleted.allow_tags = True
 
@@ -52,6 +52,11 @@ class SafeDeleteAdmin(admin.ModelAdmin):
 
     class Meta:
         abstract = True
+
+    class Media:
+        css = {
+            'all': ('safedelete/admin.css',),
+        }
 
     def queryset(self, request):
         # Deprecated in latest Django versions

@@ -1,0 +1,5 @@
+.deleted {
+    color:#ff3e3e;
+    font-weight: normal;
+    text-decoration:line-through;
+}

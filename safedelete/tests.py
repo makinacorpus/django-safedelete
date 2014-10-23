@@ -266,7 +266,7 @@ class AdminTestCase(TestCase):
     def test_admin_listing(self):
         """ Test deleted objects are in red in admin listing. """
         resp = self.client.get('/admin/safedelete/category/')
-        line = '<span style="color:#ff3e3e; font-weight: normal; text-decoration:line-through;">{0}</span>'.format(self.categories[1])
+        line = '<span class="deleted">{0}</span>'.format(self.categories[1])
         self.assertContains(resp, line)
 
     def test_admin_undelete_action(self):
