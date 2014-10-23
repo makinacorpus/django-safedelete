@@ -31,6 +31,7 @@ class QuickDjangoTest(object):
         Fire up the Django test suite developed for version 1.2
         """
         settings.configure(
+            ROOT_URLCONF = 'safedelete.urls',
             DEBUG = True,
             DATABASES = {
                 'default': {
