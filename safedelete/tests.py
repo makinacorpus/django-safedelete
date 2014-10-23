@@ -1,5 +1,10 @@
 import django
-from django.conf.urls import patterns, include
+try:
+    # Django > 1.3
+    from django.conf.urls import patterns, include
+except ImportError:
+    # Django 1.3
+    from django.conf.urls.defaults import patterns, include
 from django.contrib import admin
 from django.contrib.admin.views.main import ChangeList
 from django.contrib.admin.sites import AdminSite

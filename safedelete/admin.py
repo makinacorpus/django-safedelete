@@ -1,11 +1,22 @@
+import django
 from django.contrib import admin, messages
 from django.contrib.admin import helpers
 from django.contrib.admin.models import LogEntry, CHANGE
-from django.contrib.admin.options import get_content_type_for_model
-from django.contrib.admin.utils import model_ngettext
+try:
+    # Django 1.7
+    from django.contrib.admin.utils import model_ngettext
+except ImportError:
+    # Django < 1.7
+    from django.contrib.admin.util import model_ngettext
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.template.response import TemplateResponse
-from django.utils.encoding import force_text
+try:
+    # Django > 1.3
+    from django.utils.encoding import force_text
+except ImportError:
+    # Django 1.3
+    from django.utils.encoding import force_unicode as force_text
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -67,7 +78,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         """
         LogEntry.objects.log_action(
             user_id=request.user.pk,
-            content_type_id=get_content_type_for_model(object).pk,
+            content_type_id=ContentType.objects.get_for_model(self.model).pk,
             object_id=object.pk,
             object_repr=object_repr,
             action_flag=CHANGE
@@ -87,13 +98,21 @@ class SafeDeleteAdmin(admin.ModelAdmin):
                     obj_display = force_text(obj)
                     self.log_undeletion(request, obj, obj_display)
                 queryset.undelete()
-                self.message_user(
-                    request,
-                    _("Successfully undeleted %(count)d %(items)s.") % {
-                        "count": n, "items": model_ngettext(self.opts, n)
-                    },
-                    messages.SUCCESS
-                )
+                if django.VERSION[1] <= 4:
+                    self.message_user(
+                        request,
+                        _("Successfully undeleted %(count)d %(items)s.") % {
+                            "count": n, "items": model_ngettext(self.opts, n)
+                        },
+                    )
+                else:
+                    self.message_user(
+                        request,
+                        _("Successfully undeleted %(count)d %(items)s.") % {
+                            "count": n, "items": model_ngettext(self.opts, n)
+                        },
+                        messages.SUCCESS,
+                    )
                 # Return None to display the change list page again.
                 return None
 

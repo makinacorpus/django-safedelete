@@ -31,7 +31,7 @@ class QuickDjangoTest(object):
         Fire up the Django test suite developed for version 1.2
         """
         settings.configure(
-            ROOT_URLCONF = 'safedelete.urls',
+            ROOT_URLCONF = 'safedelete.tests',
             DEBUG = True,
             DATABASES = {
                 'default': {
@@ -48,9 +48,7 @@ class QuickDjangoTest(object):
                 'django.middleware.common.CommonMiddleware',
                 'django.middleware.csrf.CsrfViewMiddleware',
                 'django.contrib.auth.middleware.AuthenticationMiddleware',
-                'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
                 'django.contrib.messages.middleware.MessageMiddleware',
-                'django.middleware.clickjacking.XFrameOptionsMiddleware',
             ),
             INSTALLED_APPS = self.INSTALLED_APPS + self.apps
         )
