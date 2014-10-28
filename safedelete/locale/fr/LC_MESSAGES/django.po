@@ -1,0 +1,47 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: django-safedelete\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-10-28 18:03+0100\n"
+"PO-Revision-Date: 2014-10-28 18:07+0100\n"
+"Last-Translator: Gagaro <gagaro42@gmail.com>\n"
+"Language-Team: django-safedelete <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 1.5.4\n"
+"Language: fr\n"
+
+#: admin.py:31
+msgid "Name"
+msgstr "Nom"
+
+#: admin.py:109 admin.py:116
+#, python-format
+msgid "Successfully undeleted %(count)d %(items)s."
+msgstr "%(count)d %(items)s ont été restaurés avec succès."
+
+#: admin.py:129
+msgid "Are you sure?"
+msgstr "Êtes-vous sûr ?"
+
+#: admin.py:146
+#, python-format
+msgid "Undelete selected %(verbose_name_plural)s."
+msgstr "Restaurer les %(verbose_name_plural)s sélectionnés."
+
+#: templates/safedelete/undelete_selected_confirmation.html:5
+#, python-format
+msgid "Are you sure you want to undelete the selected %(objects_name)s?"
+msgstr ""
+"Êtes-vous sû de vouloir restaurer tous les %(objects_name)s sélectionnés ?"
+
+#: templates/safedelete/undelete_selected_confirmation.html:14
+msgid "Yes, I'm sure"
+msgstr "Oui, je suis sûr"
