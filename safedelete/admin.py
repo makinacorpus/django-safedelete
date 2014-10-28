@@ -133,6 +133,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
             'objects_name': objects_name,
             'queryset': queryset,
             "opts": opts,
+            "app_label": opts.app_label,
             'action_checkbox_name': helpers.ACTION_CHECKBOX_NAME,
         }
 
