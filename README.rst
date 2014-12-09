@@ -62,9 +62,15 @@ Example
 Installation
 ------------
 
-::
+Installing from pypi (using pip). ::
 
     pip install django-safedelete
+
+
+Installing from github. ::
+
+    pip install -e git://github.com/makinacorpus/django-safedelete.git#egg=django-safedelete
+
 
 The application doesn't have any special requirement.
 
