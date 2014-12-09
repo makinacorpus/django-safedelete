@@ -1,2 +1,2 @@
 include *.rst
-include LICENSE AUTHORS
+include LICENSE AUTHORS CHANGELOG
