@@ -1,0 +1,17 @@
+{% extends "admin/delete_selected_confirmation.html" %}
+{% load i18n l10n %}
+
+{% block content %}
+<p>{% blocktrans %}Are you sure you want to undelete the selected {{ objects_name }}?{% endblocktrans %}</p>
+<ul>{{ queryset|unordered_list }}</ul>
+<form action="" method="post">{% csrf_token %}
+  <div>
+    {% for obj in queryset %}
+    <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}" />
+    {% endfor %}
+    <input type="hidden" name="action" value="undelete_selected" />
+    <input type="hidden" name="post" value="yes" />
+    <input type="submit" value="{% trans "Yes, I'm sure" %}" />
+  </div>
+</form>
+{% endblock %}

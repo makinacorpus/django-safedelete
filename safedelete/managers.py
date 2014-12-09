@@ -22,7 +22,9 @@ def safedelete_manager_factory(manager_superclass, queryset_superclass, visibili
 
         def undelete(self):
             assert self.query.can_filter(), "Cannot use 'limit' or 'offset' with undelete."
-            self.all().update(deleted=False)
+            # TODO: Replace this by bulk update if we can (need to call pre/post-save signal)
+            for obj in self.all():
+                obj.undelete()
             self._result_cache = None
         undelete.alters_data = True
 

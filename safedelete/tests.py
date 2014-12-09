@@ -1,11 +1,18 @@
 import django
+try:
+    # Django > 1.3
+    from django.conf.urls import patterns, include
+except ImportError:
+    # Django 1.3
+    from django.conf.urls.defaults import patterns, include
 from django.contrib import admin
 from django.contrib.admin.views.main import ChangeList
 from django.contrib.admin.sites import AdminSite
+from django.contrib.auth.models import User
 from django.db import models
 from django.test import TestCase, RequestFactory
 
-from .admin import SafeDeleteAdmin
+from .admin import SafeDeleteAdmin, highlight_deleted
 from .models import (safedelete_mixin_factory, SoftDeleteMixin,
                      HARD_DELETE, HARD_DELETE_NOCASCADE, SOFT_DELETE,
                      DELETED_VISIBLE_BY_PK)
@@ -37,8 +44,16 @@ class Order(SoftDeleteMixin):
 
 
 class CategoryAdmin(SafeDeleteAdmin):
-    pass
+    list_display = (highlight_deleted,) + SafeDeleteAdmin.list_display
 
+admin.site.register(Category, CategoryAdmin)
+
+# URLS (FOR TESTING)
+
+urlpatterns = patterns(
+    '',
+    (r'^admin/', include(admin.site.urls)),
+)
 
 # TESTS
 
@@ -183,6 +198,8 @@ class SimpleTest(TestCase):
 
 
 class AdminTestCase(TestCase):
+    urls = 'safedelete.tests'
+
     def setUp(self):
         self.author = Author.objects.create(name='author 0')
         self.categories = (
@@ -200,6 +217,11 @@ class AdminTestCase(TestCase):
         self.request = self.request_factory.get('/', {})
         self.modeladmin_default = admin.ModelAdmin(Category, AdminSite())
         self.modeladmin = CategoryAdmin(Category, AdminSite())
+        User.objects.create_superuser("super", "", "secret")
+        self.client.login(username="super", password="secret")
+
+    def tearDown(self):
+        self.client.logout()
 
     def get_changelist(self, request, model, modeladmin):
         if (hasattr(modeladmin, 'list_max_show_all')):
@@ -240,3 +262,29 @@ class AdminTestCase(TestCase):
             self.assertEqual(changelist.get_filters(self.request)[0][0].title, "deleted")
             self.assertEqual(changelist.queryset.count(), 3)
             self.assertEqual(changelist_default.queryset.count(), 2)
+
+    def test_admin_listing(self):
+        """ Test deleted objects are in red in admin listing. """
+        resp = self.client.get('/admin/safedelete/category/')
+        line = '<span class="deleted">{0}</span>'.format(self.categories[1])
+        self.assertContains(resp, line)
+
+    def test_admin_undelete_action(self):
+        """ Test objects are undeleted and action is logged. """
+        resp = self.client.post('/admin/safedelete/category/', data={
+            'index': 0,
+            'action': ['undelete_selected'],
+            '_selected_action': [self.categories[1].pk],
+        })
+        self.assertTemplateUsed(resp, 'safedelete/undelete_selected_confirmation.html')
+        category = Category.objects.get(pk=self.categories[1].pk)
+        self.assertTrue(self.categories[1].deleted)
+
+        resp = self.client.post('/admin/safedelete/category/', data={
+            'index': 0,
+            'action': ['undelete_selected'],
+            'post': True,
+            '_selected_action': [self.categories[1].pk],
+        })
+        category = Category.objects.get(pk=self.categories[1].pk)
+        self.assertFalse(category.deleted)
