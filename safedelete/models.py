@@ -98,7 +98,10 @@ def safedelete_mixin_factory(policy,
                     continue
 
                 # This is the changed line
-                qs = model_class._default_manager.all_with_deleted().filter(**lookup_kwargs)
+                if hasattr(model_class._default_manager, 'all_with_deleted'):
+                    qs = model_class._default_manager.all_with_deleted().filter(**lookup_kwargs)
+                else:
+                    qs = model_class._default_manager.filter(**lookup_kwargs)
 
                 model_class_pk = self._get_pk_val(model_class._meta)
                 if not self._state.adding and model_class_pk is not None:
