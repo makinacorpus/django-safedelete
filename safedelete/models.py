@@ -39,6 +39,9 @@ def safedelete_mixin_factory(policy,
 
         objects = safedelete_manager_factory(manager_superclass, queryset_superclass, visibility)()
 
+        class Meta:
+            abstract = True
+
         def save(self, keep_deleted=False, **kwargs):
             """
             Save an object, un-deleting it if it was deleted.
@@ -50,7 +53,7 @@ def safedelete_mixin_factory(policy,
 
         def undelete(self):
             assert self.deleted
-            self.save()
+            self.save(keep_deleted=False)
 
         def delete(self, force_policy=None, **kwargs):
             current_policy = policy if (force_policy is None) else force_policy
@@ -74,9 +77,6 @@ def safedelete_mixin_factory(policy,
                     self.delete(force_policy=SOFT_DELETE, **kwargs)
                 else:
                     self.delete(force_policy=HARD_DELETE, **kwargs)
-
-        class Meta:
-            abstract = True
 
     return Model
 
