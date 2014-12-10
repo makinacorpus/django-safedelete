@@ -78,6 +78,39 @@ def safedelete_mixin_factory(policy,
                 else:
                     self.delete(force_policy=HARD_DELETE, **kwargs)
 
+        # We need to overwrite this check to ensure uniqueness is also checked
+        # against "deleted" (but still in db) objects.
+        # FIXME: Better/cleaner way ?
+        def _perform_unique_checks(self, unique_checks):
+            errors = {}
+
+            for model_class, unique_check in unique_checks:
+                lookup_kwargs = {}
+                for field_name in unique_check:
+                    f = self._meta.get_field(field_name)
+                    lookup_value = getattr(self, f.attname)
+                    if lookup_value is None:
+                        continue
+                    if f.primary_key and not self._state.adding:
+                        continue
+                    lookup_kwargs[str(field_name)] = lookup_value
+                if len(unique_check) != len(lookup_kwargs):
+                    continue
+
+                # This is the changed line
+                qs = model_class._default_manager.all_with_deleted().filter(**lookup_kwargs)
+
+                model_class_pk = self._get_pk_val(model_class._meta)
+                if not self._state.adding and model_class_pk is not None:
+                    qs = qs.exclude(pk=model_class_pk)
+                if qs.exists():
+                    if len(unique_check) == 1:
+                        key = unique_check[0]
+                    else:
+                        key = models.base.NON_FIELD_ERRORS
+                    errors.setdefault(key, []).append(self.unique_error_message(model_class, unique_check))
+            return errors
+
     return Model
 
 
