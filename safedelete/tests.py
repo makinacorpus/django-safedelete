@@ -5,6 +5,7 @@ try:
 except ImportError:
     # Django 1.3
     from django.conf.urls.defaults import patterns, include
+from django.core.exceptions import ValidationError
 from django.contrib import admin
 from django.contrib.admin.views.main import ChangeList
 from django.contrib.admin.sites import AdminSite
@@ -26,7 +27,7 @@ class Author(safedelete_mixin_factory(HARD_DELETE_NOCASCADE)):
 
 
 class Category(safedelete_mixin_factory(SOFT_DELETE, visibility=DELETED_VISIBLE_BY_PK)):
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, unique=True)
 
 
 class Article(safedelete_mixin_factory(HARD_DELETE)):
@@ -62,31 +63,24 @@ class SimpleTest(TestCase):
     def setUp(self):
 
         self.authors = (
-            Author(name='author 0'),
-            Author(name='author 1'),
-            Author(name='author 2'),
+            Author.objects.create(name='author 0'),
+            Author.objects.create(name='author 1'),
+            Author.objects.create(name='author 2'),
         )
 
         self.categories = (
-            Category(name='category 0'),
-            Category(name='category 1'),
-            Category(name='category 2'),
+            Category.objects.create(name='category 0'),
+            Category.objects.create(name='category 1'),
+            Category.objects.create(name='category 2'),
         )
-
-        for i in self.authors + self.categories:
-            i.save()
 
         self.articles = (
-            Article(name='article 0', author=self.authors[1]),
-            Article(name='article 1', author=self.authors[1], category=self.categories[1]),
-            Article(name='article 2', author=self.authors[2], category=self.categories[2]),
+            Article.objects.create(name='article 0', author=self.authors[1]),
+            Article.objects.create(name='article 1', author=self.authors[1], category=self.categories[1]),
+            Article.objects.create(name='article 2', author=self.authors[2], category=self.categories[2]),
         )
 
-        for i in self.articles:
-            i.save()
-
-        self.order = Order(name='order')
-        self.order.save()
+        self.order = Order.objects.create(name='order')
         self.order.articles.add(self.articles[0], self.articles[1])
 
     def test_softdelete(self):
@@ -195,6 +189,12 @@ class SimpleTest(TestCase):
         Category.objects.deleted_only().undelete()
 
         self.assertEqual(Category.objects.count(), 3)
+
+    def test_validate_unique(self):
+        """ Check that uniqueness is also checked against deleted objects """
+        Category.objects.create(name='test').delete()
+        with self.assertRaises(ValidationError):
+            Category(name='test').validate_unique()
 
 
 class AdminTestCase(TestCase):
