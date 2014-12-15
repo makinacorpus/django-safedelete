@@ -47,11 +47,11 @@ def safedelete_manager_factory(manager_superclass, queryset_superclass, visibili
         def filter(self, *args, **kwargs):
             if visibility == DELETED_VISIBLE_BY_PK and 'pk' in kwargs:
                 return self.all_with_deleted().filter(*args, **kwargs)
-            return self.get_query_set().filter(*args, **kwargs)
+            return self.get_queryset().filter(*args, **kwargs)
 
         def get(self, *args, **kwargs):
             if visibility == DELETED_VISIBLE_BY_PK and 'pk' in kwargs:
                 return self.all_with_deleted().get(*args, **kwargs)
-            return self.get_query_set().get(*args, **kwargs)
+            return self.get_queryset().get(*args, **kwargs)
 
     return SafeDeleteManager
