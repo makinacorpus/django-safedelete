@@ -12,10 +12,10 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.template.response import TemplateResponse
 try:
-    # Django > 1.3
+    # Django > 1.4.2
     from django.utils.encoding import force_text
 except ImportError:
-    # Django 1.3
+    # Django 1.4.2
     from django.utils.encoding import force_unicode as force_text
 from django.utils.translation import ugettext_lazy as _
 
@@ -68,11 +68,9 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         except:
             qs = self.model._default_manager.all()
 
-        if hasattr(self, 'get_ordering'):
-            # Django >= 1.4
-            ordering = self.get_ordering(request)
-            if ordering:
-                qs = qs.order_by(*ordering)
+        ordering = self.get_ordering(request)
+        if ordering:
+            qs = qs.order_by(*ordering)
         return qs
 
     def log_undeletion(self, request, object, object_repr):
