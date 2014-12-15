@@ -190,6 +190,17 @@ class SimpleTest(TestCase):
 
         self.assertEqual(Category.objects.count(), 3)
 
+    def test_related_manager(self):
+        order = Order.objects.create(name='order 2')
+        Order.objects.create(name='order 3')
+        order.articles.add(self.articles[0])
+        self.assertEqual(self.articles[0].order_set.all().count(), 2)
+        order.delete()
+        self.assertEqual(self.articles[0].order_set.all().count(), 1)
+        self.assertEqual(
+            self.articles[0].order_set.all_with_deleted().count(), 2
+        )
+
     def test_validate_unique(self):
         """ Check that uniqueness is also checked against deleted objects """
         Category.objects.create(name='test').delete()
