@@ -11,7 +11,13 @@ from django.contrib.admin.views.main import ChangeList
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User
 from django.db import models
-from django.test import TestCase, RequestFactory
+from django.test import TestCase
+
+try:
+    # django >= 3
+    from django.test import RequestFactory
+except ImportError:
+    from safedelete.test_utils import RequestFactory
 
 from .admin import SafeDeleteAdmin, highlight_deleted
 from .models import (safedelete_mixin_factory, SoftDeleteMixin,
@@ -21,8 +27,13 @@ from .models import (safedelete_mixin_factory, SoftDeleteMixin,
 
 # MODELS (FOR TESTING)
 
+if django.VERSION[1] < 3:
+    AUTHOR_POLICY = HARD_DELETE
+else:
+    AUTHOR_POLICY = HARD_DELETE_NOCASCADE
 
-class Author(safedelete_mixin_factory(HARD_DELETE_NOCASCADE)):
+
+class Author(safedelete_mixin_factory(AUTHOR_POLICY)):
     name = models.CharField(max_length=200)
 
 
@@ -110,6 +121,9 @@ class SimpleTest(TestCase):
         self.assertEqual(Article.objects.filter(author=self.authors[2]).count(), 1)
 
     def test_hard_delete_nocascade(self):
+        if django.VERSION[1] < 3:
+            return
+
         self.assertEqual(Author.objects.count(), 3)
 
         self.authors[0].delete()
@@ -193,8 +207,8 @@ class SimpleTest(TestCase):
     def test_validate_unique(self):
         """ Check that uniqueness is also checked against deleted objects """
         Category.objects.create(name='test').delete()
-        with self.assertRaises(ValidationError):
-            Category(name='test').validate_unique()
+        category = Category(name='test')
+        self.assertRaises(ValidationError, category.validate_unique)
 
 
 class AdminTestCase(TestCase):
@@ -247,7 +261,7 @@ class AdminTestCase(TestCase):
     def test_admin_model(self):
         changelist_default = self.get_changelist(self.request, Category, self.modeladmin_default)
         changelist = self.get_changelist(self.request, Category, self.modeladmin)
-        if django.VERSION[1] == 3:
+        if django.VERSION[1] <= 3:
             # Django == 1.3
             self.assertEqual(changelist.get_filters(self.request)[0][0].title(), "deleted")
             self.assertEqual(changelist.get_query_set().count(), 3)
@@ -276,7 +290,12 @@ class AdminTestCase(TestCase):
             'action': ['undelete_selected'],
             '_selected_action': [self.categories[1].pk],
         })
-        self.assertTemplateUsed(resp, 'safedelete/undelete_selected_confirmation.html')
+
+        if django.VERSION[1] < 3:
+            self.assertTemplateUsed(resp, 'safedelete/undelete_selected_confirmation_django12.html')
+        else:
+            self.assertTemplateUsed(resp, 'safedelete/undelete_selected_confirmation.html')
+
         category = Category.objects.get(pk=self.categories[1].pk)
         self.assertTrue(self.categories[1].deleted)
 

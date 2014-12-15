@@ -10,7 +10,14 @@ except ImportError:
     from django.contrib.admin.util import model_ngettext
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
-from django.template.response import TemplateResponse
+
+try:
+    # Django >= 1.3
+    from django.template.response import TemplateResponse
+except ImportError:
+    from django.shortcuts import render_to_response
+    from django.template import RequestContext
+
 try:
     # Django > 1.3
     from django.utils.encoding import force_text
@@ -137,10 +144,17 @@ class SafeDeleteAdmin(admin.ModelAdmin):
             'action_checkbox_name': helpers.ACTION_CHECKBOX_NAME,
         }
 
-        return TemplateResponse(
-            request,
-            self.undelete_selected_confirmation_template,
-            context,
-            current_app=self.admin_site.name,
-        )
+        if django.VERSION[1] < 3:
+            return render_to_response(
+                "safedelete/undelete_selected_confirmation_django12.html",
+                context,
+                context_instance=RequestContext(request))
+        else:
+            return TemplateResponse(
+                request,
+                self.undelete_selected_confirmation_template,
+                context,
+                current_app=self.admin_site.name,
+            )
+
     undelete_selected.short_description = _("Undelete selected %(verbose_name_plural)s.")

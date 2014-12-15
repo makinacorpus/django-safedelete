@@ -50,6 +50,6 @@ setup(
         'Development Status :: 4 - Beta',
     ],
     license='BSD',
-    requires=['Django (>= 1.3)'],
+    requires=['Django (>= 1.2)'],
     include_package_data=True,
 )

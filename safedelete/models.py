@@ -1,3 +1,4 @@
+import django
 from django.db import models
 
 from .managers import safedelete_manager_factory
@@ -30,7 +31,12 @@ def safedelete_mixin_factory(policy,
 
     """
 
-    assert policy in (HARD_DELETE, SOFT_DELETE, HARD_DELETE_NOCASCADE)
+    if django.VERSION[1] < 3:
+        # Can't pass test with HARD_DELETE_NOCASCADE
+        assert policy in (HARD_DELETE, SOFT_DELETE)
+    else:
+        assert policy in (HARD_DELETE, SOFT_DELETE, HARD_DELETE_NOCASCADE)
+
     assert visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
 
     class Model(models.Model):

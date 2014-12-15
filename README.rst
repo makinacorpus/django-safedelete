@@ -59,6 +59,19 @@ Example
     >>> article2.delete()
 
 
+Compatibilities
+---------------
+
+* Branch 0.2.x is compatible with django >= 1.2
+* Branch 0.3.x will be compatible with django >= 1.4
+
+Current branch has been tested with :
+
+*  Django 1.2, 1.3 and 1.4, using python 2.6 and 2.7.
+*  Django 1.5 and 1.6, using python 2.6, 2.7 and 3.x.
+*  Django 1.7 using python 2.7 and python 3.x.
+
+
 Installation
 ------------
 
@@ -73,10 +86,6 @@ Installing from github. ::
 
 
 The application doesn't have any special requirement.
-
-It have been tested with Django 1.3, 1.4 and 1.5, using python 2.6 and 2.7.
-It is also compatible with python 3, using Django 1.5.
-It also has been tested with Django 1.7 using python 2.7 and python 3.
 
 
 Documentation
