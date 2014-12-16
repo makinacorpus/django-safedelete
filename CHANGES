@@ -2,6 +2,27 @@
 CHANGELOG
 =========
 
+0.3.0 (unreleased)
+==================
+
+** Removed **
+
+- Support of Django 1.2 and Django 1.3 has been removed
+
+** Bugfixes **
+
+- ``all_with_deleted`` method doesn't lose current queryset on a related manager
+- uniqueness is now checked against soft deleted instances too
+
+
+0.2.1 (2014-12-15)
+==================
+
+** New **
+
+- Extends Django compatibility to Django 1.2
+
+
 0.2.0 (2014-12-09)
 ==================
 
