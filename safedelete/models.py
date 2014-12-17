@@ -2,7 +2,7 @@ from django.db import models
 
 from .managers import safedelete_manager_factory
 from .utils import (related_objects,
-                    HARD_DELETE, SOFT_DELETE, HARD_DELETE_NOCASCADE,
+                    HARD_DELETE, SOFT_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE,
                     DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
 
 
@@ -30,7 +30,8 @@ def safedelete_mixin_factory(policy,
 
     """
 
-    assert policy in (HARD_DELETE, SOFT_DELETE, HARD_DELETE_NOCASCADE)
+    assert policy in (HARD_DELETE, SOFT_DELETE, HARD_DELETE_NOCASCADE,
+                      NO_DELETE)
     assert visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
 
     class Model(models.Model):
@@ -58,7 +59,12 @@ def safedelete_mixin_factory(policy,
         def delete(self, force_policy=None, **kwargs):
             current_policy = policy if (force_policy is None) else force_policy
 
-            if current_policy == SOFT_DELETE:
+            if current_policy == NO_DELETE:
+
+                # Don't do anything.
+                return
+
+            elif current_policy == SOFT_DELETE:
 
                 # Only soft-delete the object, marking it as deleted.
                 self.deleted = True
