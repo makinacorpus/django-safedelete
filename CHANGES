@@ -5,6 +5,10 @@ CHANGELOG
 0.3.0 (unreleased)
 ==================
 
+** New **
+
+- Add a ``NO_DELETE`` policy which never soft or hard deletes an instance
+
 ** Removed **
 
 - Support of Django 1.2 and Django 1.3 has been removed
