@@ -11,7 +11,7 @@ from django.test import TestCase, RequestFactory
 from .admin import SafeDeleteAdmin, highlight_deleted
 from .models import (safedelete_mixin_factory, SoftDeleteMixin,
                      HARD_DELETE, HARD_DELETE_NOCASCADE, SOFT_DELETE,
-                     DELETED_VISIBLE_BY_PK)
+                     NO_DELETE, DELETED_VISIBLE_BY_PK)
 
 
 # MODELS (FOR TESTING)
@@ -34,6 +34,10 @@ class Article(safedelete_mixin_factory(HARD_DELETE)):
 class Order(SoftDeleteMixin):
     name = models.CharField(max_length=100)
     articles = models.ManyToManyField(Article)
+
+
+class VeryImportant(safedelete_mixin_factory(NO_DELETE)):
+    name = models.CharField(max_length=200)
 
 
 # ADMINMODEL (FOR TESTING)
@@ -118,6 +122,19 @@ class SimpleTest(TestCase):
         self.assertEqual(Author.objects.all_with_deleted().count(), 2)
 
         self.assertEqual(Article.objects.count(), 3)
+
+    def test_no_delete(self):
+        obj = VeryImportant.objects.create(name="I don't wanna die :'(.")
+        obj.delete()
+        self.assertEqual(obj.deleted, False)
+        obj = VeryImportant.objects.get(pk=obj.pk)
+        self.assertEqual(obj.deleted, False)
+
+    def test_no_delete_manager(self):
+        obj = VeryImportant.objects.create(name="I don't wanna die :'(.")
+        VeryImportant.objects.all().delete()
+        obj = VeryImportant.objects.get(pk=obj.pk)
+        self.assertEqual(obj.deleted, False)
 
     def test_save(self):
         """

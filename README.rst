@@ -20,6 +20,7 @@ You can choose what happens when you delete an object :
  - it can be masked from your database (soft delete)
  - it can be normally deleted (hard delete)
  - it can be hard-deleted, but if its deletion would delete other objects, it will only be masked
+ - it can be never deleted or masked from your database (no delete, use with caution)
 
 
 Example

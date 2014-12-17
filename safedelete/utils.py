@@ -4,9 +4,14 @@ from django.contrib.admin.util import NestedObjects
 from django.db import router
 
 
-HARD_DELETE, SOFT_DELETE, SOFT_DELETE_CASCADE, HARD_DELETE_NOCASCADE = range(4)
+HARD_DELETE = 0
+SOFT_DELETE = 1
+SOFT_DELETE_CASCADE = 2
+HARD_DELETE_NOCASCADE = 3
+NO_DELETE = 4
 
-DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK = range(10, 12)
+DELETED_INVISIBLE = 10
+DELETED_VISIBLE_BY_PK = 11
 
 
 # FIXME: Normally we must be able to use the django Collector, not the NestedObject
