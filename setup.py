@@ -17,7 +17,7 @@ def get_version(package_name):
     init_path = os.path.join(here, *(package_components + ['__init__.py']))
     with codecs.open(init_path, 'r', 'utf-8') as f:
         for line in f:
-            match = version_re.match(line[:-1])
+            match = version_re.match(line.strip())
             if match:
                 return match.groups()[0]
     raise RuntimeError("Unable to find version string.")
