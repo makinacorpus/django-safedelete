@@ -1,6 +1,11 @@
 import itertools
 
-from django.contrib.admin.util import NestedObjects
+try:
+    # Django 1.7
+    from django.contrib.admin.utils import NestedObjects
+except ImportError:
+    # Django < 1.7
+    from django.contrib.admin.util import NestedObjects
 from django.db import router
 
 
