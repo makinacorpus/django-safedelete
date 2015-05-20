@@ -30,6 +30,9 @@ class Article(safedelete_mixin_factory(HARD_DELETE)):
     author = models.ForeignKey(Author)
     category = models.ForeignKey(Category, null=True, default=None)
 
+    def __unicode__(self):
+        return 'Article ({0}): {1}'.format(self.pk, self.name)
+
 
 class Order(SoftDeleteMixin):
     name = models.CharField(max_length=100)
@@ -209,9 +212,19 @@ class SimpleTest(TestCase):
         self.assertEqual(self.articles[0].order_set.all().count(), 2)
         order.delete()
         self.assertEqual(self.articles[0].order_set.all().count(), 1)
+        # Ensure all_with_deleted() filter correctly on the article.
         self.assertEqual(
             self.articles[0].order_set.all_with_deleted().count(), 2
         )
+
+    def test_prefetch_related(self):
+        """ prefetch_related() queryset should not be filtered by core_filter """
+        authors = Author.objects.all().prefetch_related('article_set')
+        for author in authors:
+            self.assertQuerysetEqual(
+                author.article_set.all().order_by('pk'),
+                [repr(a) for a in Author.objects.get(pk=author.pk).article_set.all().order_by('pk')]
+            )
 
     def test_validate_unique(self):
         """ Check that uniqueness is also checked against deleted objects """

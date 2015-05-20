@@ -20,3 +20,4 @@ docs/_build/
 .coverage
 /dist/
 /django_safedelete.egg-info
+/.idea/

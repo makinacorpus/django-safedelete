@@ -34,23 +34,22 @@ def safedelete_manager_factory(manager_superclass, queryset_superclass, visibili
             return self.get_queryset()
 
         def get_queryset(self):
-            return self.all_with_deleted().filter(deleted=False)
+            # We MUST NOT do the core_filters in get_queryset.
+            # The child *RelatedManager will take care of that.
+            # It will break prefetch_related if we do it here.
+            queryset = SafeDeleteQueryset(self.model, using=self._db)
+            return queryset.filter(deleted=False)
 
         def all_with_deleted(self):
             """ Return a queryset to every objects, including deleted ones. """
             queryset = SafeDeleteQueryset(self.model, using=self._db)
+            # We need to filter if we are in a RelatedManager. See the `test_related_manager`.
             if hasattr(self, 'core_filters'):
                 # In a RelatedManager, must filter and add hints
                 if hasattr(queryset, '_add_hints'):
                     # Django >= 1.7
                     queryset._add_hints(instance=self.instance)
                 queryset = queryset.filter(**self.core_filters)
-                # FIXME: How to get rel_field ?
-                # if hasattr(queryset, '_known_related_objects'):
-                #     # Django >= 1.5
-                #     queryset._known_related_objects = {
-                #         rel_field: {self.instance.pk: self.instance}
-                #     }
             return queryset
 
         def deleted_only(self):
