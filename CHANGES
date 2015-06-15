@@ -2,12 +2,13 @@
 CHANGELOG
 =========
 
-0.3.0 (unreleased)
-==================
+0.3.0
+=====
 
 ** New **
 
 - Add a ``NO_DELETE`` policy which never soft or hard deletes an instance
+- Django 1.8 compatibility
 
 ** Removed **
 
@@ -17,6 +18,8 @@ CHANGELOG
 
 - ``all_with_deleted`` method doesn't lose current queryset on a related manager
 - uniqueness is now checked against soft deleted instances too
+- prefetch_related() now works with SafedeleteQuerySet
+- Fix the undelete action in the administration for active objects.
 
 
 0.2.1 (2014-12-15)
