@@ -9,9 +9,10 @@ from django.db import models
 from django.test import TestCase, RequestFactory
 
 from .admin import SafeDeleteAdmin, highlight_deleted
-from .models import (safedelete_mixin_factory, SoftDeleteMixin,
-                     HARD_DELETE, HARD_DELETE_NOCASCADE, SOFT_DELETE,
-                     NO_DELETE, DELETED_VISIBLE_BY_PK)
+from .models import (safedelete_mixin_factory, HARD_DELETE,
+                     HARD_DELETE_NOCASCADE, SOFT_DELETE, NO_DELETE,
+                     DELETED_VISIBLE_BY_PK)
+from .shortcuts import SoftDeleteMixin
 
 
 # MODELS (FOR TESTING)

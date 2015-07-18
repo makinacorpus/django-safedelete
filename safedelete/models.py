@@ -121,7 +121,3 @@ def safedelete_mixin_factory(policy,
             return errors
 
     return Model
-
-
-# Often used
-SoftDeleteMixin = safedelete_mixin_factory(SOFT_DELETE)
