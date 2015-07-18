@@ -13,7 +13,7 @@ You can create this abstract model by calling the function :py:func:`safedelete_
 
 There is also a shortcut available if you want to have simple soft-deletable objects :
 
-.. py:data:: SoftDeleteMixin
+.. py:data:: safedelete.shortcuts.SoftDeleteMixin
 
     This is a ready-to-use base model, obtained by calling ``safedelete_mixin_factory(SOFT_DELETE)``.
 
