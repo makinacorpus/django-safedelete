@@ -1,4 +1,6 @@
+from distutils.version import LooseVersion
 from django.db import models
+import django
 
 from .managers import safedelete_manager_factory
 from .utils import (related_objects,
@@ -122,6 +124,6 @@ def safedelete_mixin_factory(policy,
 
     return Model
 
-
-# Often used
-SoftDeleteMixin = safedelete_mixin_factory(SOFT_DELETE)
+# Maintains retro-compatibility with older versions, which use Django 1.9
+if LooseVersion(django.get_version()) < LooseVersion('1.9'):
+    SoftDeleteMixin = safedelete_mixin_factory(SOFT_DELETE)

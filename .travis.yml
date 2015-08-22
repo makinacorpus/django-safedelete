@@ -8,10 +8,12 @@ python:
   - 3.4
 
 env:
-  - DJANGO_VERSION=1.4
-  - DJANGO_VERSION=1.5
-  - DJANGO_VERSION=1.6
-  - DJANGO_VERSION=1.7
+  - DJANGO_VERSION="stable/1.4.x"
+  - DJANGO_VERSION="stable/1.5.x"
+  - DJANGO_VERSION="stable/1.6.x"
+  - DJANGO_VERSION="stable/1.7.x"
+  - DJANGO_VERSION="stable/1.8.x"
+  - DJANGO_VERSION="master" # 1.9
 
 install: 
    # This is a dependency of our Django test script
@@ -20,7 +22,9 @@ install:
    # Install the dependencies of the app itself
    # - pip install -r requirements.txt --use-mirrors
 
- - pip install -q Django==$DJANGO_VERSION --use-mirrors
+   # Clone Django from the GitHub repository
+ - git clone -b $DJANGO_VERSION --single-branch https://github.com/django/django
+ - pip install -e django/
 
  - pip install coverage
 
@@ -41,18 +45,27 @@ after_success:
 
 # We need to exclude old versions of Django for tests with python 3.
 # We need to exclude old versions of Python for tests with Django >= 1.7.
+# 1.9: Dropped support for 3.2-3.3: https://docs.djangoproject.com/en/dev/releases/1.9/#python-compatibility
 matrix:
     exclude:
         - python: 3.2
-          env: DJANGO_VERSION=1.4
+          env: DJANGO_VERSION="stable/1.4.x"
         - python: 3.3
-          env: DJANGO_VERSION=1.4
+          env: DJANGO_VERSION="stable/1.4.x"
         - python: 3.4
-          env: DJANGO_VERSION=1.4
+          env: DJANGO_VERSION="stable/1.4.x"
         - python: 3.4
-          env: DJANGO_VERSION=1.5
+          env: DJANGO_VERSION="stable/1.5.x"
         - python: 3.4
-          env: DJANGO_VERSION=1.6
+          env: DJANGO_VERSION="stable/1.6.x"
         - python: 2.6
-          env: DJANGO_VERSION=1.7
+          env: DJANGO_VERSION="stable/1.7.x"
+        - python: 2.6
+          env: DJANGO_VERSION="stable/1.8.x"
+        - python: 2.6
+          env: DJANGO_VERSION="master"
+        - python: 3.2
+          env: DJANGO_VERSION="master"
+        - python: 3.3
+          env: DJANGO_VERSION="master"
 
