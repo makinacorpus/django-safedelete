@@ -1,3 +1,4 @@
+from distutils.version import LooseVersion
 import django
 from django.conf.urls import patterns, include
 from django.core.exceptions import ValidationError
@@ -12,7 +13,11 @@ from .admin import SafeDeleteAdmin, highlight_deleted
 from .models import (safedelete_mixin_factory, HARD_DELETE,
                      HARD_DELETE_NOCASCADE, SOFT_DELETE, NO_DELETE,
                      DELETED_VISIBLE_BY_PK)
-from .shortcuts import SoftDeleteMixin
+
+if LooseVersion(django.get_version()) < LooseVersion('1.9'):
+    from .models import SoftDeleteMixin
+else:
+    from .shortcuts import SoftDeleteMixin
 
 
 # MODELS (FOR TESTING)
