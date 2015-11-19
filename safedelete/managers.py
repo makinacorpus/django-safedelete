@@ -28,6 +28,11 @@ def safedelete_manager_factory(manager_superclass, queryset_superclass, visibili
             self._result_cache = None
         undelete.alters_data = True
 
+    # Declaring the `SafeDeleteManager` as global prevents migration
+    # errors (makemigrations) on Django 1.8, when for instance User model
+    # is made soft-deletable.
+    global SafeDeleteManager
+
     class SafeDeleteManager(manager_superclass):
         def get_query_set(self):
             # Deprecated in Django 1.7
