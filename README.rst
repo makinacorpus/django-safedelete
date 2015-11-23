@@ -72,7 +72,7 @@ Current branch (0.3.x) has been tested with :
 *  Django 1.5 and 1.6, using python 2.6, 2.7 and 3.x.
 *  Django 1.7 using python 2.7 and python 3.x.
 *  Django 1.8 using python 2.7 and python 3.x.
-*  Django 1.9dev using python 2.7 and python 3.4.
+*  Django 1.9 using python 2.7 and python 3.x.
 
 
 
