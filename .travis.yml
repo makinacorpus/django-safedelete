@@ -13,7 +13,7 @@ env:
   - DJANGO_VERSION="stable/1.6.x"
   - DJANGO_VERSION="stable/1.7.x"
   - DJANGO_VERSION="stable/1.8.x"
-  - DJANGO_VERSION="master" # 1.9
+  - DJANGO_VERSION="stable/1.9.x"
 
 install: 
    # This is a dependency of our Django test script
@@ -63,9 +63,8 @@ matrix:
         - python: 2.6
           env: DJANGO_VERSION="stable/1.8.x"
         - python: 2.6
-          env: DJANGO_VERSION="master"
+          env: DJANGO_VERSION="stable/1.9.x"
         - python: 3.2
-          env: DJANGO_VERSION="master"
+          env: DJANGO_VERSION="stable/1.9.x"
         - python: 3.3
-          env: DJANGO_VERSION="master"
-
+          env: DJANGO_VERSION="stable/1.9.x"
