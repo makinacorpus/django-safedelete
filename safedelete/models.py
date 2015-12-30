@@ -1,8 +1,9 @@
 from distutils.version import LooseVersion
-from django.db import models
+from django.db import models, router
 import django
 
 from .managers import safedelete_manager_factory
+from .signals import post_soft_create, post_soft_delete
 from .utils import (related_objects,
                     HARD_DELETE, SOFT_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE,
                     DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
@@ -50,9 +51,15 @@ def safedelete_mixin_factory(policy,
             Save an object, un-deleting it if it was deleted.
             If you want to keep it deleted, you can set the ``keep_deleted`` argument to ``True``.
             """
+            soft_created = False
             if not keep_deleted:
+                if self.deleted and self.pk:
+                    soft_created = True
                 self.deleted = False
             super(Model, self).save(**kwargs)
+            if soft_created:
+                using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
+                post_soft_create.send(sender=self.__class__, instance=self, using=using)
 
         def undelete(self):
             assert self.deleted
@@ -71,6 +78,9 @@ def safedelete_mixin_factory(policy,
                 # Only soft-delete the object, marking it as deleted.
                 self.deleted = True
                 super(Model, self).save(**kwargs)
+                # send post-delete signal
+                using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
+                post_soft_delete.send(sender=self.__class__, instance=self, using=using)
 
             elif current_policy == HARD_DELETE:
 
