@@ -11,6 +11,8 @@ def safedelete_manager_factory(manager_superclass, queryset_superclass, visibili
 
     assert visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
 
+    global SafeDeleteQueryset
+
     class SafeDeleteQueryset(queryset_superclass):
         def delete(self):
             assert self.query.can_filter(), "Cannot use 'limit' or 'offset' with delete."
