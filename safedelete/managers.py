@@ -72,10 +72,13 @@ def safedelete_manager_factory(manager_superclass, queryset_superclass, visibili
 
     assert visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
 
-    SafeDeleteQueryset = type(
-        'SafeDeleteQueryset',
-        (SafeDeleteQuerysetMixin, queryset_superclass),
-        {})
+    # this still will fail if multiple copies of the same params are passed;
+    # it's just generally a bad pattern
+    sdqs_classname = '{0}SafeDeleteQueryset'.format(
+        queryset_superclass.__name__)
+
+    SafeDeleteQueryset = globals()[sdqs_classname] = type(
+        sdqs_classname, (SafeDeleteQuerysetMixin, queryset_superclass), {})
 
     def _get_visibility(self):
         return visibility
@@ -83,10 +86,11 @@ def safedelete_manager_factory(manager_superclass, queryset_superclass, visibili
     def _get_queryset_cls(self):
         return SafeDeleteQueryset
 
-    SafeDeleteManager = type(
-        'SafeDeleteManager',
-        (SafeDeleteManagerMixin, manager_superclass),
-        {
+    sdm_classname = '{0}SafeDeleteManager'.format(
+        manager_superclass.__name__)
+
+    SafeDeleteManager = globals()[sdm_classname] = type(
+        sdm_classname, (SafeDeleteManagerMixin, manager_superclass), {
             '_get_visibility': _get_visibility,
             '_get_queryset_cls': _get_queryset_cls
         })
