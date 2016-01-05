@@ -23,6 +23,7 @@ class SafeDeleteQuerysetMixin(object):
 
 
 class SafeDeleteManagerMixin(object):
+    use_for_related_fields = True
 
     def get_query_set(self):
         # Deprecated in Django 1.7
