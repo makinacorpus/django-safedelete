@@ -30,13 +30,15 @@ Example
 
     # Models
 
-    # We create a new mixin, with the given policy : Objects will be hard-deleted, or soft deleted if other objects would have been deleted too.
-    SafeDeleteMixin = safedelete_mixin_factory(HARD_DELETE_NOCASCADE)
-
+    # We create a new model, with the given policy : Objects will be hard-deleted, or soft deleted if other objects would have been deleted too.
     class Article(SafeDeleteMixin):
+        _safedelete_policy = HARD_DELETE_NOCASCADE
+
         name = models.CharField(max_length=100)
 
     class Order(SafeDeleteMixin):
+        _safedelete_policy = HARD_DELETE_NOCASCADE
+
         name = models.CharField(max_length=100)
         articles = models.ManyToManyField(Article)
 
@@ -64,16 +66,15 @@ Compatibilities
 ---------------
 
 * Branch 0.2.x is compatible with django >= 1.2
-* Branch 0.3.x is compatible with django >= 1.4
+* Branch 0.3.x and 0.4.x are compatible with django >= 1.4
 
-Current branch (0.3.x) has been tested with :
+Current branch (0.4.x) has been tested with :
 
 *  Django 1.4, using python 2.6 and 2.7.
 *  Django 1.5 and 1.6, using python 2.6, 2.7 and 3.x.
 *  Django 1.7 using python 2.7 and python 3.x.
 *  Django 1.8 using python 2.7 and python 3.x.
 *  Django 1.9 using python 2.7 and python 3.x.
-
 
 
 Installation

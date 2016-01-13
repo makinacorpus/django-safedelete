@@ -6,28 +6,19 @@ Creating models
 
 To create your safedelete-ready models, you have to make them inherit from an abstract model.
 
-You can create this abstract model by calling the function :py:func:`safedelete_mixin_factory` (in :py:mod:`safedelete.models`) :
-
-.. autofunction:: safedelete_mixin_factory
-
-
-There is also a shortcut available if you want to have simple soft-deletable objects :
-
-.. py:data:: safedelete.shortcuts.SoftDeleteMixin
-
-    This is a ready-to-use base model, obtained by calling ``safedelete_mixin_factory(SOFT_DELETE)``.
-
+.. autoclass:: SafeDeleteMixin
 
 Policies
 --------
 
-The different policies are :
+You can change the policy of your model by setting its ``_safedelete_policy`` attribute.
+The different policies are:
 
 .. py:data:: HARD_DELETE
 
     This will delete objects from the database if you call the delete() method.
     So, there is no difference with « normal » models, but you can still manually mask them from the database,
-    by example using ``obj.delete(force_policy=SOFT_DELETE)``.
+    by example by using ``obj.delete(force_policy=SOFT_DELETE)``.
 
 
 .. py:data:: SOFT_DELETE
@@ -37,7 +28,7 @@ The different policies are :
 
 .. py:data:: HARD_DELETE_NOCASCADE
 
-    This policy will :
+    This policy will:
      - Delete the object from database if no objects depends on it (e.g. no objects would have been deleted in cascade).
      - Mask the object if it would have deleted other objects with it.
 
@@ -49,7 +40,12 @@ The different policies are :
 Visibility
 ----------
 
-You can also give a ``visibility`` argument, useful to choose how you can see the objects that are "masked" :
+A custom manager is used to determine which objects should be included in the querysets.
+
+.. autoclass:: SafeDeleteManager
+
+If you want to change which objects are "masked", you can set the ``_safedelete_visibility``
+attribute of the manager to one of the following:
 
 .. py:data:: DELETED_INVISIBLE
 

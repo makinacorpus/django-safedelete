@@ -1,4 +1,3 @@
-from distutils.version import LooseVersion
 import django
 from django.conf.urls import patterns, include
 from django.core.exceptions import ValidationError
@@ -10,28 +9,39 @@ from django.db import models
 from django.test import TestCase, RequestFactory
 
 from .admin import SafeDeleteAdmin, highlight_deleted
-from .models import (safedelete_mixin_factory, HARD_DELETE,
-                     HARD_DELETE_NOCASCADE, SOFT_DELETE, NO_DELETE,
-                     DELETED_VISIBLE_BY_PK)
-
-if LooseVersion(django.get_version()) < LooseVersion('1.9'):
-    from .models import SoftDeleteMixin
-else:
-    from .shortcuts import SoftDeleteMixin
+from .utils import (
+    HARD_DELETE,
+    HARD_DELETE_NOCASCADE, SOFT_DELETE, NO_DELETE,
+    DELETED_VISIBLE_BY_PK
+)
+from .managers import SafeDeleteManager
+from .models import SafeDeleteMixin
 
 
 # MODELS (FOR TESTING)
 
 
-class Author(safedelete_mixin_factory(HARD_DELETE_NOCASCADE)):
+class Author(SafeDeleteMixin):
+    _safedelete_policy = HARD_DELETE_NOCASCADE
+
     name = models.CharField(max_length=200)
 
 
-class Category(safedelete_mixin_factory(SOFT_DELETE, visibility=DELETED_VISIBLE_BY_PK)):
+class CategoryManager(SafeDeleteManager):
+    _safedelete_visibility = DELETED_VISIBLE_BY_PK
+
+
+class Category(SafeDeleteMixin):
+    _safedelete_policy = SOFT_DELETE
+
     name = models.CharField(max_length=200, unique=True)
 
+    objects = CategoryManager()
 
-class Article(safedelete_mixin_factory(HARD_DELETE)):
+
+class Article(SafeDeleteMixin):
+    _safedelete_policy = HARD_DELETE
+
     name = models.CharField(max_length=200)
     author = models.ForeignKey(Author)
     category = models.ForeignKey(Category, null=True, default=None)
@@ -40,12 +50,14 @@ class Article(safedelete_mixin_factory(HARD_DELETE)):
         return 'Article ({0}): {1}'.format(self.pk, self.name)
 
 
-class Order(SoftDeleteMixin):
+class Order(SafeDeleteMixin):
     name = models.CharField(max_length=100)
     articles = models.ManyToManyField(Article)
 
 
-class VeryImportant(safedelete_mixin_factory(NO_DELETE)):
+class VeryImportant(SafeDeleteMixin):
+    _safedelete_policy = NO_DELETE
+
     name = models.CharField(max_length=200)
 
 
