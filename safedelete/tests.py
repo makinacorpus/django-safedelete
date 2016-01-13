@@ -147,15 +147,15 @@ class SimpleTest(TestCase):
     def test_no_delete(self):
         obj = VeryImportant.objects.create(name="I don't wanna die :'(.")
         obj.delete()
-        self.assertEqual(obj.deleted, False)
+        self.assertIsNone(obj.deleted)
         obj = VeryImportant.objects.get(pk=obj.pk)
-        self.assertEqual(obj.deleted, False)
+        self.assertIsNone(obj.deleted)
 
     def test_no_delete_manager(self):
         obj = VeryImportant.objects.create(name="I don't wanna die :'(.")
         VeryImportant.objects.all().delete()
         obj = VeryImportant.objects.get(pk=obj.pk)
-        self.assertEqual(obj.deleted, False)
+        self.assertIsNone(obj.deleted)
 
     def test_save(self):
         """

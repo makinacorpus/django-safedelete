@@ -2,10 +2,17 @@
 CHANGELOG
 =========
 
-0.3.3 (unreleased)
+0.4.0 (unreleased)
 ==================
 
--
+** New **
+
+- ``deleted`` is now a datetime.
+
+** Refactoring **
+
+- Remove factories to use mixins instead.
+
 
 0.3.2
 =====

@@ -8,6 +8,8 @@ To create your safedelete-ready models, you have to make them inherit from an ab
 
 .. autoclass:: SafeDeleteMixin
 
+The ``deleted`` attribute is a DateTimeField set to the moment the object was deleted.
+
 Policies
 --------
 

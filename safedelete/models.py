@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 from .managers import SafeDeleteManager
 from .utils import (
@@ -16,7 +17,6 @@ class SafeDeleteMixin(models.Model):
         It can be one of ``HARD_DELETE``, ``SOFT_DELETE``, ``NO_DELETE`` and ``HARD_DELETE_NOCASCADE``.
         Defaults to ``SOFT_DELETE``.
 
-        >>> from safedelete.models import SafeDeleteMixin
         >>> class MyModel(SafeDeleteMixin):
         ...     _safedelete_policy = SOFT_DELETE
         ...     my_field = models.TextField()
@@ -26,7 +26,7 @@ class SafeDeleteMixin(models.Model):
 
     _safedelete_policy = SOFT_DELETE
 
-    deleted = models.BooleanField(default=False)
+    deleted = models.DateTimeField(editable=False, null=True)
 
     objects = SafeDeleteManager()
 
@@ -39,7 +39,7 @@ class SafeDeleteMixin(models.Model):
         If you want to keep it deleted, you can set the ``keep_deleted`` argument to ``True``.
         """
         if not keep_deleted:
-            self.deleted = False
+            self.deleted = None
         super(SafeDeleteMixin, self).save(**kwargs)
 
     def undelete(self):
@@ -57,7 +57,7 @@ class SafeDeleteMixin(models.Model):
         elif current_policy == SOFT_DELETE:
 
             # Only soft-delete the object, marking it as deleted.
-            self.deleted = True
+            self.deleted = timezone.now()
             super(SafeDeleteMixin, self).save(**kwargs)
 
         elif current_policy == HARD_DELETE:

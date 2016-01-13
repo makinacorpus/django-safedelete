@@ -55,7 +55,7 @@ class SafeDeleteManager(models.Manager):
         # The child *RelatedManager will take care of that.
         # It will break prefetch_related if we do it here.
         queryset = SafeDeleteQueryset(self.model, using=self._db)
-        return queryset.filter(deleted=False)
+        return queryset.filter(deleted__isnull=True)
 
     def all_with_deleted(self):
         """ Return a queryset to every objects, including deleted ones. """
@@ -71,7 +71,7 @@ class SafeDeleteManager(models.Manager):
 
     def deleted_only(self):
         """ Return a queryset to only deleted objects. """
-        return self.all_with_deleted().filter(deleted=True)
+        return self.all_with_deleted().filter(deleted__isnull=False)
 
     def filter(self, *args, **kwargs):
         if self._safedelete_visibility == DELETED_VISIBLE_BY_PK and 'pk' in kwargs:
