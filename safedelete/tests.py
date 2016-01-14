@@ -10,7 +10,7 @@ from django.db import models
 from django.test import TestCase, RequestFactory
 
 from .admin import SafeDeleteAdmin, highlight_deleted
-from .signals import post_soft_create, post_soft_delete
+from .signals import post_softcreate, post_softdelete
 from .models import (safedelete_mixin_factory, HARD_DELETE,
                      HARD_DELETE_NOCASCADE, SOFT_DELETE, NO_DELETE,
                      DELETED_VISIBLE_BY_PK)
@@ -118,8 +118,8 @@ class SimpleTest(TestCase):
 
         test_obj = TestObj()
 
-        post_soft_delete.connect(test_obj.receive_softdelete, sender=Order)
-        post_soft_create.connect(test_obj.receive_softcreate, sender=Order)
+        post_softdelete.connect(test_obj.receive_softdelete, sender=Order)
+        post_softcreate.connect(test_obj.receive_softcreate, sender=Order)
 
         self.assertEqual(Order.objects.count(), 1)
 
@@ -139,8 +139,8 @@ class SimpleTest(TestCase):
         self.assertFalse(test_obj.received_softdelete_signal)
         self.assertTrue(test_obj.received_softcreate_signal)
 
-        post_soft_delete.disconnect(test_obj.receive_softdelete, sender=Order)
-        post_soft_create.disconnect(test_obj.receive_softcreate, sender=Order)
+        post_softdelete.disconnect(test_obj.receive_softdelete, sender=Order)
+        post_softcreate.disconnect(test_obj.receive_softcreate, sender=Order)
 
     def test_hard_delete(self):
         self.assertEqual(Article.objects.count(), 3)

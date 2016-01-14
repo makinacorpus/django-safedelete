@@ -3,7 +3,7 @@ from django.db import models, router
 import django
 
 from .managers import safedelete_manager_factory
-from .signals import post_soft_create, post_soft_delete
+from .signals import post_softcreate, post_softdelete
 from .utils import (related_objects,
                     HARD_DELETE, SOFT_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE,
                     DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
@@ -59,7 +59,7 @@ def safedelete_mixin_factory(policy,
             super(Model, self).save(**kwargs)
             if soft_created:
                 using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
-                post_soft_create.send(sender=self.__class__, instance=self, using=using)
+                post_softcreate.send(sender=self.__class__, instance=self, using=using)
 
         def undelete(self):
             assert self.deleted
@@ -80,7 +80,7 @@ def safedelete_mixin_factory(policy,
                 super(Model, self).save(**kwargs)
                 # send post-delete signal
                 using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
-                post_soft_delete.send(sender=self.__class__, instance=self, using=using)
+                post_softdelete.send(sender=self.__class__, instance=self, using=using)
 
             elif current_policy == HARD_DELETE:
 
