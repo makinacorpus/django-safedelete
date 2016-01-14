@@ -16,6 +16,7 @@ from .utils import (
 )
 from .managers import SafeDeleteManager
 from .models import SafeDeleteMixin
+from .signals import post_softdelete, post_undelete
 
 
 # MODELS (FOR TESTING)
@@ -114,6 +115,44 @@ class SimpleTest(TestCase):
         self.order.save()
 
         self.assertEqual(Order.objects.count(), 1)
+
+    def test_softdelete_signals(self):
+        # prevents shadowing...
+        class TestObj(object):
+            received_softdelete_signal = False
+            received_softcreate_signal = False
+
+            def receive_softdelete(self, sender, instance, **kwargs):
+                self.received_softdelete_signal = True
+
+            def receive_softcreate(self, sender, instance, **kwargs):
+                self.received_softcreate_signal = True
+
+        test_obj = TestObj()
+
+        post_softdelete.connect(test_obj.receive_softdelete, sender=Order)
+        post_undelete.connect(test_obj.receive_softcreate, sender=Order)
+
+        self.assertEqual(Order.objects.count(), 1)
+
+        self.order.delete()
+
+        self.assertEqual(Order.objects.count(), 0)
+        self.assertEqual(Order.objects.all_with_deleted().count(), 1)
+        self.assertTrue(test_obj.received_softdelete_signal)
+        self.assertFalse(test_obj.received_softcreate_signal)
+
+        test_obj.received_softdelete_signal = False
+        test_obj.received_softcreate_signal = False
+
+        self.order.save()
+
+        self.assertEqual(Order.objects.count(), 1)
+        self.assertFalse(test_obj.received_softdelete_signal)
+        self.assertTrue(test_obj.received_softcreate_signal)
+
+        post_softdelete.disconnect(test_obj.receive_softdelete, sender=Order)
+        post_undelete.disconnect(test_obj.receive_softcreate, sender=Order)
 
     def test_hard_delete(self):
         self.assertEqual(Article.objects.count(), 3)
