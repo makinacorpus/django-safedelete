@@ -1,7 +1,8 @@
-from django.db import models
+from django.db import models, router
 from django.utils import timezone
 
 from .managers import SafeDeleteManager
+from .signals import post_softdelete, post_undelete
 from .utils import (
     related_objects,
     HARD_DELETE, SOFT_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE
@@ -38,13 +39,29 @@ class SafeDeleteMixin(models.Model):
         Save an object, un-deleting it if it was deleted.
         If you want to keep it deleted, you can set the ``keep_deleted`` argument to ``True``.
         """
+
+        # undelete signal has to happen here (and not in undelete)
+        # in order to catch the case where a deleted model becomes
+        # implicitly undeleted on-save.  If someone manually nulls out
+        # deleted, it'll bypass this logic, which I think is fine, because
+        # otherwise we'd have to shadow field changes to handle that case.
+
+        was_undeleted = False
         if not keep_deleted:
+            if self.deleted and self.pk:
+                was_undeleted = True
             self.deleted = None
+
         super(SafeDeleteMixin, self).save(**kwargs)
 
-    def undelete(self):
+        if was_undeleted:
+            # send undelete signal
+            using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
+            post_undelete.send(sender=self.__class__, instance=self, using=using)
+
+    def undelete(self, **kwargs):
         assert self.deleted
-        self.save(keep_deleted=False)
+        self.save(keep_deleted=False, **kwargs)
 
     def delete(self, force_policy=None, **kwargs):
         current_policy = self._safedelete_policy if (force_policy is None) else force_policy
@@ -59,6 +76,9 @@ class SafeDeleteMixin(models.Model):
             # Only soft-delete the object, marking it as deleted.
             self.deleted = timezone.now()
             super(SafeDeleteMixin, self).save(**kwargs)
+            # send softdelete signal
+            using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
+            post_softdelete.send(sender=self.__class__, instance=self, using=using)
 
         elif current_policy == HARD_DELETE:
 
