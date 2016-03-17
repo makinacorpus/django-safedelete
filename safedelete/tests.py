@@ -49,6 +49,29 @@ class VeryImportant(safedelete_mixin_factory(NO_DELETE)):
     name = models.CharField(max_length=200)
 
 
+class OpinionatedQueryset(models.QuerySet):
+    def best(self):
+        return self.filter(color='green')
+
+
+class HasCustomQueryset(safedelete_mixin_factory(policy=SOFT_DELETE, queryset_superclass=OpinionatedQueryset)):
+    name = models.CharField(max_length=200)
+    color = models.CharField(max_length=5, choices=['red', 'green'])
+
+
+class CustomManager(models.Manager):
+    def get_queryset(self):
+        return OpinionatedQueryset(self.model, using=self._db)
+
+    def best(self):
+        return self.get_queryset().best()
+
+
+class HasCustomManager(safedelete_mixin_factory(policy=SOFT_DELETE, manager_superclass=CustomManager)):
+    name = models.CharField(max_length=200)
+    color = models.CharField(max_length=5, choices=['red', 'green'])
+
+
 # ADMINMODEL (FOR TESTING)
 
 
@@ -210,6 +233,20 @@ class SimpleTest(TestCase):
         Category.objects.deleted_only().undelete()
 
         self.assertEqual(Category.objects.count(), 3)
+
+    def test_custom_queryset_original_behavior(self):
+        HasCustomQueryset.objects.create(name='Foo', color='red')
+        HasCustomQueryset.objects.create(name='Bar', color='green')
+
+        self.assertEqual(HasCustomQueryset.objects.count(), 2)
+        self.assertEqual(HasCustomQueryset.objects.best().count(), 1)
+
+    def test_custom_manager_original_behavior(self):
+        HasCustomManager.objects.create(name='Foo', color='red')
+        HasCustomManager.objects.create(name='Bar', color='green')
+
+        self.assertEqual(HasCustomManager.objects.count(), 2)
+        self.assertEqual(HasCustomManager.objects.best().count(), 1)
 
     def test_related_manager(self):
         order = Order.objects.create(name='order 2')
