@@ -4,7 +4,7 @@ from django.utils import timezone
 from .managers import SafeDeleteManager
 from .signals import post_softdelete, post_undelete
 from .utils import (
-    related_objects,
+    can_hard_delete,
     HARD_DELETE, SOFT_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE
 )
 
@@ -89,7 +89,7 @@ class SafeDeleteMixin(models.Model):
 
             # Hard-delete the object only if nothing would be deleted with it
 
-            if sum(1 for _ in related_objects(self)) > 0:
+            if not can_hard_delete(self):
                 self.delete(force_policy=SOFT_DELETE, **kwargs)
             else:
                 self.delete(force_policy=HARD_DELETE, **kwargs)

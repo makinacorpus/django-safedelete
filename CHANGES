@@ -12,6 +12,7 @@ CHANGELOG
 ** Refactoring **
 
 - Remove factories to use mixins instead.
+- Use Collector directly.
 
 
 0.3.2
