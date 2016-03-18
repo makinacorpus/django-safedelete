@@ -14,7 +14,7 @@ from .utils import (
     HARD_DELETE_NOCASCADE, SOFT_DELETE, NO_DELETE,
     DELETED_VISIBLE_BY_PK
 )
-from .managers import SafeDeleteManager
+from .managers import SafeDeleteManager, SafeDeleteQueryset
 from .models import SafeDeleteMixin
 from .signals import post_softdelete, post_undelete
 
@@ -62,21 +62,25 @@ class VeryImportant(SafeDeleteMixin):
     name = models.CharField(max_length=200)
 
 
-class CustomQueryset(models.query.QuerySet):
+class CustomQueryset(SafeDeleteQueryset):
     def best(self):
         return self.filter(color='green')
 
 
-class CustomManager(models.Manager):
+class CustomManager(SafeDeleteManager):
+    def get_queryset(self):
+        queryset = CustomQueryset(self.model, using=self._db)
+        return queryset.filter(deleted__isnull=True)
+
     def best(self):
         return self.get_queryset().best()
 
 
-class HasCustomQueryset(safedelete_mixin_factory(
-    policy=SOFT_DELETE, manager_superclass=CustomManager, queryset_superclass=CustomQueryset)
-):
+class HasCustomQueryset(SafeDeleteMixin):
     name = models.CharField(max_length=200)
     color = models.CharField(max_length=5, choices=(('red', 'Red'), ('green', 'Green')))
+
+    objects = CustomManager()
 
 
 # ADMINMODEL (FOR TESTING)
