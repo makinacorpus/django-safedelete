@@ -67,3 +67,17 @@ attribute of the manager to one of the following:
     function, passing it the ``pk`` parameter.
 
     So, deleted objects are still available if you access them directly by their primary key.
+
+
+Signals
+-------
+
+There are two signals available. Please refer on Django signals documentation on how to use them.
+
+.. py:data:: safedelete.signals.post_softdelete
+
+Sent after an object has been soft deleted.
+
+.. py:data:: safedelete.signals.post_undelete
+
+Sent after a deleted object is restored.
