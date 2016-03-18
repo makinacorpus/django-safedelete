@@ -1,4 +1,3 @@
-import django
 from django.conf.urls import patterns, include
 from django.core.exceptions import ValidationError
 from django.contrib import admin
@@ -357,16 +356,9 @@ class AdminTestCase(TestCase):
     def test_admin_model(self):
         changelist_default = self.get_changelist(self.request, Category, self.modeladmin_default)
         changelist = self.get_changelist(self.request, Category, self.modeladmin)
-        if django.VERSION[1] == 4 or django.VERSION[1] == 5:
-            # Django == 1.4 or 1.5
-            self.assertEqual(changelist.get_filters(self.request)[0][0].title, "deleted")
-            self.assertEqual(changelist.get_query_set(self.request).count(), 3)
-            self.assertEqual(changelist_default.get_query_set(self.request).count(), 2)
-        else:
-            # Django >= 1.6
-            self.assertEqual(changelist.get_filters(self.request)[0][0].title, "deleted")
-            self.assertEqual(changelist.queryset.count(), 3)
-            self.assertEqual(changelist_default.queryset.count(), 2)
+        self.assertEqual(changelist.get_filters(self.request)[0][0].title, "deleted")
+        self.assertEqual(changelist.queryset.count(), 3)
+        self.assertEqual(changelist_default.queryset.count(), 2)
 
     def test_admin_listing(self):
         """ Test deleted objects are in red in admin listing. """

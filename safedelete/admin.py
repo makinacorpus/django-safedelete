@@ -2,21 +2,11 @@ import django
 from django.contrib import admin, messages
 from django.contrib.admin import helpers
 from django.contrib.admin.models import LogEntry, CHANGE
-try:
-    # Django 1.7
-    from django.contrib.admin.utils import model_ngettext
-except ImportError:
-    # Django < 1.7
-    from django.contrib.admin.util import model_ngettext
+from django.contrib.admin.utils import model_ngettext
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.template.response import TemplateResponse
-try:
-    # Django > 1.4.2
-    from django.utils.encoding import force_text
-except ImportError:
-    # Django 1.4.2
-    from django.utils.encoding import force_unicode as force_text
+from django.utils.encoding import force_text
 from django.utils.translation import ugettext_lazy as _
 
 

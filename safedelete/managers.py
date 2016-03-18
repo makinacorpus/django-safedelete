@@ -46,10 +46,6 @@ class SafeDeleteManager(models.Manager):
 
     _safedelete_visibility = DELETED_INVISIBLE
 
-    def get_query_set(self):
-        # Deprecated in Django 1.7
-        return self.get_queryset()
-
     def get_queryset(self):
         # We MUST NOT do the core_filters in get_queryset.
         # The child *RelatedManager will take care of that.
@@ -63,9 +59,7 @@ class SafeDeleteManager(models.Manager):
         # We need to filter if we are in a RelatedManager. See the `test_related_manager`.
         if hasattr(self, 'core_filters'):
             # In a RelatedManager, must filter and add hints
-            if hasattr(queryset, '_add_hints'):
-                # Django >= 1.7
-                queryset._add_hints(instance=self.instance)
+            queryset._add_hints(instance=self.instance)
             queryset = queryset.filter(**self.core_filters)
         return queryset
 

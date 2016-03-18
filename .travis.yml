@@ -2,7 +2,6 @@ language: python
 sudo: false
 
 python:
-  - 2.6
   - 2.7
   - 3.2
   - 3.3
@@ -10,10 +9,6 @@ python:
   - 3.5
 
 env:
-  - DJANGO_VERSION="stable/1.4.x"
-  - DJANGO_VERSION="stable/1.5.x"
-  - DJANGO_VERSION="stable/1.6.x"
-  - DJANGO_VERSION="stable/1.7.x"
   - DJANGO_VERSION="stable/1.8.x"
   - DJANGO_VERSION="stable/1.9.x"
 
@@ -45,38 +40,12 @@ after_success:
  - coveralls
 
 
-# We need to exclude old versions of Django for tests with python 3.
-# We need to exclude old versions of Python for tests with Django >= 1.7.
 # 1.9: Dropped support for 3.2-3.3: https://docs.djangoproject.com/en/dev/releases/1.9/#python-compatibility
 matrix:
     exclude:
         - python: 3.2
-          env: DJANGO_VERSION="stable/1.4.x"
-        - python: 3.3
-          env: DJANGO_VERSION="stable/1.4.x"
-        - python: 3.4
-          env: DJANGO_VERSION="stable/1.4.x"
-        - python: 3.4
-          env: DJANGO_VERSION="stable/1.5.x"
-        - python: 3.4
-          env: DJANGO_VERSION="stable/1.6.x"
-        - python: 2.6
-          env: DJANGO_VERSION="stable/1.7.x"
-        - python: 2.6
-          env: DJANGO_VERSION="stable/1.8.x"
-        - python: 2.6
-          env: DJANGO_VERSION="stable/1.9.x"
-        - python: 3.2
           env: DJANGO_VERSION="stable/1.9.x"
         - python: 3.3
           env: DJANGO_VERSION="stable/1.9.x"
-        - python: 3.5
-          env: DJANGO_VERSION="stable/1.4.x"
-        - python: 3.5
-          env: DJANGO_VERSION="stable/1.5.x"
-        - python: 3.5
-          env: DJANGO_VERSION="stable/1.6.x"
-        - python: 3.5
-          env: DJANGO_VERSION="stable/1.7.x"
         - python: 3.5
           env: DJANGO_VERSION="stable/1.8.x"

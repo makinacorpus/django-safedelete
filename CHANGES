@@ -11,6 +11,7 @@ CHANGELOG
 
 ** Refactoring **
 
+- Removed support for Django 1.4 to 1.7. You should use the 0.3.x branch if you need want to use safedelete in Django <= 1.7.
 - Remove factories to use mixins instead.
 - Use Collector directly.
 
