@@ -62,6 +62,23 @@ class VeryImportant(SafeDeleteMixin):
     name = models.CharField(max_length=200)
 
 
+class CustomQueryset(models.query.QuerySet):
+    def best(self):
+        return self.filter(color='green')
+
+
+class CustomManager(models.Manager):
+    def best(self):
+        return self.get_queryset().best()
+
+
+class HasCustomQueryset(safedelete_mixin_factory(
+    policy=SOFT_DELETE, manager_superclass=CustomManager, queryset_superclass=CustomQueryset)
+):
+    name = models.CharField(max_length=200)
+    color = models.CharField(max_length=5, choices=(('red', 'Red'), ('green', 'Green')))
+
+
 # ADMINMODEL (FOR TESTING)
 
 
@@ -261,6 +278,13 @@ class SimpleTest(TestCase):
         Category.objects.deleted_only().undelete()
 
         self.assertEqual(Category.objects.count(), 3)
+
+    def test_custom_queryset_original_behavior(self):
+        HasCustomQueryset.objects.create(name='Foo', color='red')
+        HasCustomQueryset.objects.create(name='Bar', color='green')
+
+        self.assertEqual(HasCustomQueryset.objects.count(), 2)
+        self.assertEqual(HasCustomQueryset.objects.best().count(), 1)
 
     def test_related_manager(self):
         order = Order.objects.create(name='order 2')
