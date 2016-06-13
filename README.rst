@@ -95,7 +95,7 @@ The application doesn't have any special requirement.
 Documentation
 -------------
 
-The documentation is available `here <http://django-safedelete.readthedocs.org>`_.
+The documentation is available `here <https://django-safedelete.readthedocs.io>`_.
 
 
 Licensing
