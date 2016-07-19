@@ -2,10 +2,10 @@
 CHANGELOG
 =========
 
-0.3.3 (unreleased)
-==================
+0.3.3
+=====
 
--
+- Prevent XSS in admin
 
 0.3.2
 =====
