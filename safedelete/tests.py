@@ -38,6 +38,9 @@ class Category(SafeDeleteMixin):
 
     objects = CategoryManager()
 
+    def __str__(self):
+        return self.name
+
 
 class Article(SafeDeleteMixin):
     _safedelete_policy = HARD_DELETE
@@ -365,6 +368,12 @@ class AdminTestCase(TestCase):
         resp = self.client.get('/admin/safedelete/category/')
         line = '<span class="deleted">{0}</span>'.format(self.categories[1])
         self.assertContains(resp, line)
+
+    def test_admin_xss(self):
+        Category.objects.create(name='<script>alert(42)</script>'),
+        resp = self.client.get('/admin/safedelete/category/')
+        # It should be escaped
+        self.assertNotContains(resp, '<script>alert(42)</script>')
 
     def test_admin_undelete_action(self):
         """ Test objects are undeleted and action is logged. """
