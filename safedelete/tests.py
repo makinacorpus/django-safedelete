@@ -30,6 +30,9 @@ class Author(safedelete_mixin_factory(HARD_DELETE_NOCASCADE)):
 class Category(safedelete_mixin_factory(SOFT_DELETE, visibility=DELETED_VISIBLE_BY_PK)):
     name = models.CharField(max_length=200, unique=True)
 
+    def __str__(self):
+        return self.name
+
 
 class Article(safedelete_mixin_factory(HARD_DELETE)):
     name = models.CharField(max_length=200)
@@ -318,6 +321,12 @@ class AdminTestCase(TestCase):
         resp = self.client.get('/admin/safedelete/category/')
         line = '<span class="deleted">{0}</span>'.format(self.categories[1])
         self.assertContains(resp, line)
+
+    def test_admin_xss(self):
+        Category.objects.create(name='<script>alert(42)</script>'),
+        resp = self.client.get('/admin/safedelete/category/')
+        # It should be escaped
+        self.assertNotContains(resp, '<script>alert(42)</script>')
 
     def test_admin_undelete_action(self):
         """ Test objects are undeleted and action is logged. """
