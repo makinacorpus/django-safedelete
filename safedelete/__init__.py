@@ -12,4 +12,4 @@ __all__ = ['safedelete_manager_factory',
            'DELETED_INVISIBLE',
            'DELETED_VISIBLE_BY_PK']
 
-__version__ = "0.3.3"
+__version__ = "0.3.4"
