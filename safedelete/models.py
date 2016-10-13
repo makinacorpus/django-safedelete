@@ -32,7 +32,7 @@ def safedelete_mixin_factory(policy,
 
     """
 
-    assert policy in (HARD_DELETE, SOFT_DELETE, NO_DELETE, HARD_DELETE_NOCASCADE,
+    assert policy in (HARD_DELETE, SOFT_DELETE, SOFT_DELETE_CASCADE, HARD_DELETE_NOCASCADE,
                       NO_DELETE)
     assert visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
 
