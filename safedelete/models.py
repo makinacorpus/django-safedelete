@@ -4,8 +4,8 @@ import django
 
 from .managers import safedelete_manager_factory
 from .utils import (related_objects,
-                    HARD_DELETE, SOFT_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE,
-                    DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
+                    HARD_DELETE, SOFT_DELETE, SOFT_DELETE_CASCADE, HARD_DELETE_NOCASCADE,
+                    NO_DELETE, DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
 
 
 def safedelete_mixin_factory(policy,
@@ -32,7 +32,7 @@ def safedelete_mixin_factory(policy,
 
     """
 
-    assert policy in (HARD_DELETE, SOFT_DELETE, HARD_DELETE_NOCASCADE,
+    assert policy in (HARD_DELETE, SOFT_DELETE, NO_DELETE, HARD_DELETE_NOCASCADE,
                       NO_DELETE)
     assert visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
 
@@ -85,6 +85,14 @@ def safedelete_mixin_factory(policy,
                     self.delete(force_policy=SOFT_DELETE, **kwargs)
                 else:
                     self.delete(force_policy=HARD_DELETE, **kwargs)
+
+            elif current_policy == SOFT_DELETE_CASCADE:
+                # Soft-delete on related objects before
+                for related in related_objects(self):
+                    related.delete(force_policy=SOFT_DELETE, **kwargs)
+                # soft-delete the object
+                self.delete(force_policy=SOFT_DELETE, **kwargs)
+
 
         # We need to overwrite this check to ensure uniqueness is also checked
         # against "deleted" (but still in db) objects.
