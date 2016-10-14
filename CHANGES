@@ -5,7 +5,9 @@ CHANGELOG
 0.3.3 (unreleased)
 ==================
 
--
+** New **
+- Add suport a Model superclass to use custom django models
+- Django 1.8 compatibility
 
 0.3.2
 =====
