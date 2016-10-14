@@ -12,7 +12,8 @@ def safedelete_mixin_factory(policy,
                              visibility=DELETED_INVISIBLE,
                              visibility_field="pk",
                              manager_superclass=models.Manager,
-                             queryset_superclass=models.query.QuerySet):
+                             queryset_superclass=models.query.QuerySet,
+                             model_superclass=models.Model):
     """
     Returns an abstract Django model, with a ``deleted`` field.
     It will also have a custom default manager, and an overriden ``delete()`` method.
@@ -45,11 +46,12 @@ def safedelete_mixin_factory(policy,
                 return True
         return False
 
-    class Model(models.Model):
+    class Model(model_superclass):
 
         deleted = models.BooleanField(default=False)
 
         objects = safedelete_manager_factory(manager_superclass, queryset_superclass, visibility, visibility_field)()
+        _default_manager = safedelete_manager_factory(manager_superclass, queryset_superclass, visibility, visibility_field)()
 
         class Meta:
             abstract = True
