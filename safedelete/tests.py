@@ -50,6 +50,11 @@ class Press(SoftDeleteMixin):
     article = models.ForeignKey(Article)
 
 
+class PressNormalModel(models.Model):
+    name = models.CharField(max_length=200)
+    article = models.ForeignKey(Article)
+
+
 class VeryImportant(safedelete_mixin_factory(NO_DELETE)):
     name = models.CharField(max_length=200)
 
@@ -143,6 +148,18 @@ class SimpleTest(TestCase):
         self.assertEqual(Article.objects.all_with_deleted().count(), 3)
         self.assertEqual(Press.objects.count(), 0)
         self.assertEqual(Press.objects.all_with_deleted().count(), 1)
+
+    def test_soft_delete_cascade_with_normal_model(self):
+        PressNormalModel.objects.create(name='press 0', article=self.articles[2])
+        self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
+
+        self.assertEqual(Author.objects.count(), 2)
+        self.assertEqual(Author.objects.all_with_deleted().count(), 3)
+        self.assertEqual(Article.objects.count(), 2)
+        self.assertEqual(Article.objects.all_with_deleted().count(), 3)
+        self.assertEqual(Press.objects.count(), 0)
+        self.assertEqual(Press.objects.all_with_deleted().count(), 1)
+        self.assertEqual(PressNormalModel.objects.count(), 1)
 
     def test_hard_delete(self):
         self.assertEqual(Article.objects.count(), 3)
