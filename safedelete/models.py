@@ -100,7 +100,7 @@ def safedelete_mixin_factory(policy,
                         related.delete(force_policy=SOFT_DELETE, **kwargs)
                 # soft-delete the object
                 self.delete(force_policy=SOFT_DELETE, **kwargs)
-            
+ 
         # We need to overwrite this check to ensure uniqueness is also checked
         # against "deleted" (but still in db) objects.
         # FIXME: Better/cleaner way ?
