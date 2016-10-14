@@ -11,8 +11,8 @@ from django.test import TestCase, RequestFactory
 
 from .admin import SafeDeleteAdmin, highlight_deleted
 from .models import (safedelete_mixin_factory, HARD_DELETE,
-                     HARD_DELETE_NOCASCADE, SOFT_DELETE, NO_DELETE,
-                     DELETED_VISIBLE_BY_PK)
+                     HARD_DELETE_NOCASCADE, SOFT_DELETE, SOFT_DELETE_CASCADE,
+                     NO_DELETE, DELETED_VISIBLE_BY_PK)
 
 if LooseVersion(django.get_version()) < LooseVersion('1.9'):
     from .models import SoftDeleteMixin
@@ -46,6 +46,16 @@ class Article(safedelete_mixin_factory(HARD_DELETE)):
 class Order(SoftDeleteMixin):
     name = models.CharField(max_length=100)
     articles = models.ManyToManyField(Article)
+
+
+class Press(SoftDeleteMixin):
+    name = models.CharField(max_length=200)
+    article = models.ForeignKey(Article)
+
+
+class PressNormalModel(models.Model):
+    name = models.CharField(max_length=200)
+    article = models.ForeignKey(Article)
 
 
 class VeryImportant(safedelete_mixin_factory(NO_DELETE)):
@@ -108,6 +118,10 @@ class SimpleTest(TestCase):
             Article.objects.create(name='article 2', author=self.authors[2], category=self.categories[2]),
         )
 
+        self.press = (
+            Press.objects.create(name='press 0', article=self.articles[2])
+        )
+
         self.order = Order.objects.create(name='order')
         self.order.articles.add(self.articles[0], self.articles[1])
 
@@ -122,6 +136,33 @@ class SimpleTest(TestCase):
         self.order.save()
 
         self.assertEqual(Order.objects.count(), 1)
+
+    def test_soft_delete_cascade(self):
+        self.assertEqual(Author.objects.count(), 3)
+        self.assertEqual(Article.objects.count(), 3)
+        self.assertEqual(Category.objects.count(), 3)
+        self.assertEqual(Press.objects.count(), 1)
+
+        self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
+
+        self.assertEqual(Author.objects.count(), 2)
+        self.assertEqual(Author.objects.all_with_deleted().count(), 3)
+        self.assertEqual(Article.objects.count(), 2)
+        self.assertEqual(Article.objects.all_with_deleted().count(), 3)
+        self.assertEqual(Press.objects.count(), 0)
+        self.assertEqual(Press.objects.all_with_deleted().count(), 1)
+
+    def test_soft_delete_cascade_with_normal_model(self):
+        PressNormalModel.objects.create(name='press 0', article=self.articles[2])
+        self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
+
+        self.assertEqual(Author.objects.count(), 2)
+        self.assertEqual(Author.objects.all_with_deleted().count(), 3)
+        self.assertEqual(Article.objects.count(), 2)
+        self.assertEqual(Article.objects.all_with_deleted().count(), 3)
+        self.assertEqual(Press.objects.count(), 0)
+        self.assertEqual(Press.objects.all_with_deleted().count(), 1)
+        self.assertEqual(PressNormalModel.objects.count(), 1)
 
     def test_hard_delete(self):
         self.assertEqual(Article.objects.count(), 3)

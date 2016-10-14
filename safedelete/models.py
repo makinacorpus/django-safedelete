@@ -4,8 +4,8 @@ import django
 
 from .managers import safedelete_manager_factory
 from .utils import (related_objects,
-                    HARD_DELETE, SOFT_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE,
-                    DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
+                    HARD_DELETE, SOFT_DELETE, SOFT_DELETE_CASCADE, HARD_DELETE_NOCASCADE,
+                    NO_DELETE, DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
 
 
 def safedelete_mixin_factory(policy,
@@ -32,9 +32,16 @@ def safedelete_mixin_factory(policy,
 
     """
 
-    assert policy in (HARD_DELETE, SOFT_DELETE, HARD_DELETE_NOCASCADE,
+    assert policy in (HARD_DELETE, SOFT_DELETE, SOFT_DELETE_CASCADE, HARD_DELETE_NOCASCADE,
                       NO_DELETE)
     assert visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
+
+    def is_safedelete(related):
+        bases = related.__class__.__bases__
+        for base in bases:
+            if base.__module__.startswith('safedelete'):
+                return True
+        return False
 
     class Model(models.Model):
 
@@ -86,6 +93,14 @@ def safedelete_mixin_factory(policy,
                 else:
                     self.delete(force_policy=HARD_DELETE, **kwargs)
 
+            elif current_policy == SOFT_DELETE_CASCADE:
+                # Soft-delete on related objects before
+                for related in related_objects(self):
+                    if is_safedelete(related):
+                        related.delete(force_policy=SOFT_DELETE, **kwargs)
+                # soft-delete the object
+                self.delete(force_policy=SOFT_DELETE, **kwargs)
+
         # We need to overwrite this check to ensure uniqueness is also checked
         # against "deleted" (but still in db) objects.
         # FIXME: Better/cleaner way ?
@@ -127,3 +142,4 @@ def safedelete_mixin_factory(policy,
 # Maintains retro-compatibility with older versions, which use Django 1.9
 if LooseVersion(django.get_version()) < LooseVersion('1.9'):
     SoftDeleteMixin = safedelete_mixin_factory(SOFT_DELETE)
+    SoftDeleteCascadeMixin = safedelete_mixin_factory(SOFT_DELETE_CASCADE)
