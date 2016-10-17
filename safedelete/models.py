@@ -5,7 +5,7 @@ import django
 from .managers import safedelete_manager_factory
 from .utils import (related_objects,
                     HARD_DELETE, SOFT_DELETE, SOFT_DELETE_CASCADE, HARD_DELETE_NOCASCADE,
-                    NO_DELETE, DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
+                    NO_DELETE, DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD, DELETED_VISIBLE_BY_PK)
 
 
 def safedelete_mixin_factory(policy,
@@ -17,7 +17,7 @@ def safedelete_mixin_factory(policy,
     It will also have a custom default manager, and an overriden ``delete()`` method.
 
     :param policy: define what happens when you delete an object. It can be one of ``HARD_DELETE``, ``SOFT_DELETE`` and ``HARD_DELETE_NOCASCADE``.
-    :param visibility: useful to define how deleted objects can be accessed. It can be ``DELETED_INVISIBLE`` (by default), or ``DELETED_VISIBLE_BY_PK``.
+    :param visibility: useful to define how deleted objects can be accessed. It can be ``DELETED_INVISIBLE`` (by default), or ``DELETED_VISIBLE_BY_FIELD``.
 
     :param manager_superclass: if you want, you can make your manager inherits from another class. Useful if you need to use a custom manager.
     :param queryset_superclass: the manager that will be created will return a queryset instance, which class will inherits from this class.
@@ -34,7 +34,7 @@ def safedelete_mixin_factory(policy,
 
     assert policy in (HARD_DELETE, SOFT_DELETE, SOFT_DELETE_CASCADE, HARD_DELETE_NOCASCADE,
                       NO_DELETE)
-    assert visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
+    assert visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD, DELETED_VISIBLE_BY_PK)
 
     def is_safedelete(related):
         bases = related.__class__.__bases__

@@ -12,7 +12,7 @@ from django.test import TestCase, RequestFactory
 from .admin import SafeDeleteAdmin, highlight_deleted
 from .models import (safedelete_mixin_factory, HARD_DELETE,
                      HARD_DELETE_NOCASCADE, SOFT_DELETE, SOFT_DELETE_CASCADE,
-                     NO_DELETE, DELETED_VISIBLE_BY_PK)
+                     NO_DELETE, DELETED_VISIBLE_BY_FIELD, DELETED_VISIBLE_BY_PK)
 
 if LooseVersion(django.get_version()) < LooseVersion('1.9'):
     from .models import SoftDeleteMixin
@@ -27,7 +27,14 @@ class Author(safedelete_mixin_factory(HARD_DELETE_NOCASCADE)):
     name = models.CharField(max_length=200)
 
 
-class Category(safedelete_mixin_factory(SOFT_DELETE, visibility=DELETED_VISIBLE_BY_PK)):
+class Category(safedelete_mixin_factory(SOFT_DELETE, visibility=DELETED_VISIBLE_BY_FIELD)):
+    name = models.CharField(max_length=200, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class CategoryPK(safedelete_mixin_factory(SOFT_DELETE, visibility=DELETED_VISIBLE_BY_PK)):
     name = models.CharField(max_length=200, unique=True)
 
     def __str__(self):
@@ -110,6 +117,12 @@ class SimpleTest(TestCase):
             Category.objects.create(name='category 0'),
             Category.objects.create(name='category 1'),
             Category.objects.create(name='category 2'),
+        )
+
+        self.categoriespk = (
+            CategoryPK.objects.create(name='category 0'),
+            CategoryPK.objects.create(name='category 1'),
+            CategoryPK.objects.create(name='category 2'),
         )
 
         self.articles = (
@@ -232,7 +245,7 @@ class SimpleTest(TestCase):
     def test_access_by_pk(self):
         """
         Ensure that we can access to a deleted category when we access it by pk.
-        We can do that because we have set visibility=DELETED_VISIBLE_BY_PK
+        We can do that because we have set visibility=DELETED_VISIBLE_BY_FIELD
         """
 
         pk = self.categories[1].id
@@ -246,6 +259,24 @@ class SimpleTest(TestCase):
         cat = Category.objects.filter(pk=pk)
         self.assertEqual(len(cat), 1)
         self.assertEqual(self.categories[1], cat[0])
+
+    def test_access_by_deleted_visible_by_pk(self):
+        """
+        Ensure that the field names changes did not break backwards compatability.
+        (DELETED_VISIBLE_BY_PK changed to DELETED_VISIBLE_BY_FIELD)
+        """
+
+        pk = self.categoriespk[1].id
+
+        self.categoriespk[1].delete()
+
+        self.assertRaises(CategoryPK.DoesNotExist, CategoryPK.objects.get, name=self.categoriespk[1].name)
+
+        self.assertEqual(self.categoriespk[1], CategoryPK.objects.get(pk=pk))
+
+        cat = CategoryPK.objects.filter(pk=pk)
+        self.assertEqual(len(cat), 1)
+        self.assertEqual(self.categoriespk[1], cat[0])
 
     def test_no_access_by_pk(self):
         """

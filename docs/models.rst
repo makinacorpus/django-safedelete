@@ -63,9 +63,14 @@ You can also give a ``visibility`` argument, useful to choose how you can see th
     the masked article.
 
 
-.. py:data:: DELETED_VISIBLE_BY_PK
+.. py:data:: DELETED_VISIBLE_BY_FIELD
 
     This policy is like :py:data:`DELETED_INVISIBLE`, except that you can still access a deleted object if you call the ``get()`` or ``filter()``
-    function, passing it the ``pk`` parameter.
+    function, passing it the ``pk`` parameter. The field is configurable, check :py:data:`VISIBLE_BY_FIELD`.
 
     So, deleted objects are still available if you access them directly by their primary key.
+
+.. py:data:: VISIBLE_BY_FIELD 
+
+    The :py:data:`DELETED_VISIBLE_BY_FIELD`, is configurable by adding this variable to your django settings.
+    The field chosen should be a unique field. e.g: You can assign it in the settings as ``uuid`` field instead.
