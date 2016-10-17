@@ -1,4 +1,5 @@
 from .utils import DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK
+from app_settings import VISIBLE_BY_FIELD
 
 
 def safedelete_manager_factory(manager_superclass, queryset_superclass, visibility=DELETED_INVISIBLE):
@@ -34,6 +35,10 @@ def safedelete_manager_factory(manager_superclass, queryset_superclass, visibili
     global SafeDeleteManager
 
     class SafeDeleteManager(manager_superclass):
+        def _validate_visible_by_field(self):
+            if visibility == DELETED_VISIBLE_BY_PK:
+                assert hasattr(self.model, VISIBLE_BY_FIELD)
+
         def get_query_set(self):
             # Deprecated in Django 1.7
             return self.get_queryset()
@@ -62,12 +67,12 @@ def safedelete_manager_factory(manager_superclass, queryset_superclass, visibili
             return self.all_with_deleted().filter(deleted=True)
 
         def filter(self, *args, **kwargs):
-            if visibility == DELETED_VISIBLE_BY_PK and 'pk' in kwargs:
+            if visibility == DELETED_VISIBLE_BY_PK and VISIBLE_BY_FIELD in kwargs:
                 return self.all_with_deleted().filter(*args, **kwargs)
             return self.get_queryset().filter(*args, **kwargs)
 
         def get(self, *args, **kwargs):
-            if visibility == DELETED_VISIBLE_BY_PK and 'pk' in kwargs:
+            if visibility == DELETED_VISIBLE_BY_PK and VISIBLE_BY_FIELD in kwargs:
                 return self.all_with_deleted().get(*args, **kwargs)
             return self.get_queryset().get(*args, **kwargs)
 
