@@ -2,6 +2,14 @@
 CHANGELOG
 =========
 
+0.4.1 (unreleased)
+==================
+
+** New **
+ 
+ - Add a ``SOFT_DELETE_CASCADE`` policy which perform a SOFT_DELETE on safedelete related objects 
+ - ``SOFT_DELETE_CASCADE`` uses related_objects, still needing NestedObjects
+
 0.4.0 (unreleased)
 ==================
 
