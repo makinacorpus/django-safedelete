@@ -6,7 +6,7 @@ from .signals import post_softdelete, post_undelete
 from .utils import (
     can_hard_delete, related_objects,
     HARD_DELETE, HARD_DELETE_NOCASCADE,
-    SOFT_DELETE, SOFT_DELETE_CASCADE, 
+    SOFT_DELETE, SOFT_DELETE_CASCADE,
     NO_DELETE
 )
 
