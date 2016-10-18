@@ -2,10 +2,18 @@
 CHANGELOG
 =========
 
-0.3.3 (unreleased)
-==================
+0.3.4
+=====
 
--
+** New **
+
+- Add a ``SOFT_DELETE_CASCADE`` policy which perform a SOFT_DELETE on safedelete related objects 
+- Django 1.8 compatibility
+
+0.3.3
+=====
+
+- Prevent XSS in admin
 
 0.3.2
 =====

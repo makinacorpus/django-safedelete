@@ -17,6 +17,8 @@ try:
 except ImportError:
     # Django 1.4.2
     from django.utils.encoding import force_unicode as force_text
+from django.utils.html import conditional_escape
+from django.utils.six import text_type
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -24,10 +26,11 @@ def highlight_deleted(obj):
     """
         Display in red lines when object is deleted.
     """
+    obj_str = conditional_escape(text_type(obj))
     if not getattr(obj, 'deleted', False):
-        return obj
+        return obj_str
     else:
-        return '<span class="deleted">{0}</span>'.format(obj)
+        return '<span class="deleted">{0}</span>'.format(obj_str)
 highlight_deleted.short_description = _("Name")
 highlight_deleted.allow_tags = True
 
