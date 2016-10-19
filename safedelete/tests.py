@@ -86,6 +86,13 @@ class HasCustomQueryset(safedelete_mixin_factory(
     color = models.CharField(max_length=5, choices=(('red', 'Red'), ('green', 'Green')))
 
 
+class NameVisibleField(safedelete_mixin_factory(SOFT_DELETE, visibility=DELETED_VISIBLE_BY_PK,
+                       visibility_field="name")):
+    name = models.CharField(max_length=200, unique=True)
+
+    def __str__(self):
+        return self.name
+
 # ADMINMODEL (FOR TESTING)
 
 
@@ -137,6 +144,12 @@ class SimpleTest(TestCase):
 
         self.order = Order.objects.create(name='order')
         self.order.articles.add(self.articles[0], self.articles[1])
+
+        self.namevisiblefield = (
+            NameVisibleField.objects.create(name='NVF 1'),
+            NameVisibleField.objects.create(name='NVF 2'),
+            NameVisibleField.objects.create(name='NVF 3'),
+        )
 
     def test_softdelete(self):
         self.assertEqual(Order.objects.count(), 1)
@@ -277,6 +290,22 @@ class SimpleTest(TestCase):
         cat = CategoryPK.objects.filter(pk=pk)
         self.assertEqual(len(cat), 1)
         self.assertEqual(self.categoriespk[1], cat[0])
+
+    def test_access_by_passed_visible_field(self):
+
+        name = self.namevisiblefield[0].name
+
+        self.namevisiblefield[0].delete()
+
+        self.assertRaises(NameVisibleField.DoesNotExist, NameVisibleField.objects.get, pk=self.namevisiblefield[0].id)
+
+        self.assertEqual(self.namevisiblefield[0], NameVisibleField.objects.get(name=name))
+
+        cat = NameVisibleField.objects.filter(name=name)
+
+        self.assertEqual(len(cat), 1)
+
+        self.assertEqual(self.namevisiblefield[0], cat[0])
 
     def test_no_access_by_pk(self):
         """

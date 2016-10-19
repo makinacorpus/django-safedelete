@@ -66,11 +66,6 @@ You can also give a ``visibility`` argument, useful to choose how you can see th
 .. py:data:: DELETED_VISIBLE_BY_FIELD
 
     This policy is like :py:data:`DELETED_INVISIBLE`, except that you can still access a deleted object if you call the ``get()`` or ``filter()``
-    function, passing it the ``pk`` parameter. The field is configurable, check :py:data:`VISIBLE_BY_FIELD`.
+    function, passing it the default field ``pk`` parameter. Configurable through `visibility_field` parameter in :py:data:`safedelete_mixin_factory`
 
     So, deleted objects are still available if you access them directly by their primary key.
-
-.. py:data:: VISIBLE_BY_FIELD 
-
-    The :py:data:`DELETED_VISIBLE_BY_FIELD`, is configurable by adding this variable to your django settings.
-    The field chosen should be a unique field. e.g: You can assign it in the settings as ``uuid`` field instead.

@@ -10,6 +10,7 @@ from .utils import (related_objects,
 
 def safedelete_mixin_factory(policy,
                              visibility=DELETED_INVISIBLE,
+                             visibility_field="pk",
                              manager_superclass=models.Manager,
                              queryset_superclass=models.query.QuerySet):
     """
@@ -18,6 +19,7 @@ def safedelete_mixin_factory(policy,
 
     :param policy: define what happens when you delete an object. It can be one of ``HARD_DELETE``, ``SOFT_DELETE`` and ``HARD_DELETE_NOCASCADE``.
     :param visibility: useful to define how deleted objects can be accessed. It can be ``DELETED_INVISIBLE`` (by default), or ``DELETED_VISIBLE_BY_FIELD``.
+    :param visibility_field: define which field the model should be visible by. Field should be unique. Defaults to 'pk'
 
     :param manager_superclass: if you want, you can make your manager inherits from another class. Useful if you need to use a custom manager.
     :param queryset_superclass: the manager that will be created will return a queryset instance, which class will inherits from this class.
@@ -47,7 +49,7 @@ def safedelete_mixin_factory(policy,
 
         deleted = models.BooleanField(default=False)
 
-        objects = safedelete_manager_factory(manager_superclass, queryset_superclass, visibility)()
+        objects = safedelete_manager_factory(manager_superclass, queryset_superclass, visibility, visibility_field)()
 
         class Meta:
             abstract = True
