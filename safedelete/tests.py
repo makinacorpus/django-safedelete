@@ -85,17 +85,20 @@ class HasCustomQueryset(safedelete_mixin_factory(
     name = models.CharField(max_length=200)
     color = models.CharField(max_length=5, choices=(('red', 'Red'), ('green', 'Green')))
 
+
 class CustomModel(models.Model):
     def customMethod(self):
         pass
 
+
 class WrongEdition(CustomModel, SoftDeleteMixin):
     name = models.CharField(max_length=100)
 
-class Edition(safedelete_mixin_factory(policy=SOFT_DELETE, 
+
+class Edition(safedelete_mixin_factory(policy=SOFT_DELETE,
                                        model_superclass=CustomModel)):
     name = models.CharField(max_length=100)
-    
+
 
 class NameVisibleField(safedelete_mixin_factory(SOFT_DELETE, visibility=DELETED_VISIBLE_BY_PK,
                        visibility_field="name")):
