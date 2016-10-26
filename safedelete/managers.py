@@ -1,15 +1,15 @@
-from .utils import DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK
+from .utils import DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD
 
 
-def safedelete_manager_factory(manager_superclass, queryset_superclass, visibility=DELETED_INVISIBLE):
+def safedelete_manager_factory(manager_superclass, queryset_superclass, visibility=DELETED_INVISIBLE, visibility_field="pk"):
     """
     Return a manager, inheriting from the "superclass" class.
 
-    If visibility == DELETED_VISIBLE_BY_PK, the manager can returns deleted
+    If visibility == DELETED_VISIBLE_BY_FIELD, the manager can returns deleted
     objects if they are accessed by primary key.
     """
 
-    assert visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK)
+    assert visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD)
 
     class SafeDeleteQueryset(queryset_superclass):
         def delete(self):
@@ -62,12 +62,12 @@ def safedelete_manager_factory(manager_superclass, queryset_superclass, visibili
             return self.all_with_deleted().filter(deleted=True)
 
         def filter(self, *args, **kwargs):
-            if visibility == DELETED_VISIBLE_BY_PK and 'pk' in kwargs:
+            if visibility == DELETED_VISIBLE_BY_FIELD and visibility_field in kwargs:
                 return self.all_with_deleted().filter(*args, **kwargs)
             return self.get_queryset().filter(*args, **kwargs)
 
         def get(self, *args, **kwargs):
-            if visibility == DELETED_VISIBLE_BY_PK and 'pk' in kwargs:
+            if visibility == DELETED_VISIBLE_BY_FIELD and visibility_field in kwargs:
                 return self.all_with_deleted().get(*args, **kwargs)
             return self.get_queryset().get(*args, **kwargs)
 
