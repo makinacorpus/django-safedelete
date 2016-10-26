@@ -27,7 +27,7 @@ class Author(safedelete_mixin_factory(HARD_DELETE_NOCASCADE)):
     name = models.CharField(max_length=200)
 
 
-class Category(safedelete_mixin_factory(SOFT_DELETE, visibility=DELETED_VISIBLE_BY_FIELD)):
+class Category(safedelete_mixin_factory(SOFT_DELETE, visibility=DELETED_VISIBLE_BY_PK)):
     name = models.CharField(max_length=200, unique=True)
 
     def __str__(self):
@@ -269,7 +269,7 @@ class SimpleTest(TestCase):
     def test_access_by_pk(self):
         """
         Ensure that we can access to a deleted category when we access it by pk.
-        We can do that because we have set visibility=DELETED_VISIBLE_BY_FIELD
+        We can do that because we have set visibility=DELETED_VISIBLE_BY_PK
         """
 
         pk = self.categories[1].id
