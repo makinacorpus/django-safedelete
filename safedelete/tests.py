@@ -381,7 +381,7 @@ class SimpleTest(TestCase):
             Category(name='test').validate_unique()
 
     def test_custom_model_fail(self):
-        self.assertTrue(hasattr(Edition, "customMethod"))
+        self.assertTrue(hasattr(WrongEdition, "customMethod"))
         self.assertFalse(hasattr(WrongEdition.objects, "all_with_deleted"))
 
     def test_custom_model_ok(self):
