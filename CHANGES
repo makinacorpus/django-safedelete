@@ -2,7 +2,7 @@
 CHANGELOG
 =========
 
-0.3.6 (unreleased)
+0.3.7 (unreleased)
 ==================
 
 ** New **
@@ -16,6 +16,14 @@ CHANGELOG
 ** Bugfixes **
 
 -
+
+0.3.6
+==================
+
+** New **
+
+- Add suport a Model superclass to use custom django models
+- Django 1.8 compatibility
 
 0.3.5
 =====
