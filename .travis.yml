@@ -11,6 +11,7 @@ python:
 env:
   - DJANGO_VERSION="stable/1.8.x"
   - DJANGO_VERSION="stable/1.9.x"
+  - DJANGO_VERSION="stable/1.10.x"
 
 install: 
    # This is a dependency of our Django test script
@@ -47,5 +48,11 @@ matrix:
           env: DJANGO_VERSION="stable/1.9.x"
         - python: 3.3
           env: DJANGO_VERSION="stable/1.9.x"
+        - python: 2.6
+          env: DJANGO_VERSION="stable/1.10.x"
+        - python: 3.2
+          env: DJANGO_VERSION="stable/1.10.x"
+        - python: 3.3
+          env: DJANGO_VERSION="stable/1.10.x"
         - python: 3.5
           env: DJANGO_VERSION="stable/1.8.x"
