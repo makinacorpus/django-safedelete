@@ -8,6 +8,9 @@ Django safedelete
     :target: https://coveralls.io/r/makinacorpus/django-safedelete
 
 
+NOTE: This branch should no longer be used, please look at the `0.4.x <https://github.com/makinacorpus/django-safedelete/tree/0.4.x>`_ one and give feedback `here <https://github.com/makinacorpus/django-safedelete/issues/43#issuecomment-225513449>`_
+
+
 What is it ?
 ------------
 
