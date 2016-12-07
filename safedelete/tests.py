@@ -1,4 +1,3 @@
-from django.conf.urls import patterns, include
 from django.core.exceptions import ValidationError
 from django.contrib import admin
 from django.contrib.admin.views.main import ChangeList
@@ -95,10 +94,21 @@ admin.site.register(Category, CategoryAdmin)
 
 # URLS (FOR TESTING)
 
-urlpatterns = patterns(
-    '',
-    (r'^admin/', include(admin.site.urls)),
-)
+try:
+    from django.conf.urls import patterns, include
+
+    urlpatterns = patterns(
+        '',
+        (r'^admin/', include(admin.site.urls)),
+    )
+except ImportError:
+    # Django >= 1.10
+    from django.conf.urls import url, include
+
+    urlpatterns = [
+        url(r'^admin/', include(admin.site.urls)),
+    ]
+
 
 # TESTS
 

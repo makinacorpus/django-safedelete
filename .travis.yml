@@ -23,6 +23,7 @@ install:
    # Clone Django from the GitHub repository
  - git clone -b $DJANGO_VERSION --single-branch https://github.com/django/django
  - pip install -e django/
+ - pip install -e .
 
  - pip install 'coverage>=3,<4'
 
@@ -34,7 +35,7 @@ before_script:
     - pyflakes safedelete
 
 script:
-    - coverage run quicktest.py safedelete
+    - coverage run `which django-admin.py` test --settings=safedelete.settings
 
 after_success:
  - pip install coveralls
@@ -48,8 +49,6 @@ matrix:
           env: DJANGO_VERSION="stable/1.9.x"
         - python: 3.3
           env: DJANGO_VERSION="stable/1.9.x"
-        - python: 2.6
-          env: DJANGO_VERSION="stable/1.10.x"
         - python: 3.2
           env: DJANGO_VERSION="stable/1.10.x"
         - python: 3.3

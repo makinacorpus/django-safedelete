@@ -1,3 +1,5 @@
+from distutils.version import LooseVersion
+
 import django
 from django.contrib import admin, messages
 from django.contrib.admin import helpers
@@ -130,10 +132,17 @@ class SafeDeleteAdmin(admin.ModelAdmin):
             'action_checkbox_name': helpers.ACTION_CHECKBOX_NAME,
         }
 
-        return TemplateResponse(
-            request,
-            self.undelete_selected_confirmation_template,
-            context,
-            current_app=self.admin_site.name,
-        )
+        if LooseVersion(django.get_version()) < LooseVersion('1.10'):
+            return TemplateResponse(
+                request,
+                self.undelete_selected_confirmation_template,
+                context,
+                current_app=self.admin_site.name,
+            )
+        else:
+            return TemplateResponse(
+                request,
+                self.undelete_selected_confirmation_template,
+                context,
+            )
     undelete_selected.short_description = _("Undelete selected %(verbose_name_plural)s.")
