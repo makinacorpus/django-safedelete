@@ -40,13 +40,14 @@ class CustomQuerySetModel(SafeDeleteMixin):
 
 class CustomQuerySetTestCase(SafeDeleteTestCase):
 
-    def setUp(self):
-        self.instance = CustomQuerySetModel.objects.create(
+    def test_custom_queryset_original_behavior(self):
+        """Test whether creating a custom queryset works as intended."""
+        CustomQuerySetModel.objects.create(
             color=choices[0][0]
         )
-
-    def test_custom_queryset_original_behavior(self):
-        CustomQuerySetModel.objects.create(color=choices[1][0])
+        CustomQuerySetModel.objects.create(
+            color=choices[1][0]
+        )
 
         self.assertEqual(CustomQuerySetModel.objects.count(), 2)
         self.assertEqual(CustomQuerySetModel.objects.green().count(), 1)

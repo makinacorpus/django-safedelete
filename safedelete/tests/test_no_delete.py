@@ -1,13 +1,13 @@
 from ..config import NO_DELETE
 from ..models import SafeDeleteMixin
-from .testcase import SafeDeleteTestCase
+from .testcase import SafeDeleteForceTestCase
 
 
 class NoDeleteModel(SafeDeleteMixin):
     _safedelete_policy = NO_DELETE
 
 
-class NoDeleteTestCase(SafeDeleteTestCase):
+class NoDeleteTestCase(SafeDeleteForceTestCase):
 
     def setUp(self):
         self.instance = NoDeleteModel.objects.create()

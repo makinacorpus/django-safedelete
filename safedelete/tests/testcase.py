@@ -116,12 +116,15 @@ class SafeDeleteTestCase(TestCase):
             **kwargs
         )
 
+
+class SafeDeleteForceTestCase(SafeDeleteTestCase):
+
     def check_skip(self):
         """Skip tests that should only run when inherited."""
-        if self.__class__ == SafeDeleteTestCase:
+        if self.__class__ == SafeDeleteForceTestCase:
             raise unittest.SkipTest(
-                "Only SafeDeleteTestCase subclasses can have tests that use "
-                "SafeDeleteTestCase.instance."
+                "Only SafeDeleteForceTestCase subclasses can have tests that use "
+                "SafeDeleteForceTestCase.instance."
             )
 
     def test_harddelete_force(self):

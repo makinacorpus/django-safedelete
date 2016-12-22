@@ -3,8 +3,8 @@ try:
 except ImportError:
     import mock
 
-from .testcase import SafeDeleteTestCase
 from ..models import SafeDeleteMixin
+from .testcase import SafeDeleteForceTestCase
 
 
 class SoftDeleteModel(SafeDeleteMixin):
@@ -12,7 +12,7 @@ class SoftDeleteModel(SafeDeleteMixin):
     pass
 
 
-class SoftDeleteTestCase(SafeDeleteTestCase):
+class SoftDeleteTestCase(SafeDeleteForceTestCase):
 
     def setUp(self):
         self.instance = SoftDeleteModel.objects.create()

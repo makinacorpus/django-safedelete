@@ -122,18 +122,6 @@ class SimpleTest(TestCase):
         self.order = Order.objects.create(name='order')
         self.order.articles.add(self.articles[0], self.articles[1])
 
-    def test_related_manager(self):
-        order = Order.objects.create(name='order 2')
-        Order.objects.create(name='order 3')
-        order.articles.add(self.articles[0])
-        self.assertEqual(self.articles[0].order_set.all().count(), 2)
-        order.delete()
-        self.assertEqual(self.articles[0].order_set.all().count(), 1)
-        # Ensure all_with_deleted() filter correctly on the article.
-        self.assertEqual(
-            self.articles[0].order_set.all_with_deleted().count(), 2
-        )
-
     def test_prefetch_related(self):
         """ prefetch_related() queryset should not be filtered by core_filter """
         authors = Author.objects.all().prefetch_related('article_set')

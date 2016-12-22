@@ -1,4 +1,4 @@
-from .testcase import SafeDeleteTestCase
+from .testcase import SafeDeleteForceTestCase
 from ..config import HARD_DELETE
 from ..models import SafeDeleteMixin
 
@@ -7,7 +7,7 @@ class HardDeleteModel(SafeDeleteMixin):
     _safedelete_policy = HARD_DELETE
 
 
-class SoftDeleteTestCase(SafeDeleteTestCase):
+class SoftDeleteTestCase(SafeDeleteForceTestCase):
 
     def setUp(self):
         self.instance = HardDeleteModel.objects.create()
