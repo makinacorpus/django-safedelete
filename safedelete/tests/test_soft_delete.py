@@ -3,7 +3,7 @@ try:
 except ImportError:
     import mock
 
-from . import SafeDeleteTestCase
+from .testcase import SafeDeleteTestCase
 from ..models import SafeDeleteMixin
 
 
@@ -20,12 +20,6 @@ class SoftDeleteTestCase(SafeDeleteTestCase):
     def test_softdelete(self):
         """Deleting a model with the soft delete policy should only mask it, not delete it."""
         self.assertSoftDelete(self.instance)
-
-    def test_softdelete_force(self):
-        self.assertSoftDelete(self.instance, force=True)
-
-    def test_harddelete_force(self):
-        self.assertHardDelete(self.instance, force=True)
 
     @mock.patch('safedelete.models.post_undelete.send')
     @mock.patch('safedelete.models.post_softdelete.send')

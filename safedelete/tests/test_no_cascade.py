@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models.deletion import ProtectedError
 
-from . import SafeDeleteTestCase
+from .testcase import SafeDeleteTestCase
 from ..config import HARD_DELETE_NOCASCADE
 from ..models import SafeDeleteMixin
 
@@ -17,14 +17,14 @@ class CascadeChild(models.Model):
     )
 
 
-class ProtectedChild(SafeDeleteMixin):
+class ProtectedChild(models.Model):
     parent = models.ForeignKey(
         NoCascadeModel,
         on_delete=models.PROTECT
     )
 
 
-class NullChild(SafeDeleteMixin):
+class NullChild(models.Model):
     parent = models.ForeignKey(
         NoCascadeModel,
         on_delete=models.SET_NULL,
@@ -32,7 +32,7 @@ class NullChild(SafeDeleteMixin):
     )
 
 
-class DefaultChild(SafeDeleteMixin):
+class DefaultChild(models.Model):
     parent = models.ForeignKey(
         NoCascadeModel,
         on_delete=models.SET_DEFAULT,
@@ -45,7 +45,7 @@ def get_default():
     return None
 
 
-class SetChild(SafeDeleteMixin):
+class SetChild(models.Model):
     parent = models.ForeignKey(
         NoCascadeModel,
         on_delete=models.SET(get_default),
@@ -93,9 +93,3 @@ class NoCascadeTestCase(SafeDeleteTestCase):
             parent=self.instance
         )
         self.assertHardDelete(self.instance)
-
-    def test_harddelete_force(self):
-        self.assertHardDelete(self.instance, force=True)
-
-    def test_softdelete_force(self):
-        self.assertSoftDelete(self.instance, force=True)

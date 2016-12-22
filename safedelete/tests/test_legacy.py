@@ -122,19 +122,6 @@ class SimpleTest(TestCase):
         self.order = Order.objects.create(name='order')
         self.order.articles.add(self.articles[0], self.articles[1])
 
-    def test_no_delete(self):
-        obj = VeryImportant.objects.create(name="I don't wanna die :'(.")
-        obj.delete()
-        self.assertIsNone(obj.deleted)
-        obj = VeryImportant.objects.get(pk=obj.pk)
-        self.assertIsNone(obj.deleted)
-
-    def test_no_delete_manager(self):
-        obj = VeryImportant.objects.create(name="I don't wanna die :'(.")
-        VeryImportant.objects.all().delete()
-        obj = VeryImportant.objects.get(pk=obj.pk)
-        self.assertIsNone(obj.deleted)
-
     def test_save(self):
         """
         When we save an object, it will be re-inserted if it was deleted,
