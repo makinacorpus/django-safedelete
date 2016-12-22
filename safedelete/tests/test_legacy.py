@@ -122,13 +122,6 @@ class SimpleTest(TestCase):
         self.order = Order.objects.create(name='order')
         self.order.articles.add(self.articles[0], self.articles[1])
 
-    def test_custom_queryset_original_behavior(self):
-        HasCustomQueryset.objects.create(name='Foo', color='red')
-        HasCustomQueryset.objects.create(name='Bar', color='green')
-
-        self.assertEqual(HasCustomQueryset.objects.count(), 2)
-        self.assertEqual(HasCustomQueryset.objects.best().count(), 1)
-
     def test_related_manager(self):
         order = Order.objects.create(name='order 2')
         Order.objects.create(name='order 3')
