@@ -2,7 +2,7 @@ import codecs
 import os
 import re
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -21,6 +21,7 @@ def get_version(package_name):
             if match:
                 return match.groups()[0]
     raise RuntimeError("Unable to find version string.")
+
 
 version = get_version('safedelete')
 
@@ -41,15 +42,15 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Development Status :: 4 - Beta',
     ],
     license='BSD',
-    requires=['Django (>= 1.4)'],
+    requires=['Django (>= 1.8)'],
     include_package_data=True,
 )

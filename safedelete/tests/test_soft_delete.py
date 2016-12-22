@@ -1,4 +1,7 @@
-import mock
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 from . import SafeDeleteTestCase
 from ..models import SafeDeleteMixin

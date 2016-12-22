@@ -3,10 +3,8 @@ from django.utils import timezone
 
 from .managers import SafeDeleteManager
 from .signals import post_softdelete, post_undelete
-from .utils import (
-    can_hard_delete,
-    HARD_DELETE, SOFT_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE
-)
+from .utils import (HARD_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE, SOFT_DELETE,
+                    can_hard_delete)
 
 
 class SafeDeleteMixin(models.Model):
@@ -127,5 +125,7 @@ class SafeDeleteMixin(models.Model):
                     key = unique_check[0]
                 else:
                     key = models.base.NON_FIELD_ERRORS
-                errors.setdefault(key, []).append(self.unique_error_message(model_class, unique_check))
+                errors.setdefault(key, []).append(
+                    self.unique_error_message(model_class, unique_check)
+                )
         return errors

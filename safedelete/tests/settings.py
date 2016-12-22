@@ -1,22 +1,12 @@
-# For testing purpose only
-import os
-
-DIRNAME = os.path.dirname(__file__)
-
 SECRET_KEY = 'secret'
 
-ROOT_URLCONF = 'safedelete.tests'
+ROOT_URLCONF = 'safedelete.tests.urls'
 
 DEBUG = True
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(DIRNAME, 'database.db'),
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
     }
 }
 

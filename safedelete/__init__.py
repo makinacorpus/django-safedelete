@@ -9,3 +9,4 @@ __all__ = ['HARD_DELETE', 'SOFT_DELETE',
            'DELETED_VISIBLE_BY_PK']
 
 __version__ = "0.4.0"
+default_app_config = 'safedelete.apps.SafeDeleteConfig'
