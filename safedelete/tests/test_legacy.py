@@ -122,15 +122,6 @@ class SimpleTest(TestCase):
         self.order = Order.objects.create(name='order')
         self.order.articles.add(self.articles[0], self.articles[1])
 
-    def test_prefetch_related(self):
-        """ prefetch_related() queryset should not be filtered by core_filter """
-        authors = Author.objects.all().prefetch_related('article_set')
-        for author in authors:
-            self.assertQuerysetEqual(
-                author.article_set.all().order_by('pk'),
-                [repr(a) for a in Author.objects.get(pk=author.pk).article_set.all().order_by('pk')]
-            )
-
     def test_validate_unique(self):
         """ Check that uniqueness is also checked against deleted objects """
         Category.objects.create(name='test').delete()

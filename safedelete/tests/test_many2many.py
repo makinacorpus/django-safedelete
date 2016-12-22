@@ -4,25 +4,25 @@ from ..models import SafeDeleteMixin
 from .testcase import SafeDeleteTestCase
 
 
-class RelatedChild(models.Model):
+class ManyToManyChild(models.Model):
     pass
 
 
-class RelatedParent(SafeDeleteMixin):
+class ManyToManyParent(SafeDeleteMixin):
     children = models.ManyToManyField(
-        RelatedChild,
+        ManyToManyChild,
         blank=True,
         related_name='parents'
     )
 
 
-class RelatedTestCase(SafeDeleteTestCase):
+class ManyToManyTestCase(SafeDeleteTestCase):
 
-    def test_related_manager(self):
+    def test_many_to_many(self):
         """Test whether related queries still works."""
-        parent1 = RelatedParent.objects.create()
-        parent2 = RelatedParent.objects.create()
-        child = RelatedChild.objects.create()
+        parent1 = ManyToManyParent.objects.create()
+        parent2 = ManyToManyParent.objects.create()
+        child = ManyToManyChild.objects.create()
 
         parent1.children.add(child)
         parent2.children.add(child)
