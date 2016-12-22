@@ -79,6 +79,7 @@ class SafeDeleteTestCase(TestCase):
                     'all': 0,
                     'all_with_deleted': 1
                 },
+                # Saving a soft deleted model should reinstate it.
                 'after_save': {
                     'all': 1,
                     'all_with_deleted': 1

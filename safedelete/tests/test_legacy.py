@@ -122,29 +122,6 @@ class SimpleTest(TestCase):
         self.order = Order.objects.create(name='order')
         self.order.articles.add(self.articles[0], self.articles[1])
 
-    def test_save(self):
-        """
-        When we save an object, it will be re-inserted if it was deleted,
-        the same way as save() will re-insert a deleted object.
-        """
-
-        self.assertEqual(Order.objects.count(), 1)
-
-        self.order.delete()
-        self.assertEqual(Order.objects.count(), 0)
-
-        self.order.save()
-        self.assertEqual(Order.objects.count(), 1)
-
-    def test_undelete(self):
-        self.assertEqual(Order.objects.count(), 1)
-
-        self.order.delete()
-        self.assertEqual(Order.objects.count(), 0)
-
-        self.order.undelete()
-        self.assertEqual(Order.objects.count(), 1)
-
     def test_access_by_pk(self):
         """
         Ensure that we can access to a deleted category when we access it by pk.

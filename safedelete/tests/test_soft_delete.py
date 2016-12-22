@@ -40,3 +40,24 @@ class SoftDeleteTestCase(SafeDeleteTestCase):
             mock_undelete.call_count,
             1
         )
+
+    def test_undelete(self):
+        """Undeleting a soft deleted model should uhhh... undelete it?"""
+        self.instance.delete()
+        self.assertEqual(
+            SoftDeleteModel.objects.count(),
+            0
+        )
+        self.assertEqual(
+            SoftDeleteModel.objects.all_with_deleted().count(),
+            1
+        )
+        self.instance.undelete()
+        self.assertEqual(
+            SoftDeleteModel.objects.count(),
+            1
+        )
+        self.assertEqual(
+            SoftDeleteModel.objects.all_with_deleted().count(),
+            1
+        )
