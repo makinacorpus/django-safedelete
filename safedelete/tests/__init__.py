@@ -136,18 +136,6 @@ class SimpleTest(TestCase):
         self.order = Order.objects.create(name='order')
         self.order.articles.add(self.articles[0], self.articles[1])
 
-    def test_softdelete(self):
-        self.assertEqual(Order.objects.count(), 1)
-
-        self.order.delete()
-
-        self.assertEqual(Order.objects.count(), 0)
-        self.assertEqual(Order.objects.all_with_deleted().count(), 1)
-
-        self.order.save()
-
-        self.assertEqual(Order.objects.count(), 1)
-
     def test_hard_delete(self):
         self.assertEqual(Article.objects.count(), 3)
 
