@@ -20,9 +20,11 @@ class SoftDeleteTestCase(SafeDeleteTestCase):
     def test_softdelete(self):
         """Deleting a model with the soft delete policy should only mask it, not delete it."""
         self.assertSoftDelete(self.instance)
+
+    def test_softdelete_force(self):
         self.assertSoftDelete(self.instance, force=True)
 
-    def test_harddelete(self):
+    def test_harddelete_force(self):
         self.assertHardDelete(self.instance, force=True)
 
     @mock.patch('safedelete.models.post_undelete.send')

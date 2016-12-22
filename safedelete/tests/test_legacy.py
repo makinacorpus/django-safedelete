@@ -7,10 +7,10 @@ from django.db import models
 from django.test import RequestFactory, TestCase
 
 from ..admin import SafeDeleteAdmin, highlight_deleted
+from ..config import (DELETED_VISIBLE_BY_PK, HARD_DELETE,
+                      HARD_DELETE_NOCASCADE, NO_DELETE, SOFT_DELETE)
 from ..managers import SafeDeleteManager, SafeDeleteQueryset
 from ..models import SafeDeleteMixin
-from ..utils import (DELETED_VISIBLE_BY_PK, HARD_DELETE, HARD_DELETE_NOCASCADE,
-                     NO_DELETE, SOFT_DELETE)
 
 
 # MODELS (FOR TESTING)
@@ -121,21 +121,6 @@ class SimpleTest(TestCase):
 
         self.order = Order.objects.create(name='order')
         self.order.articles.add(self.articles[0], self.articles[1])
-
-    def test_hard_delete_nocascade(self):
-        self.assertEqual(Author.objects.count(), 3)
-
-        self.authors[0].delete()
-
-        self.assertEqual(Author.objects.count(), 2)
-        self.assertEqual(Author.objects.all_with_deleted().count(), 2)
-
-        self.authors[1].delete()
-
-        self.assertEqual(Author.objects.count(), 1)
-        self.assertEqual(Author.objects.all_with_deleted().count(), 2)
-
-        self.assertEqual(Article.objects.count(), 3)
 
     def test_no_delete(self):
         obj = VeryImportant.objects.create(name="I don't wanna die :'(.")

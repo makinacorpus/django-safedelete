@@ -1,6 +1,6 @@
 from . import SafeDeleteTestCase
+from ..config import HARD_DELETE
 from ..models import SafeDeleteMixin
-from ..utils import HARD_DELETE
 
 
 class HardDeleteModel(SafeDeleteMixin):
@@ -19,5 +19,5 @@ class SoftDeleteTestCase(SafeDeleteTestCase):
     def test_harddelete_force(self):
         self.assertHardDelete(self.instance, force=True)
 
-    def test_softdelete(self):
+    def test_softdelete_force(self):
         self.assertSoftDelete(self.instance, force=True)

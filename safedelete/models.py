@@ -1,10 +1,10 @@
 from django.db import models, router
 from django.utils import timezone
 
+from .config import HARD_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE, SOFT_DELETE
 from .managers import SafeDeleteManager
 from .signals import post_softdelete, post_undelete
-from .utils import (HARD_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE, SOFT_DELETE,
-                    can_hard_delete)
+from .utils import can_hard_delete
 
 
 class SafeDeleteMixin(models.Model):

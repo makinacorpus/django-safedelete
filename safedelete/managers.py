@@ -1,9 +1,10 @@
 from django.db import models
 
-from .utils import DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK
+from .config import DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK
 
 
 class SafeDeleteQueryset(models.query.QuerySet):
+
     def delete(self):
         assert self.query.can_filter(), "Cannot use 'limit' or 'offset' with delete."
         # TODO: Replace this by bulk update if we can

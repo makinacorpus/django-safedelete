@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from ..utils import HARD_DELETE, SOFT_DELETE
+from ..config import HARD_DELETE, SOFT_DELETE
 
 
 class SafeDeleteTestCase(TestCase):
