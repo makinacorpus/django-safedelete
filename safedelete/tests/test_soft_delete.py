@@ -1,6 +1,6 @@
 import mock
-from django.test import TestCase
 
+from . import SafeDeleteTestCase
 from ..models import SafeDeleteMixin
 
 
@@ -9,44 +9,23 @@ class SoftDeleteModel(SafeDeleteMixin):
     pass
 
 
-class SoftDeleteTestCase(TestCase):
+class SoftDeleteTestCase(SafeDeleteTestCase):
 
     def setUp(self):
         self.instance = SoftDeleteModel.objects.create()
 
     def test_softdelete(self):
-        self.assertEqual(
-            SoftDeleteModel.objects.count(),
-            1
-        )
-        self.assertEqual(
-            SoftDeleteModel.objects.all_with_deleted().count(),
-            1
-        )
+        """Deleting a model with the soft delete policy should only mask it, not delete it."""
+        self.assertSoftDelete(self.instance)
+        self.assertSoftDelete(self.instance, force=True)
 
-        self.instance.delete()
-        self.assertEqual(
-            SoftDeleteModel.objects.count(),
-            0
-        )
-        self.assertEqual(
-            SoftDeleteModel.objects.all_with_deleted().count(),
-            1
-        )
-
-        self.instance.save()
-        self.assertEqual(
-            SoftDeleteModel.objects.count(),
-            1
-        )
-        self.assertEqual(
-            SoftDeleteModel.objects.all_with_deleted().count(),
-            1
-        )
+    def test_harddelete(self):
+        self.assertHardDelete(self.instance, force=True)
 
     @mock.patch('safedelete.models.post_undelete.send')
     @mock.patch('safedelete.models.post_softdelete.send')
     def test_signals(self, mock_softdelete, mock_undelete):
+        """The soft delete and undelete signals should be sent correctly for soft deleted models."""
         self.instance.delete()
 
         # Soft deleting the model should've sent a post_softdelete signal.
