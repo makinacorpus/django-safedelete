@@ -3,6 +3,9 @@ try:
 except ImportError:
     import mock
 
+from django.core.exceptions import ValidationError
+from django.db import models
+
 from ..models import SafeDeleteMixin
 from .testcase import SafeDeleteForceTestCase
 
@@ -10,6 +13,14 @@ from .testcase import SafeDeleteForceTestCase
 class SoftDeleteModel(SafeDeleteMixin):
     # SafeDeleteMixin has the soft delete policy by default
     pass
+
+
+class UniqueSoftDeleteModel(SafeDeleteMixin):
+
+    name = models.CharField(
+        max_length=100,
+        unique=True
+    )
 
 
 class SoftDeleteTestCase(SafeDeleteForceTestCase):
@@ -65,3 +76,15 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
 
         SoftDeleteModel.objects.deleted_only().undelete()
         self.assertEqual(SoftDeleteModel.objects.count(), 1)
+
+    def test_validate_unique(self):
+        """Check that uniqueness is also checked against deleted objects """
+        UniqueSoftDeleteModel.objects.create(
+            name='test'
+        ).delete()
+        self.assertRaises(
+            ValidationError,
+            UniqueSoftDeleteModel(
+                name='test'
+            ).validate_unique
+        )

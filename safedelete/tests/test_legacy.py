@@ -2,7 +2,6 @@ from django.contrib import admin
 from django.contrib.admin.sites import AdminSite
 from django.contrib.admin.views.main import ChangeList
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.test import RequestFactory, TestCase
 
@@ -93,41 +92,6 @@ admin.site.register(Category, CategoryAdmin)
 
 
 # TESTS
-
-
-class SimpleTest(TestCase):
-
-    def setUp(self):
-
-        self.authors = (
-            Author.objects.create(name='author 0'),
-            Author.objects.create(name='author 1'),
-            Author.objects.create(name='author 2'),
-        )
-
-        self.categories = (
-            Category.objects.create(name='category 0'),
-            Category.objects.create(name='category 1'),
-            Category.objects.create(name='category 2'),
-        )
-
-        self.articles = (
-            Article.objects.create(name='article 0', author=self.authors[1]),
-            Article.objects.create(name='article 1', author=self.authors[
-                                   1], category=self.categories[1]),
-            Article.objects.create(name='article 2', author=self.authors[
-                                   2], category=self.categories[2]),
-        )
-
-        self.order = Order.objects.create(name='order')
-        self.order.articles.add(self.articles[0], self.articles[1])
-
-    def test_validate_unique(self):
-        """ Check that uniqueness is also checked against deleted objects """
-        Category.objects.create(name='test').delete()
-        with self.assertRaises(ValidationError):
-            Category(name='test').validate_unique()
-
 
 class AdminTestCase(TestCase):
     urls = 'safedelete.tests.urls'
