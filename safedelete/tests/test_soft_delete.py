@@ -53,3 +53,15 @@ class SoftDeleteTestCase(SafeDeleteTestCase):
             SoftDeleteModel.objects.all_with_deleted().count(),
             1
         )
+
+    def test_undelete_queryset(self):
+        self.assertEqual(SoftDeleteModel.objects.count(), 1)
+
+        SoftDeleteModel.objects.all().delete()
+        self.assertEqual(SoftDeleteModel.objects.count(), 0)
+
+        SoftDeleteModel.objects.all().undelete()  # Nonsense
+        self.assertEqual(SoftDeleteModel.objects.count(), 0)
+
+        SoftDeleteModel.objects.deleted_only().undelete()
+        self.assertEqual(SoftDeleteModel.objects.count(), 1)

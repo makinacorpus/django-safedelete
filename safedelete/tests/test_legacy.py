@@ -122,21 +122,6 @@ class SimpleTest(TestCase):
         self.order = Order.objects.create(name='order')
         self.order.articles.add(self.articles[0], self.articles[1])
 
-    def test_queryset(self):
-        self.assertEqual(Category.objects.count(), 3)
-
-        Category.objects.all().delete()
-
-        self.assertEqual(Category.objects.count(), 0)
-
-        Category.objects.all().undelete()  # Nonsense
-
-        self.assertEqual(Category.objects.count(), 0)
-
-        Category.objects.deleted_only().undelete()
-
-        self.assertEqual(Category.objects.count(), 3)
-
     def test_custom_queryset_original_behavior(self):
         HasCustomQueryset.objects.create(name='Foo', color='red')
         HasCustomQueryset.objects.create(name='Bar', color='green')
