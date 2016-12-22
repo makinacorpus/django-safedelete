@@ -122,35 +122,6 @@ class SimpleTest(TestCase):
         self.order = Order.objects.create(name='order')
         self.order.articles.add(self.articles[0], self.articles[1])
 
-    def test_access_by_pk(self):
-        """
-        Ensure that we can access to a deleted category when we access it by pk.
-        We can do that because we have set visibility=DELETED_VISIBLE_BY_PK
-        """
-
-        pk = self.categories[1].id
-
-        self.categories[1].delete()
-
-        self.assertRaises(Category.DoesNotExist, Category.objects.get,
-                          name=self.categories[1].name)
-
-        self.assertEqual(self.categories[1], Category.objects.get(pk=pk))
-
-        cat = Category.objects.filter(pk=pk)
-        self.assertEqual(len(cat), 1)
-        self.assertEqual(self.categories[1], cat[0])
-
-    def test_no_access_by_pk(self):
-        """
-        Ensure that if we try to access a deleted object by pk (with the default visibility),
-        we can't access it.
-        """
-
-        self.order.delete()
-
-        self.assertRaises(Order.DoesNotExist, Order.objects.get, pk=self.order.id)
-
     def test_queryset(self):
         self.assertEqual(Category.objects.count(), 3)
 

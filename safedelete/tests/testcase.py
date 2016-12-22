@@ -7,7 +7,7 @@ from ..config import HARD_DELETE, SOFT_DELETE
 
 class SafeDeleteTestCase(TestCase):
 
-    def assertDelete(self, instance, expected_results, force_policy=None):
+    def assertDelete(self, instance, expected_results, force_policy=None, save=True):
         """Assert specific specific expected results before delete, after delete and after save.
 
         Example of expected_results, see SafeDeleteTestCase.assertSoftDelete.
@@ -16,6 +16,7 @@ class SafeDeleteTestCase(TestCase):
             instance: Model instance.
             expected_results: Specific expected results before delete, after delete and after save.
             force_policy: Specific policy to force, None if no policy forced. (default: {None})
+            save: Whether to test the Model.save() restoration. (default: {True})
         """
         model = instance.__class__
 
@@ -42,6 +43,9 @@ class SafeDeleteTestCase(TestCase):
             expected_results['after_delete']['all_with_deleted']
         )
 
+        if not save:
+            return
+
         # If there is no after_save in the expected results, then we assume
         # that Model.save will give a DoesNotExist exception because it was
         # a hard delete. So we test whether it was a hard delete.
@@ -61,7 +65,7 @@ class SafeDeleteTestCase(TestCase):
                 expected_results['after_save']['all_with_deleted']
             )
 
-    def assertSoftDelete(self, instance, force=False):
+    def assertSoftDelete(self, instance, force=False, **kwargs):
         """Assert whether the given model instance can be soft deleted.
 
         Args:
@@ -86,9 +90,10 @@ class SafeDeleteTestCase(TestCase):
                 },
             },
             force_policy=SOFT_DELETE if force else None,
+            **kwargs
         )
 
-    def assertHardDelete(self, instance, force=False):
+    def assertHardDelete(self, instance, force=False, **kwargs):
         """Assert whether the given model instance can be hard deleted.
 
         Args:
@@ -108,6 +113,7 @@ class SafeDeleteTestCase(TestCase):
                 },
             },
             force_policy=HARD_DELETE if force else None,
+            **kwargs
         )
 
     def check_skip(self):
