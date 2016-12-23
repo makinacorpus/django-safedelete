@@ -60,8 +60,7 @@ class AdminTestCase(TestCase):
     urls = 'safedelete.tests.urls'
 
     def setUp(self):
-        self.author = Author.objects.create(
-        )
+        self.author = Author.objects.create()
 
         self.categories = (
             Category.objects.create(),
