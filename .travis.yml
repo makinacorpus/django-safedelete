@@ -1,6 +1,5 @@
 language: python
 sudo: false
-cache: pip
 
 python:
   - 2.7
@@ -8,5 +7,46 @@ python:
   - 3.4
   - 3.5
 
-install: pip install tox-travis
-script: tox
+env:
+  - DJANGO_VERSION="stable/1.8.x"
+  - DJANGO_VERSION="stable/1.9.x"
+  - DJANGO_VERSION="stable/1.10.x"
+
+install:
+   # This is a dependency of our Django test script
+ - pip install argparse
+
+   # Install the dependencies of the app itself
+   # - pip install -r requirements.txt
+
+   # Clone Django from the GitHub repository
+ - git clone -b $DJANGO_VERSION --single-branch https://github.com/django/django
+ - pip install -e django/
+ - pip install -e .
+
+ - pip install 'coverage>=3,<4'
+
+ - pip install pep8
+ - pip install pyflakes
+
+before_script:
+    - "pep8 --ignore=E501 safedelete"
+    - pyflakes safedelete
+
+script:
+    - coverage run `which django-admin.py` test --settings=safedelete.tests.settings
+
+after_success:
+ - pip install coveralls
+ - coveralls
+
+
+# 1.9: Dropped support for 3.2-3.3: https://docs.djangoproject.com/en/dev/releases/1.9/#python-compatibility
+matrix:
+    exclude:
+        - python: 3.3
+          env: DJANGO_VERSION="stable/1.9.x"
+        - python: 3.3
+          env: DJANGO_VERSION="stable/1.10.x"
+        - python: 3.5
+          env: DJANGO_VERSION="stable/1.8.x"
