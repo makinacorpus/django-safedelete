@@ -56,7 +56,7 @@ attribute of the manager to one of the following:
     The objects marked as deleted will be visible in one case : If you access them directly using a OneToOne or a ForeignKey
     relation.
 
-    For example, if you have an article with a masked autor, you can still access the author using ``article.author``.
+    For example, if you have an article with a masked author, you can still access the author using ``article.author``.
     If the article is masked, you are not able to access it using reverse relationship : ``author.article_set`` will not contain
     the masked article.
 

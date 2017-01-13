@@ -4,7 +4,9 @@ from django.contrib.admin.utils import NestedObjects
 from django.db import router
 
 
-def can_hard_delete(obj):
+def related_objects(obj):
+    """ Return a generator to the objects that would be deleted if we delete "obj" (excluding obj) """
+
     collector = NestedObjects(using=router.db_for_write(obj))
     collector.collect([obj])
 
@@ -15,4 +17,8 @@ def can_hard_delete(obj):
             return (elem,)
         return ()
 
-    return not bool(list(flatten(collector.nested())))
+    return flatten(collector.nested())
+
+
+def can_hard_delete(obj):
+    return not bool(list(related_objects(obj)))

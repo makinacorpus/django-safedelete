@@ -5,44 +5,9 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.test import RequestFactory, TestCase
 
+from safedelete.tests.models import Article, Category, Author
 from ..admin import SafeDeleteAdmin, highlight_deleted
-from ..config import (DELETED_VISIBLE_BY_PK, HARD_DELETE,
-                      HARD_DELETE_NOCASCADE, SOFT_DELETE)
-from ..managers import SafeDeleteManager
 from ..models import SafeDeleteMixin
-
-
-class Author(SafeDeleteMixin):
-    _safedelete_policy = HARD_DELETE_NOCASCADE
-
-
-class CategoryManager(SafeDeleteManager):
-    _safedelete_visibility = DELETED_VISIBLE_BY_PK
-
-
-class Category(SafeDeleteMixin):
-    _safedelete_policy = SOFT_DELETE
-
-    name = models.CharField(
-        max_length=100,
-        blank=True
-    )
-    objects = CategoryManager()
-
-
-class Article(SafeDeleteMixin):
-    _safedelete_policy = HARD_DELETE
-
-    author = models.ForeignKey(
-        Author,
-        on_delete=models.CASCADE
-    )
-    category = models.ForeignKey(
-        Category,
-        on_delete=models.CASCADE,
-        null=True,
-        default=None
-    )
 
 
 class Order(SafeDeleteMixin):

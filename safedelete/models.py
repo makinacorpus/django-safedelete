@@ -1,10 +1,18 @@
 from django.db import models, router
 from django.utils import timezone
 
-from .config import HARD_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE, SOFT_DELETE
+from .config import HARD_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE, SOFT_DELETE, SOFT_DELETE_CASCADE
 from .managers import SafeDeleteManager
 from .signals import post_softdelete, post_undelete
-from .utils import can_hard_delete
+from .utils import can_hard_delete, related_objects
+
+
+def is_safedelete(related):
+    bases = related.__class__.__bases__
+    for base in bases:
+        if base.__module__.startswith('safedelete'):
+            return True
+    return False
 
 
 class SafeDeleteMixin(models.Model):
@@ -91,6 +99,14 @@ class SafeDeleteMixin(models.Model):
                 self.delete(force_policy=SOFT_DELETE, **kwargs)
             else:
                 self.delete(force_policy=HARD_DELETE, **kwargs)
+
+        elif current_policy == SOFT_DELETE_CASCADE:
+            # Soft-delete on related objects before
+            for related in related_objects(self):
+                if is_safedelete(related):
+                    related.delete(force_policy=SOFT_DELETE, **kwargs)
+            # soft-delete the object
+            self.delete(force_policy=SOFT_DELETE, **kwargs)
 
     # We need to overwrite this check to ensure uniqueness is also checked
     # against "deleted" (but still in db) objects.
