@@ -28,6 +28,11 @@ The different policies are:
     This will make the objects be automatically masked (and not deleted), when you call the delete() method.
     They will NOT be masked in cascade.
 
+.. py:data:: SOFT_DELETE_CASCADE
+
+    This will make the objects be automatically masked (and not deleted) and all related objects, when you call the delete() method.
+    They will be masked in cascade.
+
 .. py:data:: HARD_DELETE_NOCASCADE
 
     This policy will:
