@@ -61,12 +61,12 @@ attribute of the manager to one of the following:
     the masked article.
 
 
-.. py:data:: DELETED_VISIBLE_BY_PK
+.. py:data:: DELETED_VISIBLE_BY_FIELD
 
     This policy is like :py:data:`DELETED_INVISIBLE`, except that you can still access a deleted object if you call the ``get()`` or ``filter()``
-    function, passing it the ``pk`` parameter.
+    function, passing it the default field ``pk`` parameter. Configurable through the `_safedelete_visibility_field` attribute of the manager.
 
-    So, deleted objects are still available if you access them directly by their primary key.
+    So, deleted objects are still available if you access them directly by this field.
 
 
 Signals

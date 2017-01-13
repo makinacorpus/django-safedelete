@@ -1,6 +1,6 @@
 from django.db import models
 
-from .config import DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK
+from .config import DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD
 
 
 class SafeDeleteQueryset(models.query.QuerySet):
@@ -46,6 +46,7 @@ class SafeDeleteManager(models.Manager):
     """
 
     _safedelete_visibility = DELETED_INVISIBLE
+    _safedelete_visibility_field = 'pk'
 
     def get_queryset(self):
         # We MUST NOT do the core_filters in get_queryset.
@@ -69,11 +70,11 @@ class SafeDeleteManager(models.Manager):
         return self.all_with_deleted().filter(deleted__isnull=False)
 
     def filter(self, *args, **kwargs):
-        if self._safedelete_visibility == DELETED_VISIBLE_BY_PK and 'pk' in kwargs:
+        if self._safedelete_visibility == DELETED_VISIBLE_BY_FIELD and self._safedelete_visibility_field in kwargs:
             return self.all_with_deleted().filter(*args, **kwargs)
         return self.get_queryset().filter(*args, **kwargs)
 
     def get(self, *args, **kwargs):
-        if self._safedelete_visibility == DELETED_VISIBLE_BY_PK and 'pk' in kwargs:
+        if self._safedelete_visibility == DELETED_VISIBLE_BY_FIELD and self._safedelete_visibility_field in kwargs:
             return self.all_with_deleted().get(*args, **kwargs)
         return self.get_queryset().get(*args, **kwargs)
