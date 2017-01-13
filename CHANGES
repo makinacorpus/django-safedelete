@@ -2,8 +2,8 @@
 CHANGELOG
 =========
 
-0.4.0 (unreleased)
-==================
+0.4.0
+=====
 
 ** New **
 
@@ -11,10 +11,24 @@ CHANGELOG
 
 ** Refactoring **
 
-- Removed support for Django 1.4 to 1.7. You should use the 0.3.x branch if you need want to use safedelete in Django <= 1.7.
+- Globals (HARD_DELETE, SOFT_DELETE, ...) have been moved `to config.py`.
+- Removed support for Django 1.4 to 1.7. You should use the 0.3.x branch if you need to use safedelete in Django <= 1.7.
 - Remove factories to use mixins instead.
-- Use Collector directly.
 
+0.3.5
+=====
+
+** New **
+
+- Change ``DELETED_VISIBLE_BY_PK`` to ``DELETED_VISIBLE_BY_FIELD`` to be able to change the field used.
+
+0.3.4
+=====
+
+** New **
+
+- Add a ``SOFT_DELETE_CASCADE`` policy which perform a SOFT_DELETE on safedelete related objects
+- Django 1.8 compatibility
 
 0.3.2
 =====

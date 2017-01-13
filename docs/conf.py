@@ -46,7 +46,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'django-safedelete'
-copyright = '2017, Makina Corpus'
+copyright = '2017, palkeo, Makina Corpus'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
