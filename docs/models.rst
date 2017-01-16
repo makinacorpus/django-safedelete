@@ -79,6 +79,10 @@ Signals
 
 There are two signals available. Please refer on Django signals documentation on how to use them.
 
+.. py:data:: safedelete.signals.pre_softdelete
+
+Sent before an object is soft deleted.
+
 .. py:data:: safedelete.signals.post_softdelete
 
 Sent after an object has been soft deleted.
