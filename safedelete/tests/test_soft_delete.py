@@ -34,11 +34,17 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
 
     @mock.patch('safedelete.models.post_undelete.send')
     @mock.patch('safedelete.models.post_softdelete.send')
-    def test_signals(self, mock_softdelete, mock_undelete):
+    @mock.patch('safedelete.models.pre_softdelete.send')
+    def test_signals(self, mock_presoftdelete, mock_softdelete, mock_undelete):
         """The soft delete and undelete signals should be sent correctly for soft deleted models."""
         self.instance.delete()
 
-        # Soft deleting the model should've sent a post_softdelete signal.
+        # Soft deleting the model should've sent a pre_softdelete and a post_softdelete signals.
+        self.assertEqual(
+            mock_presoftdelete.call_count,
+            1
+        )
+
         self.assertEqual(
             mock_softdelete.call_count,
             1
