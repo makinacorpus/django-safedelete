@@ -33,7 +33,9 @@ class SafeDeleteManyToManyField(models.ManyToManyField):
 
     def contribute_to_class(self, cls, name, **kwargs):
         """Add custom descriptor to source model"""
-        super().contribute_to_class(cls, name, **kwargs)
+        super(SafeDeleteManyToManyField, self).contribute_to_class(
+            cls, name, **kwargs
+        )
         setattr(
             cls,
             self.name,
@@ -42,7 +44,9 @@ class SafeDeleteManyToManyField(models.ManyToManyField):
 
     def contribute_to_related_class(self, cls, related):
         """Add custom descriptor to related model"""
-        super().contribute_to_related_class(cls, related)
+        super(SafeDeleteManyToManyField, self).contribute_to_related_class(
+            cls, related
+        )
         # this check is copied from django sources
         if not (self.remote_field.is_hidden() and
                 not related.related_model._meta.swapped):
@@ -62,14 +66,14 @@ class SafeDeleteManyToManyDescriptor(ManyToManyDescriptor):
     @cached_property
     def related_manager_cls(self):
         """Patch default relateed manager with custom filter"""
-        cls = super().related_manager_cls
+        cls = super(SafeDeleteManyToManyDescriptor, self).related_manager_cls
 
         class SafeDeleteRelatedManager(cls):
             """Related manager with custom filtration for soft-delete"""
 
             def _apply_rel_filters(self, queryset):
                 """Filter queryset for not deleted instances"""
-                queryset = super()._apply_rel_filters(queryset)
+                queryset = super(SafeDeleteRelatedManager, self)._apply_rel_filters(queryset)
                 return queryset.filter(**self._get_safedelete_filter())
 
             def _get_safedelete_filter(self):
