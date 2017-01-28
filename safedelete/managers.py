@@ -84,3 +84,20 @@ class SafeDeleteManager(models.Manager):
         if self._safedelete_visibility == DELETED_VISIBLE_BY_FIELD and self._safedelete_visibility_field in kwargs:
             return self.all_with_deleted().get(*args, **kwargs)
         return self.get_queryset().get(*args, **kwargs)
+
+    def __init__(self, queryset_class=None, *args, **kwargs):
+        """Hook for setting custom ``_queryset_class``
+
+        Example:
+
+            class CustomQueryset(models.QuerySet):
+                pass
+
+            class MyModel(models.Model):
+                my_field = models.TextField()
+
+                objects = SafeDeleteManager(CustomQuerySet)
+        """
+        super(SafeDeleteManager, self).__init__(*args, **kwargs)
+        if queryset_class:
+            self._queryset_class = queryset_class
