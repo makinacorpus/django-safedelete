@@ -14,12 +14,11 @@ class CustomQuerySet(SafeDeleteQueryset):
 
 
 class CustomManager(SafeDeleteManager):
-
-    def get_queryset(self):
-        queryset = CustomQuerySet(self.model, using=self._db)
-        return queryset.filter(deleted__isnull=True)
+    _queryset_class = CustomQuerySet
 
     def green(self):
+        """Implemented here so ``green`` available as manager's method
+        """
         return self.get_queryset().green()
 
 
