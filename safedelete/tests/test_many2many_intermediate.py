@@ -4,6 +4,7 @@ relationships
 from django.db import models
 
 from ..models import SafeDeleteMixin
+from ..fields import SafeDeleteManyToManyField
 from .testcase import SafeDeleteTestCase
 
 
@@ -13,7 +14,7 @@ class Person(models.Model):
 
 class Group(models.Model):
     name = models.CharField(max_length=128)
-    members = models.ManyToManyField(Person, through='Membership')
+    members = SafeDeleteManyToManyField(Person, through='Membership')
 
 
 # Note: this model is safe deletable
