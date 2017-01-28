@@ -90,3 +90,14 @@ Sent after an object has been soft deleted.
 .. py:data:: safedelete.signals.post_undelete
 
 Sent after a deleted object is restored.
+
+
+Fields
+------
+
+When you use custom ``through`` model for M2M relations, you may want
+that related manager return only not-deleted relations. If so, you may want
+to use ``safedelete.fields.SafeDeleteManyToManyField``.
+
+You still will be able to retrieve deleted instances for intermediate model using
+it's manager.
