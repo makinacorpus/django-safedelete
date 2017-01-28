@@ -51,3 +51,16 @@ class CustomQuerySetTestCase(SafeDeleteTestCase):
 
         self.assertEqual(CustomQuerySetModel.objects.count(), 2)
         self.assertEqual(CustomQuerySetModel.objects.green().count(), 1)
+
+    def test_custom_queryset_custom_method(self):
+        """Test custom filters for deleted objects"""
+        instance = CustomQuerySetModel.objects.create(color=choices[1][0])
+        instance.delete()
+
+        deleted_only = CustomQuerySetModel.objects.deleted_only()
+
+        # ensure deleted instances available
+        self.assertEqual(deleted_only.count(), 1)
+
+        # and they can be custom filtered
+        self.assertEqual(deleted_only.green().count(), 1)
