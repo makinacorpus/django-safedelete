@@ -14,12 +14,11 @@ class CustomQuerySet(SafeDeleteQueryset):
 
 
 class CustomManager(SafeDeleteManager):
-
-    def get_queryset(self):
-        queryset = CustomQuerySet(self.model, using=self._db)
-        return queryset.filter(deleted__isnull=True)
+    _queryset_class = CustomQuerySet
 
     def green(self):
+        """Implemented here so ``green`` available as manager's method
+        """
         return self.get_queryset().green()
 
 
@@ -37,6 +36,9 @@ class CustomQuerySetModel(SafeDeleteMixin):
 
     objects = CustomManager()
 
+    # other manager to test custom QS using ``SafeDeleteManager.__init__``
+    other_objects = SafeDeleteManager(CustomQuerySet)
+
 
 class CustomQuerySetTestCase(SafeDeleteTestCase):
 
@@ -51,3 +53,37 @@ class CustomQuerySetTestCase(SafeDeleteTestCase):
 
         self.assertEqual(CustomQuerySetModel.objects.count(), 2)
         self.assertEqual(CustomQuerySetModel.objects.green().count(), 1)
+
+    def test_custom_queryset_custom_method(self):
+        """Test custom filters for deleted objects"""
+        instance = self._create_green_instance()
+        instance.delete()
+
+        deleted_only = CustomQuerySetModel.objects.deleted_only()
+
+        # ensure deleted instances available
+        self.assertEqual(deleted_only.count(), 1)
+
+        # and they can be custom filtered
+        self.assertEqual(deleted_only.green().count(), 1)
+
+    def test_custom_queryset_without_manager(self):
+        """Test whether custom queryset may be used without custom manager
+        """
+        instance = self._create_green_instance()
+        instance.delete()
+
+        # note that ``other_objects`` manager used
+        deleted_only = CustomQuerySetModel.other_objects.deleted_only()
+
+        # ensure deleted instances available
+        self.assertEqual(deleted_only.count(), 1)
+
+        # and they can be custom filtered
+        self.assertEqual(deleted_only.green().count(), 1)
+
+    @staticmethod
+    def _create_green_instance():
+        """Shortcut for creating instance with ``color == green``
+        """
+        return CustomQuerySetModel.objects.create(color=choices[1][0])
