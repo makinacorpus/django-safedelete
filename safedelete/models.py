@@ -1,9 +1,11 @@
 from django.db import models, router
 from django.utils import timezone
 
-from .config import HARD_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE, SOFT_DELETE, SOFT_DELETE_CASCADE
-from .managers import SafeDeleteManager
-from .signals import pre_softdelete, post_softdelete, post_undelete
+from .config import (HARD_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE,
+                     SOFT_DELETE, SOFT_DELETE_CASCADE)
+from .managers import (SafeDeleteAllManager, SafeDeleteDeletedManager,
+                       SafeDeleteManager)
+from .signals import post_softdelete, post_undelete, pre_softdelete
 from .utils import can_hard_delete, related_objects
 
 import warnings
@@ -49,6 +51,8 @@ class SafeDeleteModel(models.Model):
     deleted = models.DateTimeField(editable=False, null=True)
 
     objects = SafeDeleteManager()
+    all_objects = SafeDeleteAllManager()
+    deleted_objects = SafeDeleteDeletedManager()
 
     class Meta:
         abstract = True
@@ -142,9 +146,11 @@ class SafeDeleteModel(models.Model):
             if len(unique_check) != len(lookup_kwargs):
                 continue
 
+            qs = model_class.all_objects.filter(**lookup_kwargs)
+
             # This is the changed line
-            if hasattr(model_class._default_manager, 'all_with_deleted'):
-                qs = model_class._default_manager.all_with_deleted().filter(**lookup_kwargs)
+            if hasattr(model_class, 'all_objects'):
+                qs = model_class.all_objects.filter(**lookup_kwargs)
             else:
                 qs = model_class._default_manager.filter(**lookup_kwargs)
 

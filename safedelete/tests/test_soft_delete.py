@@ -77,7 +77,7 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
             1
         )
         self.assertEqual(
-            SoftDeleteModel.objects.all_with_deleted().count(),
+            SoftDeleteModel.all_objects.count(),
             1
         )
 
@@ -90,7 +90,7 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         SoftDeleteModel.objects.all().undelete()  # Nonsense
         self.assertEqual(SoftDeleteModel.objects.count(), 0)
 
-        SoftDeleteModel.objects.deleted_only().undelete()
+        SoftDeleteModel.deleted_objects.all().undelete()
         self.assertEqual(SoftDeleteModel.objects.count(), 1)
 
     def test_validate_unique(self):

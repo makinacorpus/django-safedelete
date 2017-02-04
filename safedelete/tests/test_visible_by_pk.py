@@ -78,7 +78,11 @@ class VisibilityTestCase(SafeDeleteTestCase):
         """ Test wether the namefield model can be found by filtering on name. """
         name = self.namevisiblefield[0].name
         self.namevisiblefield[0].delete()
-        self.assertRaises(NameVisibleField.DoesNotExist, NameVisibleField.objects.get, pk=self.namevisiblefield[0].id)
+        self.assertRaises(
+            NameVisibleField.DoesNotExist,
+            NameVisibleField.objects.get,
+            pk=self.namevisiblefield[0].id
+        )
         self.assertEqual(self.namevisiblefield[0], NameVisibleField.objects.get(name=name))
         cat = NameVisibleField.objects.filter(name=name)
         self.assertEqual(len(cat), 1)
