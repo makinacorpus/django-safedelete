@@ -1,6 +1,5 @@
-import warnings
-
 from django.db import models
+from django.db.models.query_utils import Q
 
 from .config import (DELETED_INVISIBLE, DELETED_ONLY_VISIBLE, DELETED_VISIBLE,
                      DELETED_VISIBLE_BY_FIELD)
@@ -23,6 +22,90 @@ class SafeDeleteQueryset(models.query.QuerySet):
             obj.undelete()
         self._result_cache = None
     undelete.alters_data = True
+
+    def all(self, force_visibility=None):
+        """Override so related managers can also see the deleted models.
+
+        A model's m2m field does not easily have access to `all_objects` and
+        so setting `force_visibility` to True is a way of getting all of the
+        models. It is not recommended to use `force_visibility` outside of related
+        models because it will create a new queryset.
+
+        Args:
+            force_visibility: Show deleted models (default: {False})
+        """
+        if force_visibility is not None:
+            self._safedelete_force_visibility = force_visibility
+        return super(SafeDeleteQueryset, self).all()
+
+    def _check_field_filter(self, **kwargs):
+        """Check if the visibility for DELETED_VISIBLE_BY_FIELD needs t be put into effect.
+
+        DELETED_VISIBLE_BY_FIELD is a temporary visibility flag that changes
+        to DELETED_VISIBLE once asked for the named parameter defined in
+        `_safedelete_force_visibility`. When evaluating the queryset, it will
+        then filter on all models.
+        """
+        if self._safedelete_visibility == DELETED_VISIBLE_BY_FIELD \
+                and self._safedelete_visibility_field in kwargs:
+            self._safedelete_force_visibility = DELETED_VISIBLE
+
+    def filter(self, *args, **kwargs):
+        self._check_field_filter(**kwargs)
+        return super(SafeDeleteQueryset, self).filter(*args, **kwargs)
+
+    def get(self, *args, **kwargs):
+        self._check_field_filter(**kwargs)
+        return super(SafeDeleteQueryset, self).get(*args, **kwargs)
+
+    def _filter_visibility(self):
+        """Add deleted filters to the current QuerySet.
+
+        Unlike QuerySet.filter, this does not return a clone.
+        This is because QuerySet._fetch_all cannot work with a clone.
+        """
+        force_visibility = getattr(self, '_safedelete_force_visibility', None)
+        visibility = force_visibility \
+            if force_visibility is not None \
+            else self._safedelete_visibility
+        if visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD, DELETED_ONLY_VISIBLE):
+            assert self.query.can_filter(), \
+                "Cannot filter a query once a slice has been taken."
+
+            # Add a query manually, QuerySet.filter returns a clone.
+            # QuerySet._fetch_all cannot work with clones.
+            self.query.add_q(
+                Q(
+                    deleted__isnull=visibility in (
+                        DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD
+                    )
+                )
+            )
+
+    def __getattribute__(self, name):
+        """Methods that do not return a QuerySet should call ``_filter_visibility`` first."""
+        attr = object.__getattribute__(self, name)
+        # These methods evaluate the queryset and therefore need to filter the
+        # visiblity set.
+        evaluation_methods = (
+            '_fetch_all', 'count', 'exists', 'aggregate', 'update', '_update',
+            'delete', 'undelete',
+        )
+        if hasattr(attr, '__call__') and name in evaluation_methods:
+            def decorator(*args, **kwargs):
+                self._filter_visibility()
+                return attr(*args, **kwargs)
+            return decorator
+        return attr
+
+    def _clone(self, **kwargs):
+        """Called by django when cloning a QuerySet."""
+        clone = super(SafeDeleteQueryset, self)._clone(**kwargs)
+        clone._safedelete_visibility = self._safedelete_visibility
+        clone._safedelete_visibility_field = self._safedelete_visibility_field
+        if hasattr(self, '_safedelete_force_visibility'):
+            clone._safedelete_force_visibility = self._safedelete_force_visibility
+        return clone
 
 
 class SafeDeleteManager(models.Manager):
@@ -58,7 +141,7 @@ class SafeDeleteManager(models.Manager):
     _queryset_class = SafeDeleteQueryset
 
     def __init__(self, queryset_class=None, *args, **kwargs):
-        """Hook for setting custom ``_queryset_class``
+        """Hook for setting custom ``_queryset_class``.
 
         Example:
 
@@ -75,51 +158,36 @@ class SafeDeleteManager(models.Manager):
             self._queryset_class = queryset_class
 
     def get_queryset(self):
-        # We MUST NOT do the core_filters in get_queryset.
-        # The child *RelatedManager will take care of that.
-        # It will break prefetch_related if we do it here.
+        # Backwards compatibility, no need to move options to QuerySet.
         queryset = self._queryset_class(self.model, using=self._db)
-
-        if self._safedelete_visibility in (
-                DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD, DELETED_ONLY_VISIBLE):
-            queryset = queryset.filter(
-                deleted__isnull=self._safedelete_visibility in (
-                    DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD
-                )
-            )
+        queryset._safedelete_visibility = self._safedelete_visibility
+        queryset._safedelete_visibility_field = self._safedelete_visibility_field
         return queryset
 
     def all_with_deleted(self):
         """Show all models including the soft deleted models.
 
         .. note::
-            This should only be used for related managers as it resets the queryset.
-
-        .. deprecated:: 0.5.0
-            Use :func:`all` with ``show_delete=True``.
+            This is useful for related managers as those don't have access to
+            ``all_objects``.
         """
-        warnings.warn('deprecated', DeprecationWarning)
-        return self.all(show_deleted=True)
+        return self.all(
+            force_visibility=DELETED_VISIBLE
+        )
 
     def deleted_only(self):
         """Only show the soft deleted models.
 
         .. note::
-            This should only be used for related managers as it resets the queryset.
-
-        .. deprecated:: 0.5.0
-            Use :func:`all` with ``show_delete=True`` and filter on ``deleted__isnull=False``.
+            This is useful for related managers as those don't have access to
+            ``deleted_objects``.
         """
-        warnings.warn('deprecated', DeprecationWarning)
-        return self.all(show_deleted=True).filter(deleted__isnull=False)
+        return self.all(
+            force_visibility=DELETED_ONLY_VISIBLE
+        )
 
-    def all(self, show_deleted=False):
-        """Override so related managers can also see the deleted models.
-
-        A model's m2m field does not easily have access to `all_objects` and
-        so setting `show_deleted` to True is a way of getting all of the
-        models. It is not recommended to use `show_deleted` outside of related
-        models because it will create a new queryset.
+    def all(self, **kwargs):
+        """Pass kwargs to SafeDeleteQuerySet.all().
 
         Args:
             show_deleted: Show deleted models. (default: {False})
@@ -128,29 +196,9 @@ class SafeDeleteManager(models.Manager):
             The ``show_deleted`` argument is meant for related managers when no
             other managers like ``all_objects`` or ``deleted_objects`` are available.
         """
-        # We need to filter if we are in a RelatedManager. See the `test_many_to_many`.
-        if show_deleted:
-            queryset = self._queryset_class(self.model, using=self._db)
-
-            if hasattr(self, 'core_filters'):
-                # In a RelatedManager, must filter and add hints
-                queryset._add_hints(instance=self.instance)
-                queryset = queryset.filter(**self.core_filters)
-
-            return queryset
-        return super(SafeDeleteManager, self).all()
-
-    def filter(self, *args, **kwargs):
-        if self._safedelete_visibility == DELETED_VISIBLE_BY_FIELD \
-                and self._safedelete_visibility_field in kwargs:
-            return self.all(show_deleted=True).filter(*args, **kwargs)
-        return self.get_queryset().filter(*args, **kwargs)
-
-    def get(self, *args, **kwargs):
-        if self._safedelete_visibility == DELETED_VISIBLE_BY_FIELD \
-                and self._safedelete_visibility_field in kwargs:
-            return self.all(show_deleted=True).get(*args, **kwargs)
-        return self.get_queryset().get(*args, **kwargs)
+        # get_queryset().all(**kwargs) is used instead of a get_queryset(**kwargs)
+        # implementation because get_queryset() is different for related managers.
+        return self.get_queryset().all(**kwargs)
 
 
 class SafeDeleteAllManager(SafeDeleteManager):
