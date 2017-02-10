@@ -13,7 +13,9 @@ def safedelete_mixin_factory(policy,
                              visibility_field="pk",
                              manager_superclass=models.Manager,
                              queryset_superclass=models.query.QuerySet,
-                             model_superclass=models.Model):
+                             model_superclass=models.Model,
+                             db_index=False,
+                             verbose_name=None):
     """
     Returns an abstract Django model, with a ``deleted`` field.
     It will also have a custom default manager, and an overriden ``delete()`` method.
@@ -24,6 +26,8 @@ def safedelete_mixin_factory(policy,
 
     :param manager_superclass: if you want, you can make your manager inherits from another class. Useful if you need to use a custom manager.
     :param queryset_superclass: the manager that will be created will return a queryset instance, which class will inherits from this class.
+    :param db_index: if True, a database index will be created for this field. Defaults to False.
+    :param verbose_name: useful for localization. It can be used with ugettext(), e. g. "verbose_name=_('deleted')". Defaults to None.
 
     :Example:
 
@@ -48,7 +52,7 @@ def safedelete_mixin_factory(policy,
 
     class Model(model_superclass):
 
-        deleted = models.BooleanField(default=False)
+        deleted = models.BooleanField(default=False, db_index=db_index, verbose_name=verbose_name)
 
         objects = safedelete_manager_factory(manager_superclass, queryset_superclass, visibility, visibility_field)()
         _default_manager = safedelete_manager_factory(manager_superclass, queryset_superclass, visibility, visibility_field)()
