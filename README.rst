@@ -17,7 +17,7 @@ This Django application provides a model mixin, that allows you to transparently
 without having them deleted from your database.
 
 You can choose what happens when you delete an object :
- - it can be masked from your database (soft delete)
+ - it can be masked from your database (soft delete, the default behavior)
  - it can be normally deleted (hard delete)
  - it can be hard-deleted, but if its deletion would delete other objects, it will only be masked
  - it can be never deleted or masked from your database (no delete, use with caution)
@@ -27,6 +27,10 @@ Example
 -------
 
 .. code-block:: python
+
+    # imports
+    from safedelete.models import SafeDeleteMixin
+    from safedelete.models import HARD_DELETE_NOCASCADE
 
     # Models
 
@@ -110,4 +114,3 @@ Please see the AUTHORS file.
 
 .. image:: https://drupal.org/files/imagecache/grid-3/Logo_slogan_300dpi.png
     :target: http://www.makina-corpus.com
-
