@@ -15,7 +15,7 @@ CHANGELOG
 
 ** Bugfixes **
 
--
+- Fixed abstract intermediate models not working with SOFT_DELETE_CASCADE
 
 0.4.0
 =====

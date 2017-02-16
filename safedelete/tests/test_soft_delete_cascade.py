@@ -16,6 +16,17 @@ class PressNormalModel(models.Model):
     article = models.ForeignKey(Article)
 
 
+class CustomAbstractModel(SafeDeleteMixin):
+    class Meta:
+        abstract = True
+
+
+class ArticleView(CustomAbstractModel):
+    _safedelete_policy = SOFT_DELETE_CASCADE
+
+    article = models.ForeignKey(Article)
+
+
 class SimpleTest(TestCase):
     def setUp(self):
 
@@ -66,3 +77,14 @@ class SimpleTest(TestCase):
         self.assertEqual(Article.objects.all_with_deleted().count(), 3)
         self.assertEqual(Press.objects.count(), 0)
         self.assertEqual(Press.objects.all_with_deleted().count(), 1)
+
+    def test_soft_delete_cascade_with_abstract_model(self):
+        ArticleView.objects.create(article=self.articles[2])
+
+        self.articles[2].delete(force_policy=SOFT_DELETE_CASCADE)
+
+        self.assertEqual(Article.objects.count(), 2)
+        self.assertEqual(Article.objects.all_with_deleted().count(), 3)
+
+        self.assertEqual(ArticleView.objects.count(), 0)
+        self.assertEqual(ArticleView.objects.all_with_deleted().count(), 1)

@@ -6,13 +6,26 @@ from .managers import SafeDeleteManager
 from .signals import pre_softdelete, post_softdelete, post_undelete
 from .utils import can_hard_delete, related_objects
 
+import warnings
 
-def is_safedelete(related):
-    bases = related.__class__.__bases__
-    for base in bases:
-        if base.__module__.startswith('safedelete'):
+
+def is_safedelete_cls(cls):
+    for base in cls.__bases__:
+        # This used to check if it startswith 'safedelete', but that masks
+        # the issue inside of a test. Other clients create models that are
+        # outside of the safedelete package.
+        if base.__module__.startswith('safedelete.models'):
+            return True
+        if is_safedelete_cls(base):
             return True
     return False
+
+
+def is_safedelete(related):
+    warnings.warn(
+        'is_safedelete is deprecated in favor of is_safedelete_cls',
+        DeprecationWarning)
+    return is_safedelete_cls(related.__class__)
 
 
 class SafeDeleteMixin(models.Model):
@@ -21,7 +34,7 @@ class SafeDeleteMixin(models.Model):
     It will also have a custom default manager, and an overriden ``delete()`` method.
 
     :attribute _safedelete_policy: define what happens when you delete an object.
-        It can be one of ``HARD_DELETE``, ``SOFT_DELETE``, ``NO_DELETE`` and ``HARD_DELETE_NOCASCADE``.
+        It can be one of ``HARD_DELETE``, ``SOFT_DELETE``, ``SOFT_DELETE_CASCADE``, ``NO_DELETE`` and ``HARD_DELETE_NOCASCADE``.
         Defaults to ``SOFT_DELETE``.
 
         >>> class MyModel(SafeDeleteMixin):
@@ -105,7 +118,7 @@ class SafeDeleteMixin(models.Model):
         elif current_policy == SOFT_DELETE_CASCADE:
             # Soft-delete on related objects before
             for related in related_objects(self):
-                if is_safedelete(related):
+                if is_safedelete_cls(related.__class__):
                     related.delete(force_policy=SOFT_DELETE, **kwargs)
             # soft-delete the object
             self.delete(force_policy=SOFT_DELETE, **kwargs)
