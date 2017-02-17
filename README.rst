@@ -13,7 +13,7 @@ What is it ?
 
 For various reasons, you may want to avoid deleting objects from your database.
 
-This Django application provides a model mixin, that allows you to transparently retrieve or delete your objects,
+This Django application provides an abstract model, that allows you to transparently retrieve or delete your objects,
 without having them deleted from your database.
 
 You can choose what happens when you delete an object :
@@ -29,18 +29,18 @@ Example
 .. code-block:: python
 
     # imports
-    from safedelete.models import SafeDeleteMixin
+    from safedelete.models import SafeDeleteModel
     from safedelete.models import HARD_DELETE_NOCASCADE
 
     # Models
 
     # We create a new model, with the given policy : Objects will be hard-deleted, or soft deleted if other objects would have been deleted too.
-    class Article(SafeDeleteMixin):
+    class Article(SafeDeleteModel):
         _safedelete_policy = HARD_DELETE_NOCASCADE
 
         name = models.CharField(max_length=100)
 
-    class Order(SafeDeleteMixin):
+    class Order(SafeDeleteModel):
         _safedelete_policy = HARD_DELETE_NOCASCADE
 
         name = models.CharField(max_length=100)

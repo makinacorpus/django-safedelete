@@ -1,7 +1,7 @@
 from django.db import models
 
 from ..managers import SafeDeleteManager, SafeDeleteQueryset
-from ..models import SafeDeleteMixin
+from ..models import SafeDeleteModel
 from .testcase import SafeDeleteTestCase
 
 
@@ -28,7 +28,7 @@ choices = (
 )
 
 
-class CustomQuerySetModel(SafeDeleteMixin):
+class CustomQuerySetModel(SafeDeleteModel):
     color = models.CharField(
         max_length=5,
         choices=choices

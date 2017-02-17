@@ -17,6 +17,11 @@ CHANGELOG
 
 - Fixed abstract intermediate models not working with SOFT_DELETE_CASCADE
 
+** Refactoring **
+
+- Renamed SafeDeleteMixin to SafeDeleteModel to better reflect the intended behavior. Using SafeDeleteMixin now throws a DeprecationWarning.
+
+
 0.4.0
 =====
 

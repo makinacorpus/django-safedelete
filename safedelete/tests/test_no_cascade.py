@@ -3,10 +3,10 @@ from django.db.models.deletion import ProtectedError
 
 from .testcase import SafeDeleteTestCase
 from ..config import HARD_DELETE_NOCASCADE
-from ..models import SafeDeleteMixin
+from ..models import SafeDeleteModel
 
 
-class NoCascadeModel(SafeDeleteMixin):
+class NoCascadeModel(SafeDeleteModel):
     _safedelete_policy = HARD_DELETE_NOCASCADE
 
 

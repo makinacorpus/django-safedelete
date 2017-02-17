@@ -1,6 +1,6 @@
 from django.db import models
 
-from ..models import SafeDeleteMixin
+from ..models import SafeDeleteModel
 from .testcase import SafeDeleteTestCase
 
 
@@ -8,7 +8,7 @@ class ManyToManyChild(models.Model):
     pass
 
 
-class ManyToManyParent(SafeDeleteMixin):
+class ManyToManyParent(SafeDeleteModel):
     children = models.ManyToManyField(
         ManyToManyChild,
         blank=True,

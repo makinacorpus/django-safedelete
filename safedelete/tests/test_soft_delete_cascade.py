@@ -2,11 +2,11 @@ from django.db import models
 from django.test import TestCase
 
 from safedelete import SOFT_DELETE_CASCADE
-from safedelete.models import SafeDeleteMixin
+from safedelete.models import SafeDeleteModel
 from safedelete.tests.models import Article, Author, Category
 
 
-class Press(SafeDeleteMixin):
+class Press(SafeDeleteModel):
     name = models.CharField(max_length=200)
     article = models.ForeignKey(Article)
 
@@ -16,7 +16,7 @@ class PressNormalModel(models.Model):
     article = models.ForeignKey(Article)
 
 
-class CustomAbstractModel(SafeDeleteMixin):
+class CustomAbstractModel(SafeDeleteModel):
     class Meta:
         abstract = True
 

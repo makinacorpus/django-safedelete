@@ -2,7 +2,7 @@ from django.db import models
 
 from ..config import DELETED_VISIBLE_BY_FIELD
 from ..managers import SafeDeleteManager
-from ..models import SafeDeleteMixin
+from ..models import SafeDeleteModel
 from .testcase import SafeDeleteTestCase
 
 
@@ -10,7 +10,7 @@ class PkVisibleManager(SafeDeleteManager):
     _safedelete_visibility = DELETED_VISIBLE_BY_FIELD
 
 
-class PkVisibleModel(SafeDeleteMixin):
+class PkVisibleModel(SafeDeleteModel):
 
     objects = PkVisibleManager()
 
@@ -24,7 +24,7 @@ class NameVisibleManager(SafeDeleteManager):
     _safedelete_visibility_field = 'name'
 
 
-class NameVisibleField(SafeDeleteMixin):
+class NameVisibleField(SafeDeleteModel):
     name = models.CharField(max_length=200, unique=True)
 
     objects = NameVisibleManager()

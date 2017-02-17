@@ -7,10 +7,10 @@ from django.test import RequestFactory, TestCase
 
 from safedelete.tests.models import Article, Category, Author
 from ..admin import SafeDeleteAdmin, highlight_deleted
-from ..models import SafeDeleteMixin
+from ..models import SafeDeleteModel
 
 
-class Order(SafeDeleteMixin):
+class Order(SafeDeleteModel):
     articles = models.ManyToManyField(Article)
 
 

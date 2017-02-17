@@ -24,7 +24,7 @@ class SafeDeleteQueryset(models.query.QuerySet):
 
 class SafeDeleteManager(models.Manager):
     """
-    A manager for the SafeDeleteMixin.
+    A manager for the SafeDeleteModel.
     If _safedelete_visibility == DELETED_VISIBLE_BY_PK, the manager can returns deleted
     objects if they are accessed by primary key.
 
@@ -32,12 +32,12 @@ class SafeDeleteManager(models.Manager):
         It can be one of ``DELETED_INVISIBLE`` and ``DELETED_VISIBLE_BY_PK``.
         Defaults to ``SOFT_DELETE``.
 
-        >>> from safedelete.models import SafeDeleteMixin
+        >>> from safedelete.models import SafeDeleteModel
         >>> from safedelete.managers import SafeDeleteManager
         >>> class MyModelManager(SafeDeleteManager):
         ...     _safedelete_visibility = DELETED_VISIBLE_BY_PK
         ...
-        >>> class MyModel(SafeDeleteMixin):
+        >>> class MyModel(SafeDeleteModel):
         ...     _safedelete_policy = SOFT_DELETE
         ...     my_field = models.TextField()
         ...     objects = MyModelManager()
