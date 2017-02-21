@@ -28,7 +28,7 @@ def is_safedelete(related):
     return is_safedelete_cls(related.__class__)
 
 
-class SafeDeleteMixin(models.Model):
+class SafeDeleteModel(models.Model):
     """
     An abstract Django model, with a ``deleted`` field.
     It will also have a custom default manager, and an overriden ``delete()`` method.
@@ -37,7 +37,7 @@ class SafeDeleteMixin(models.Model):
         It can be one of ``HARD_DELETE``, ``SOFT_DELETE``, ``SOFT_DELETE_CASCADE``, ``NO_DELETE`` and ``HARD_DELETE_NOCASCADE``.
         Defaults to ``SOFT_DELETE``.
 
-        >>> class MyModel(SafeDeleteMixin):
+        >>> class MyModel(SafeDeleteModel):
         ...     _safedelete_policy = SOFT_DELETE
         ...     my_field = models.TextField()
         ...
@@ -71,7 +71,7 @@ class SafeDeleteMixin(models.Model):
                 was_undeleted = True
             self.deleted = None
 
-        super(SafeDeleteMixin, self).save(**kwargs)
+        super(SafeDeleteModel, self).save(**kwargs)
 
         if was_undeleted:
             # send undelete signal
@@ -97,14 +97,14 @@ class SafeDeleteMixin(models.Model):
             using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
             # send pre_softdelete signal
             pre_softdelete.send(sender=self.__class__, instance=self, using=using)
-            super(SafeDeleteMixin, self).save(**kwargs)
+            super(SafeDeleteModel, self).save(**kwargs)
             # send softdelete signal
             post_softdelete.send(sender=self.__class__, instance=self, using=using)
 
         elif current_policy == HARD_DELETE:
 
             # Normally hard-delete the object.
-            super(SafeDeleteMixin, self).delete()
+            super(SafeDeleteModel, self).delete()
 
         elif current_policy == HARD_DELETE_NOCASCADE:
 
@@ -160,3 +160,11 @@ class SafeDeleteMixin(models.Model):
                     self.unique_error_message(model_class, unique_check)
                 )
         return errors
+
+
+class SafeDeleteMixin(SafeDeleteModel):
+    """Deprecated class maintained for backwards compatibility"""
+    def __init__(self, *args, **kwargs):
+        warnings.warn('The SafeDeleteMixin class was renamed SafeDeleteModel',
+                      DeprecationWarning)
+        SafeDeleteModel.__init__(self, *args, **kwargs)

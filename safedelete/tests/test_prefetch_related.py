@@ -1,14 +1,14 @@
 from django.db import models
 
-from ..models import SafeDeleteMixin
+from ..models import SafeDeleteModel
 from .testcase import SafeDeleteTestCase
 
 
-class PrefetchBrother(SafeDeleteMixin):
+class PrefetchBrother(SafeDeleteModel):
     pass
 
 
-class PrefetchSister(SafeDeleteMixin):
+class PrefetchSister(SafeDeleteModel):
     sibling = models.ForeignKey(
         PrefetchBrother,
         related_name='sisters'

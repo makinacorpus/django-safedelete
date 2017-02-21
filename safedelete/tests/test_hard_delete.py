@@ -1,9 +1,9 @@
 from .testcase import SafeDeleteForceTestCase
 from ..config import HARD_DELETE
-from ..models import SafeDeleteMixin
+from ..models import SafeDeleteModel
 
 
-class HardDeleteModel(SafeDeleteMixin):
+class HardDeleteModel(SafeDeleteModel):
     _safedelete_policy = HARD_DELETE
 
 

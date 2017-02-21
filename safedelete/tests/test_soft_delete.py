@@ -7,15 +7,21 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from ..models import SafeDeleteMixin
+from ..models import SafeDeleteModel
 from .testcase import SafeDeleteForceTestCase
 
 
-class SoftDeleteModel(SafeDeleteMixin):
-    # SafeDeleteMixin has the soft delete policy by default
+class SoftDeleteModel(SafeDeleteModel):
+    # SafeDeleteModel has the soft delete policy by default
     pass
 
 
-class UniqueSoftDeleteModel(SafeDeleteMixin):
+class SoftDeleteMixinModel(SafeDeleteMixin):
+    # Legacy compatibility with the older SafeDeleteMixin name.
+    pass
+
+
+class UniqueSoftDeleteModel(SafeDeleteModel):
 
     name = models.CharField(
         max_length=100,
@@ -31,6 +37,10 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
     def test_softdelete(self):
         """Deleting a model with the soft delete policy should only mask it, not delete it."""
         self.assertSoftDelete(self.instance)
+
+    def test_softdelete_mixin(self):
+        """Deprecated: Deleting a SafeDeleteMixin model with the soft delete policy should only mask it, not delete it."""
+        self.assertSoftDelete(SoftDeleteMixinModel.objects.create())
 
     @mock.patch('safedelete.models.post_undelete.send')
     @mock.patch('safedelete.models.post_softdelete.send')

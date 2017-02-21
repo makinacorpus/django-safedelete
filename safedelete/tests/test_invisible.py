@@ -1,11 +1,11 @@
 from django.db import models
 
-from ..models import SafeDeleteMixin
+from ..models import SafeDeleteModel
 from .testcase import SafeDeleteTestCase
 
 
-class InvisibleModel(SafeDeleteMixin):
-    # SafeDeleteMixin subclasses automatically have their visibility set to invisible.
+class InvisibleModel(SafeDeleteModel):
+    # SafeDeleteModel subclasses automatically have their visibility set to invisible.
 
     name = models.CharField(
         max_length=100

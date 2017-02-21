@@ -1,9 +1,9 @@
 from ..config import NO_DELETE
-from ..models import SafeDeleteMixin
+from ..models import SafeDeleteModel
 from .testcase import SafeDeleteForceTestCase
 
 
-class NoDeleteModel(SafeDeleteMixin):
+class NoDeleteModel(SafeDeleteModel):
     _safedelete_policy = NO_DELETE
 
 

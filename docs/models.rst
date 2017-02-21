@@ -4,9 +4,9 @@ Creating models
 
 .. py:module:: safedelete.models
 
-To create your safedelete-ready models, you have to make them inherit from an abstract model.
+To create your safedelete-ready models, you have to make them inherit from an abstract model (``safedelete.models.SafeDeleteModel``).
 
-.. autoclass:: SafeDeleteMixin
+.. autoclass:: SafeDeleteModel
 
 The ``deleted`` attribute is a DateTimeField set to the moment the object was deleted.
 

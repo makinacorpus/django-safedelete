@@ -5,10 +5,10 @@ from safedelete import HARD_DELETE
 from safedelete import HARD_DELETE_NOCASCADE
 from safedelete import SOFT_DELETE
 from safedelete.managers import SafeDeleteManager
-from safedelete.models import SafeDeleteMixin
+from safedelete.models import SafeDeleteModel
 
 
-class Author(SafeDeleteMixin):
+class Author(SafeDeleteModel):
     _safedelete_policy = HARD_DELETE_NOCASCADE
 
 
@@ -16,7 +16,7 @@ class CategoryManager(SafeDeleteManager):
     _safedelete_visibility = DELETED_VISIBLE_BY_PK
 
 
-class Category(SafeDeleteMixin):
+class Category(SafeDeleteModel):
     _safedelete_policy = SOFT_DELETE
 
     name = models.CharField(
@@ -27,7 +27,8 @@ class Category(SafeDeleteMixin):
     objects = CategoryManager()
 
 
-class Article(SafeDeleteMixin):
+# Explicitly use SafeDeleteModel instead of SafeDeleteModel to test both
+class Article(SafeDeleteModel):
     _safedelete_policy = HARD_DELETE
 
     author = models.ForeignKey(
