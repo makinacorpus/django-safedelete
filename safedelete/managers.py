@@ -89,12 +89,26 @@ class SafeDeleteManager(models.Manager):
         return queryset
 
     def all_with_deleted(self):
-        """Deprecated because all(show_deleted=True) is meant for related managers."""
+        """Show all models including the soft deleted models.
+
+        .. note::
+            This should only be used for related managers as it resets the queryset.
+
+        .. deprecated:: 0.5.0
+            Use :func:`all` with ``show_delete=True``.
+        """
         warnings.warn('deprecated', DeprecationWarning)
         return self.all(show_deleted=True)
 
     def deleted_only(self):
-        """Deprecated because all(show_deleted=True) is meant for related managers."""
+        """Only show the soft deleted models.
+
+        .. note::
+            This should only be used for related managers as it resets the queryset.
+
+        .. deprecated:: 0.5.0
+            Use :func:`all` with ``show_delete=True`` and filter on ``deleted__isnull=False``.
+        """
         warnings.warn('deprecated', DeprecationWarning)
         return self.all(show_deleted=True).filter(deleted__isnull=False)
 
@@ -107,7 +121,11 @@ class SafeDeleteManager(models.Manager):
         models because it will create a new queryset.
 
         Args:
-            show_deleted: Show deleted models (default: {False})
+            show_deleted: Show deleted models. (default: {False})
+
+        .. note::
+            The ``show_deleted`` argument is meant for related managers when no
+            other managers like ``all_objects`` or ``deleted_objects`` are available.
         """
         # We need to filter if we are in a RelatedManager. See the `test_many_to_many`.
         if show_deleted:
@@ -135,10 +153,20 @@ class SafeDeleteManager(models.Manager):
 
 
 class SafeDeleteAllManager(SafeDeleteManager):
+    """SafeDeleteManager with ``_safedelete_visibility`` set to ``DELETED_VISIBLE``.
+
+    .. note::
+        This is used in :py:attr:`safedelete.models.SafeDeleteModel.all_objects`
+    """
 
     _safedelete_visibility = DELETED_VISIBLE
 
 
 class SafeDeleteDeletedManager(SafeDeleteManager):
+    """SafeDeleteManager with ``_safedelete_visibility`` set to ``DELETED_ONLY_VISIBLE``.
+
+    .. note::
+        This is used in :py:attr:`safedelete.models.SafeDeleteModel.deleted_objects`
+    """
 
     _safedelete_visibility = DELETED_ONLY_VISIBLE
