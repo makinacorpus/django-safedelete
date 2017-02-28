@@ -12,16 +12,18 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
-from django.conf import settings
+import os
+import sys
+
+import django
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 sys.path.insert(0, os.path.abspath('..'))
-
-settings.configure(DEBUG = True, DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': '/tmp/db.sqlite', 'USER': '', 'PASSWORD': '', 'HOST': '', 'PORT': ''}})
+os.environ['DJANGO_SETTINGS_MODULE'] = 'safedelete.tests.settings'
+django.setup()
 
 # -- General configuration -----------------------------------------------------
 
@@ -30,7 +32,8 @@ settings.configure(DEBUG = True, DATABASES = {'default': {'ENGINE': 'django.db.b
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.coverage', 'sphinx.ext.pngmath', 'sphinx.ext.viewcode']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest',
+              'sphinx.ext.coverage', 'sphinx.ext.imgmath', 'sphinx.ext.viewcode']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -96,7 +99,7 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -125,7 +128,7 @@ html_theme = 'default'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ['../safedelete/static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -181,21 +184,21 @@ htmlhelp_basename = 'django-safedeletedoc'
 # -- Options for LaTeX output --------------------------------------------------
 
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
+    # The paper size ('letterpaper' or 'a4paper').
+    #'papersize': 'letterpaper',
 
-# The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    #'pointsize': '10pt',
 
-# Additional stuff for the LaTeX preamble.
-#'preamble': '',
+    # Additional stuff for the LaTeX preamble.
+    #'preamble': '',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'django-safedelete.tex', 'django-safedelete Documentation',
-   'palkeo', 'manual'),
+    ('index', 'django-safedelete.tex', 'django-safedelete Documentation',
+     'palkeo', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -238,9 +241,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'django-safedelete', 'django-safedelete Documentation',
-   'palkeo', 'django-safedelete', 'One line description of project.',
-   'Miscellaneous'),
+    ('index', 'django-safedelete', 'django-safedelete Documentation',
+     'palkeo', 'django-safedelete', 'One line description of project.',
+     'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -251,3 +254,11 @@ texinfo_documents = [
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
+
+# Suppress warnings about nonlocal URIs.
+# The travis build image in the readme is a nonlocal URI.
+suppress_warnings = ['image.nonlocal_uri']
+
+
+# Generated documentation should be ordered like it is in the source.
+autodoc_member_order = 'bysource'
