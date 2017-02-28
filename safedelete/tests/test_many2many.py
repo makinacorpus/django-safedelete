@@ -41,6 +41,6 @@ class ManyToManyTestCase(SafeDeleteTestCase):
         )
         # But explicitly saying you want to "show" them, shouldn't hide them
         self.assertEqual(
-            child.parents.all_with_deleted().count(),
+            child.parents.all(show_deleted=True).count(),
             2
         )

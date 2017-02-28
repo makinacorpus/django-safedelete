@@ -1,6 +1,9 @@
+import warnings
+
 from django.db import models
 
-from .config import DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD
+from .config import (DELETED_INVISIBLE, DELETED_ONLY_VISIBLE, DELETED_VISIBLE,
+                     DELETED_VISIBLE_BY_FIELD)
 
 
 class SafeDeleteQueryset(models.query.QuerySet):
@@ -54,37 +57,6 @@ class SafeDeleteManager(models.Manager):
     _safedelete_visibility_field = 'pk'
     _queryset_class = SafeDeleteQueryset
 
-    def get_queryset(self):
-        # We MUST NOT do the core_filters in get_queryset.
-        # The child *RelatedManager will take care of that.
-        # It will break prefetch_related if we do it here.
-        queryset = self._queryset_class(self.model, using=self._db)
-        return queryset.filter(deleted__isnull=True)
-
-    def all_with_deleted(self):
-        """ Return a queryset to every objects, including deleted ones. """
-        queryset = self._queryset_class(self.model, using=self._db)
-        # We need to filter if we are in a RelatedManager. See the `test_related_manager`.
-        if hasattr(self, 'core_filters'):
-            # In a RelatedManager, must filter and add hints
-            queryset._add_hints(instance=self.instance)
-            queryset = queryset.filter(**self.core_filters)
-        return queryset
-
-    def deleted_only(self):
-        """ Return a queryset to only deleted objects. """
-        return self.all_with_deleted().filter(deleted__isnull=False)
-
-    def filter(self, *args, **kwargs):
-        if self._safedelete_visibility == DELETED_VISIBLE_BY_FIELD and self._safedelete_visibility_field in kwargs:
-            return self.all_with_deleted().filter(*args, **kwargs)
-        return self.get_queryset().filter(*args, **kwargs)
-
-    def get(self, *args, **kwargs):
-        if self._safedelete_visibility == DELETED_VISIBLE_BY_FIELD and self._safedelete_visibility_field in kwargs:
-            return self.all_with_deleted().get(*args, **kwargs)
-        return self.get_queryset().get(*args, **kwargs)
-
     def __init__(self, queryset_class=None, *args, **kwargs):
         """Hook for setting custom ``_queryset_class``
 
@@ -101,3 +73,100 @@ class SafeDeleteManager(models.Manager):
         super(SafeDeleteManager, self).__init__(*args, **kwargs)
         if queryset_class:
             self._queryset_class = queryset_class
+
+    def get_queryset(self):
+        # We MUST NOT do the core_filters in get_queryset.
+        # The child *RelatedManager will take care of that.
+        # It will break prefetch_related if we do it here.
+        queryset = self._queryset_class(self.model, using=self._db)
+
+        if self._safedelete_visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD, DELETED_ONLY_VISIBLE):
+            queryset = queryset.filter(
+                deleted__isnull=self._safedelete_visibility in (
+                    DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD
+                )
+            )
+        return queryset
+
+    def all_with_deleted(self):
+        """Show all models including the soft deleted models.
+
+        .. note::
+            This should only be used for related managers as it resets the queryset.
+
+        .. deprecated:: 0.5.0
+            Use :func:`all` with ``show_delete=True``.
+        """
+        warnings.warn('deprecated', DeprecationWarning)
+        return self.all(show_deleted=True)
+
+    def deleted_only(self):
+        """Only show the soft deleted models.
+
+        .. note::
+            This should only be used for related managers as it resets the queryset.
+
+        .. deprecated:: 0.5.0
+            Use :func:`all` with ``show_delete=True`` and filter on ``deleted__isnull=False``.
+        """
+        warnings.warn('deprecated', DeprecationWarning)
+        return self.all(show_deleted=True).filter(deleted__isnull=False)
+
+    def all(self, show_deleted=False):
+        """Override so related managers can also see the deleted models.
+
+        A model's m2m field does not easily have access to `all_objects` and
+        so setting `show_deleted` to True is a way of getting all of the
+        models. It is not recommended to use `show_deleted` outside of related
+        models because it will create a new queryset.
+
+        Args:
+            show_deleted: Show deleted models. (default: {False})
+
+        .. note::
+            The ``show_deleted`` argument is meant for related managers when no
+            other managers like ``all_objects`` or ``deleted_objects`` are available.
+        """
+        # We need to filter if we are in a RelatedManager. See the `test_many_to_many`.
+        if show_deleted:
+            queryset = self._queryset_class(self.model, using=self._db)
+
+            if hasattr(self, 'core_filters'):
+                # In a RelatedManager, must filter and add hints
+                queryset._add_hints(instance=self.instance)
+                queryset = queryset.filter(**self.core_filters)
+
+            return queryset
+        return super(SafeDeleteManager, self).all()
+
+    def filter(self, *args, **kwargs):
+        if self._safedelete_visibility == DELETED_VISIBLE_BY_FIELD \
+                and self._safedelete_visibility_field in kwargs:
+            return self.all(show_deleted=True).filter(*args, **kwargs)
+        return self.get_queryset().filter(*args, **kwargs)
+
+    def get(self, *args, **kwargs):
+        if self._safedelete_visibility == DELETED_VISIBLE_BY_FIELD \
+                and self._safedelete_visibility_field in kwargs:
+            return self.all(show_deleted=True).get(*args, **kwargs)
+        return self.get_queryset().get(*args, **kwargs)
+
+
+class SafeDeleteAllManager(SafeDeleteManager):
+    """SafeDeleteManager with ``_safedelete_visibility`` set to ``DELETED_VISIBLE``.
+
+    .. note::
+        This is used in :py:attr:`safedelete.models.SafeDeleteModel.all_objects`
+    """
+
+    _safedelete_visibility = DELETED_VISIBLE
+
+
+class SafeDeleteDeletedManager(SafeDeleteManager):
+    """SafeDeleteManager with ``_safedelete_visibility`` set to ``DELETED_ONLY_VISIBLE``.
+
+    .. note::
+        This is used in :py:attr:`safedelete.models.SafeDeleteModel.deleted_objects`
+    """
+
+    _safedelete_visibility = DELETED_ONLY_VISIBLE
