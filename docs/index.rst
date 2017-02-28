@@ -13,5 +13,6 @@ Documentation
    Introduction <self>
    models
    managers
+   queryset
    signals
    admin

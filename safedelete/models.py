@@ -76,7 +76,7 @@ class SafeDeleteModel(models.Model):
 
         Args:
             keep_deleted: Do not undelete the model if soft-deleted. (default: {False})
-            \*\*kwargs: Passed onto :func:`save`.
+            kwargs: Passed onto :func:`save`.
 
         .. note::
             Undeletes soft-deleted models by default.
@@ -105,7 +105,7 @@ class SafeDeleteModel(models.Model):
         """Undelete a soft-deleted model.
 
         Args:
-            \*\*kwargs: Passed onto :func:`save`.
+            kwargs: Passed onto :func:`save`.
 
         .. note::
             Will raise a :class:`AssertionError` if the model was not soft-deleted.
@@ -118,7 +118,7 @@ class SafeDeleteModel(models.Model):
 
         Args:
             force_policy: Force a specific delete policy. (default: {None})
-            \*\*kwargs: Passed onto :func:`save` if soft deleted.
+            kwargs: Passed onto :func:`save` if soft deleted.
         """
         current_policy = self._safedelete_policy if (force_policy is None) else force_policy
 
