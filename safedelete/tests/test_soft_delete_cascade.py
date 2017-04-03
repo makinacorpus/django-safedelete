@@ -1,6 +1,5 @@
 from django.db import models
 from django.test import TestCase
-
 from safedelete import SOFT_DELETE_CASCADE
 from safedelete.models import SafeDeleteModel
 from safedelete.tests.models import Article, Author, Category
@@ -17,6 +16,7 @@ class PressNormalModel(models.Model):
 
 
 class CustomAbstractModel(SafeDeleteModel):
+
     class Meta:
         abstract = True
 
@@ -28,6 +28,7 @@ class ArticleView(CustomAbstractModel):
 
 
 class SimpleTest(TestCase):
+
     def setUp(self):
 
         self.authors = (
@@ -61,22 +62,22 @@ class SimpleTest(TestCase):
         self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
 
         self.assertEqual(Author.objects.count(), 2)
-        self.assertEqual(Author.objects.all_with_deleted().count(), 3)
+        self.assertEqual(Author.all_objects.count(), 3)
         self.assertEqual(Article.objects.count(), 2)
-        self.assertEqual(Article.objects.all_with_deleted().count(), 3)
+        self.assertEqual(Article.all_objects.count(), 3)
         self.assertEqual(Press.objects.count(), 0)
-        self.assertEqual(Press.objects.all_with_deleted().count(), 1)
+        self.assertEqual(Press.all_objects.count(), 1)
 
     def test_soft_delete_cascade_with_normal_model(self):
         PressNormalModel.objects.create(name='press 0', article=self.articles[2])
         self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
 
         self.assertEqual(Author.objects.count(), 2)
-        self.assertEqual(Author.objects.all_with_deleted().count(), 3)
+        self.assertEqual(Author.all_objects.count(), 3)
         self.assertEqual(Article.objects.count(), 2)
-        self.assertEqual(Article.objects.all_with_deleted().count(), 3)
+        self.assertEqual(Article.all_objects.count(), 3)
         self.assertEqual(Press.objects.count(), 0)
-        self.assertEqual(Press.objects.all_with_deleted().count(), 1)
+        self.assertEqual(Press.all_objects.count(), 1)
 
     def test_soft_delete_cascade_with_abstract_model(self):
         ArticleView.objects.create(article=self.articles[2])
@@ -84,7 +85,7 @@ class SimpleTest(TestCase):
         self.articles[2].delete(force_policy=SOFT_DELETE_CASCADE)
 
         self.assertEqual(Article.objects.count(), 2)
-        self.assertEqual(Article.objects.all_with_deleted().count(), 3)
+        self.assertEqual(Article.all_objects.count(), 3)
 
         self.assertEqual(ArticleView.objects.count(), 0)
-        self.assertEqual(ArticleView.objects.all_with_deleted().count(), 1)
+        self.assertEqual(ArticleView.all_objects.count(), 1)

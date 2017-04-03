@@ -5,9 +5,9 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.test import RequestFactory, TestCase
 
-from safedelete.tests.models import Article, Category, Author
 from ..admin import SafeDeleteAdmin, highlight_deleted
 from ..models import SafeDeleteModel
+from .models import Article, Author, Category
 
 
 class Order(SafeDeleteModel):
@@ -99,7 +99,7 @@ class AdminTestCase(TestCase):
             '_selected_action': [self.categories[1].pk],
         })
         self.assertTemplateUsed(resp, 'safedelete/undelete_selected_confirmation.html')
-        category = Category.objects.get(
+        category = Category.all_objects.get(
             pk=self.categories[1].pk
         )
         self.assertTrue(self.categories[1].deleted)

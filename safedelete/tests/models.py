@@ -1,9 +1,6 @@
 from django.db import models
-
-from safedelete import DELETED_VISIBLE_BY_PK
-from safedelete import HARD_DELETE
-from safedelete import HARD_DELETE_NOCASCADE
-from safedelete import SOFT_DELETE
+from safedelete import (DELETED_VISIBLE_BY_PK, HARD_DELETE,
+                        HARD_DELETE_NOCASCADE, SOFT_DELETE)
 from safedelete.managers import SafeDeleteManager
 from safedelete.models import SafeDeleteModel
 
@@ -23,8 +20,6 @@ class Category(SafeDeleteModel):
         max_length=100,
         blank=True
     )
-
-    objects = CategoryManager()
 
 
 # Explicitly use SafeDeleteModel instead of SafeDeleteModel to test both

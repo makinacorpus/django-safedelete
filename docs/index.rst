@@ -10,5 +10,9 @@ Documentation
    :maxdepth: 2
    :glob:
 
+   Introduction <self>
    models
+   managers
+   queryset
+   signals
    admin

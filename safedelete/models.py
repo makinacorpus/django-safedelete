@@ -1,12 +1,14 @@
+import warnings
+
 from django.db import models, router
 from django.utils import timezone
 
-from .config import HARD_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE, SOFT_DELETE, SOFT_DELETE_CASCADE
-from .managers import SafeDeleteManager
-from .signals import pre_softdelete, post_softdelete, post_undelete
+from .config import (HARD_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE,
+                     SOFT_DELETE, SOFT_DELETE_CASCADE)
+from .managers import (SafeDeleteAllManager, SafeDeleteDeletedManager,
+                       SafeDeleteManager)
+from .signals import post_softdelete, post_undelete, pre_softdelete
 from .utils import can_hard_delete, related_objects
-
-import warnings
 
 
 def is_safedelete_cls(cls):
@@ -29,9 +31,14 @@ def is_safedelete(related):
 
 
 class SafeDeleteModel(models.Model):
-    """
-    An abstract Django model, with a ``deleted`` field.
-    It will also have a custom default manager, and an overriden ``delete()`` method.
+    """Abstract safedelete-ready model.
+
+    .. note::
+        To create your safedelete-ready models, you have to make them inherit from this model.
+
+    :attribute deleted:
+        DateTimeField set to the moment the object was deleted. Is set to
+        ``None`` if the object has not been deleted.
 
     :attribute _safedelete_policy: define what happens when you delete an object.
         It can be one of ``HARD_DELETE``, ``SOFT_DELETE``, ``SOFT_DELETE_CASCADE``, ``NO_DELETE`` and ``HARD_DELETE_NOCASCADE``.
@@ -42,6 +49,15 @@ class SafeDeleteModel(models.Model):
         ...     my_field = models.TextField()
         ...
         >>> # Now you have your model (with its ``deleted`` field, and custom manager and delete method)
+
+    :attribute objects:
+        The :class:`safedelete.managers.SafeDeleteManager` that returns the non-deleted models.
+
+    :attribute all_objects:
+        The :class:`safedelete.managers.SafeDeleteAllManager` that returns the all models (non-deleted and soft-deleted).
+
+    :attribute deleted_objects:
+        The :class:`safedelete.managers.SafeDeleteDeletedManager` that returns the soft-deleted models.
     """
 
     _safedelete_policy = SOFT_DELETE
@@ -49,14 +65,21 @@ class SafeDeleteModel(models.Model):
     deleted = models.DateTimeField(editable=False, null=True)
 
     objects = SafeDeleteManager()
+    all_objects = SafeDeleteAllManager()
+    deleted_objects = SafeDeleteDeletedManager()
 
     class Meta:
         abstract = True
 
     def save(self, keep_deleted=False, **kwargs):
-        """
-        Save an object, un-deleting it if it was deleted.
-        If you want to keep it deleted, you can set the ``keep_deleted`` argument to ``True``.
+        """Save an object, un-deleting it if it was deleted.
+
+        Args:
+            keep_deleted: Do not undelete the model if soft-deleted. (default: {False})
+            kwargs: Passed onto :func:`save`.
+
+        .. note::
+            Undeletes soft-deleted models by default.
         """
 
         # undelete signal has to happen here (and not in undelete)
@@ -79,10 +102,24 @@ class SafeDeleteModel(models.Model):
             post_undelete.send(sender=self.__class__, instance=self, using=using)
 
     def undelete(self, **kwargs):
+        """Undelete a soft-deleted model.
+
+        Args:
+            kwargs: Passed onto :func:`save`.
+
+        .. note::
+            Will raise a :class:`AssertionError` if the model was not soft-deleted.
+        """
         assert self.deleted
         self.save(keep_deleted=False, **kwargs)
 
     def delete(self, force_policy=None, **kwargs):
+        """Overrides Django's delete behaviour based on the model's delete policy.
+
+        Args:
+            force_policy: Force a specific delete policy. (default: {None})
+            kwargs: Passed onto :func:`save` if soft deleted.
+        """
         current_policy = self._safedelete_policy if (force_policy is None) else force_policy
 
         if current_policy == NO_DELETE:
@@ -142,9 +179,11 @@ class SafeDeleteModel(models.Model):
             if len(unique_check) != len(lookup_kwargs):
                 continue
 
+            qs = model_class.all_objects.filter(**lookup_kwargs)
+
             # This is the changed line
-            if hasattr(model_class._default_manager, 'all_with_deleted'):
-                qs = model_class._default_manager.all_with_deleted().filter(**lookup_kwargs)
+            if hasattr(model_class, 'all_objects'):
+                qs = model_class.all_objects.filter(**lookup_kwargs)
             else:
                 qs = model_class._default_manager.filter(**lookup_kwargs)
 
@@ -163,7 +202,12 @@ class SafeDeleteModel(models.Model):
 
 
 class SafeDeleteMixin(SafeDeleteModel):
-    """Deprecated class maintained for backwards compatibility"""
+    """``SafeDeleteModel`` was previously named ``SafeDeleteMixin``.
+
+    .. deprecated:: 0.4.0
+        Use :class:`SafeDeleteModel` instead.
+    """
+
     def __init__(self, *args, **kwargs):
         warnings.warn('The SafeDeleteMixin class was renamed SafeDeleteModel',
                       DeprecationWarning)

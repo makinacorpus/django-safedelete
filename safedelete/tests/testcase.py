@@ -25,7 +25,7 @@ class SafeDeleteTestCase(TestCase):
             expected_results['before_delete']['all']
         )
         self.assertEqual(
-            model.objects.all_with_deleted().count(),
+            model.all_objects.count(),
             expected_results['before_delete']['all_with_deleted']
         )
 
@@ -39,7 +39,7 @@ class SafeDeleteTestCase(TestCase):
             expected_results['after_delete']['all']
         )
         self.assertEqual(
-            model.objects.all_with_deleted().count(),
+            model.all_objects.count(),
             expected_results['after_delete']['all_with_deleted']
         )
 
@@ -61,7 +61,7 @@ class SafeDeleteTestCase(TestCase):
                 expected_results['after_save']['all']
             )
             self.assertEqual(
-                model.objects.all_with_deleted().count(),
+                model.all_objects.count(),
                 expected_results['after_save']['all_with_deleted']
             )
 
