@@ -1,5 +1,6 @@
 from django.db import models
 
+from ..config import DELETED_VISIBLE
 from ..models import SafeDeleteModel
 from .testcase import SafeDeleteTestCase
 
@@ -41,6 +42,6 @@ class ManyToManyTestCase(SafeDeleteTestCase):
         )
         # But explicitly saying you want to "show" them, shouldn't hide them
         self.assertEqual(
-            child.parents.all_with_deleted().count(),
+            child.parents.all(force_visibility=DELETED_VISIBLE).count(),
             2
         )

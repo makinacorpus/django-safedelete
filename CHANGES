@@ -7,7 +7,8 @@ CHANGELOG
 
 ** New **
 
--
+- Filtering on the deleted field is done on evaluation.
+- Added specific managers: all_objects and deleted_objects.
 
 ** Removed **
 
@@ -20,6 +21,7 @@ CHANGELOG
 ** Refactoring **
 
 - Renamed SafeDeleteMixin to SafeDeleteModel to better reflect the intended behavior. Using SafeDeleteMixin now throws a DeprecationWarning.
+- Moved SafeDeleteQueryset
 
 
 0.4.0

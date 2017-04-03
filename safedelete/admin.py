@@ -1,9 +1,8 @@
-from distutils.version import LooseVersion
-
 import django
+from distutils.version import LooseVersion
 from django.contrib import admin, messages
 from django.contrib.admin import helpers
-from django.contrib.admin.models import LogEntry, CHANGE
+from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.admin.utils import model_ngettext
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
@@ -23,6 +22,8 @@ def highlight_deleted(obj):
         return obj_str
     else:
         return '<span class="deleted">{0}</span>'.format(obj_str)
+
+
 highlight_deleted.short_description = _("Name")
 highlight_deleted.allow_tags = True
 
@@ -59,16 +60,16 @@ class SafeDeleteAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         try:
-            qs = self.model._default_manager.all_with_deleted()
+            queryset = self.model.all_objects.all()
         except:
-            qs = self.model._default_manager.all()
+            queryset = self.model._default_manager.all()
 
         ordering = self.get_ordering(request)
         if ordering:
-            qs = qs.order_by(*ordering)
-        return qs
+            queryset = queryset.order_by(*ordering)
+        return queryset
 
-    def log_undeletion(self, request, object, object_repr):
+    def log_undeletion(self, request, obj, object_repr):
         """
         Log that an object will be undeleted.
 
@@ -77,7 +78,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         LogEntry.objects.log_action(
             user_id=request.user.pk,
             content_type_id=ContentType.objects.get_for_model(self.model).pk,
-            object_id=object.pk,
+            object_id=obj.pk,
             object_repr=object_repr,
             action_flag=CHANGE
         )
