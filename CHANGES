@@ -9,6 +9,7 @@ CHANGELOG
 
 - Filtering on the deleted field is done on evaluation.
 - Added specific managers: all_objects and deleted_objects.
+- Added 'force_policy' feature to SafeDeleteQuerySet.
 
 ** Removed **
 
