@@ -14,7 +14,7 @@ class SafeDeleteQueryset(query.QuerySet):
     QuerySet itself is evaluated.
     """
 
-    def delete(self):
+    def delete(self, force_policy=None):
         """Overrides bulk delete behaviour.
 
         .. note::
@@ -27,7 +27,7 @@ class SafeDeleteQueryset(query.QuerySet):
         assert self.query.can_filter(), "Cannot use 'limit' or 'offset' with delete."
         # TODO: Replace this by bulk update if we can
         for obj in self.all():
-            obj.delete()
+            obj.delete(force_policy=force_policy)
         self._result_cache = None
     delete.alters_data = True
 
