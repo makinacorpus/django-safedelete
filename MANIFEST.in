@@ -1,3 +1,5 @@
 include *.rst
 include LICENSE AUTHORS CHANGES
 recursive-include safedelete/templates *.html
+recursive-include safedelete/static *.css *.js *.jpg *.jpeg *.png
+recursive-include safedelete/locale *.po
