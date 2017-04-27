@@ -104,3 +104,8 @@ class QuerySetTestCase(SafeDeleteTestCase):
                 'max_id': self.instance.id
             }
         )
+
+    def test_first(self):
+        self.assertEqual(
+            len(QuerySetModel.objects.filter(id=self.instance.pk).first()),
+            0)
