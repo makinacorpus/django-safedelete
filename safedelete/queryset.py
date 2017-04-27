@@ -15,7 +15,6 @@ class SafeDeleteQueryset(query.QuerySet):
     """
     _safedelete_filter_applied = False
 
-
     def delete(self, force_policy=None):
         """Overrides bulk delete behaviour.
 
