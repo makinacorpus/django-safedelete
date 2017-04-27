@@ -107,5 +107,18 @@ class QuerySetTestCase(SafeDeleteTestCase):
 
     def test_first(self):
         self.assertEqual(
-            len(QuerySetModel.objects.filter(id=self.instance.pk).first()),
-            0)
+            QuerySetModel.objects.filter(id=self.instance.pk).first(),
+            None)
+
+        self.assertEqual(
+            QuerySetModel.all_objects.filter(id=self.instance.pk).first(),
+            self.instance)
+
+    def test_last(self):
+        self.assertEqual(
+            QuerySetModel.objects.filter(id=self.instance.pk).last(),
+            None)
+
+        self.assertEqual(
+            QuerySetModel.all_objects.filter(id=self.instance.pk).last(),
+            self.instance)
