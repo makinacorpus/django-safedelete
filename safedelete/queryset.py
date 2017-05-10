@@ -91,12 +91,11 @@ class SafeDeleteQueryset(query.QuerySet):
         This is because QuerySet._fetch_all cannot work with a clone.
         """
         force_visibility = getattr(self, '_safedelete_force_visibility', None)
-        filter_applied = getattr(self, '_safedelete_filter_applied', False)
         visibility = force_visibility \
             if force_visibility is not None \
             else self._safedelete_visibility
-        if visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD, DELETED_ONLY_VISIBLE) \
-           and not filter_applied:
+        if not self._safedelete_filter_applied and \
+           visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD, DELETED_ONLY_VISIBLE):
             assert self.query.can_filter(), \
                 "Cannot filter a query once a slice has been taken."
 
