@@ -12,7 +12,7 @@ class SafeDeleteManager(models.Manager):
 
     :attribute _safedelete_visibility: define what happens when you query masked objects.
         It can be one of ``DELETED_INVISIBLE`` and ``DELETED_VISIBLE_BY_PK``.
-        Defaults to ``SOFT_DELETE``.
+        Defaults to ``DELETED_INVISIBLE``.
 
         >>> from safedelete.models import SafeDeleteModel
         >>> from safedelete.managers import SafeDeleteManager
