@@ -139,3 +139,18 @@ class QuerySetTestCase(SafeDeleteTestCase):
         self.assertEqual(
             len(QuerySetModel.all_objects.all()),
             amount + 1)  # Count for the already created instance
+
+    def test_all_slicing(self):
+        amount = random.randint(1, 4)
+
+        # Create an other object for more testing
+        [QuerySetModel.objects.create(other=self.other).delete() \
+         for x in range(amount)]
+
+        self.assertEqual(
+            len(QuerySetModel.objects.all()[:amount]),
+            0)
+
+        self.assertEqual(
+            len(QuerySetModel.all_objects.all()[1:amount]),
+            amount - 1)
