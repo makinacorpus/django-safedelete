@@ -111,6 +111,15 @@ class SafeDeleteQueryset(query.QuerySet):
 
             self._safedelete_filter_applied = True
 
+    def __getitem__(self, key):
+        """
+        Override __getitem__ just before it hits the original queryset
+        to apply the filter visibility method.
+        """
+        self._filter_visibility()
+
+        return super(SafeDeleteQueryset, self).__getitem__(key)
+
     def __getattribute__(self, name):
         """Methods that do not return a QuerySet should call ``_filter_visibility`` first."""
         attr = object.__getattribute__(self, name)

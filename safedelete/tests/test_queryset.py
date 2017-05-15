@@ -1,3 +1,5 @@
+import random
+
 from django.db import models
 
 from ..config import DELETED_VISIBLE_BY_FIELD
@@ -122,3 +124,18 @@ class QuerySetTestCase(SafeDeleteTestCase):
         self.assertEqual(
             QuerySetModel.all_objects.filter(id=self.instance.pk).last(),
             self.instance)
+
+    def test_all(self):
+        amount = random.randint(1, 4)
+
+        # Create an other object for more testing
+        [QuerySetModel.objects.create(other=self.other).delete() \
+         for x in range(amount)]
+
+        self.assertEqual(
+            len(QuerySetModel.objects.all()),
+            0)
+
+        self.assertEqual(
+            len(QuerySetModel.all_objects.all()),
+            amount + 1)  # Count for the already created instance
