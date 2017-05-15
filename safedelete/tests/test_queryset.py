@@ -129,7 +129,7 @@ class QuerySetTestCase(SafeDeleteTestCase):
         amount = random.randint(1, 4)
 
         # Create an other object for more testing
-        [QuerySetModel.objects.create(other=self.other).delete() \
+        [QuerySetModel.objects.create(other=self.other).delete()
          for x in range(amount)]
 
         self.assertEqual(
@@ -144,7 +144,7 @@ class QuerySetTestCase(SafeDeleteTestCase):
         amount = random.randint(1, 4)
 
         # Create an other object for more testing
-        [QuerySetModel.objects.create(other=self.other).delete() \
+        [QuerySetModel.objects.create(other=self.other).delete()
          for x in range(amount)]
 
         self.assertEqual(
