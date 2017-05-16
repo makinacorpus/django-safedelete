@@ -2,6 +2,14 @@
 CHANGELOG
 =========
 
+0.4.2
+=====
+
+** Bugfixes **
+
+- iterator() now filter the deleted objects correctly.
+
+
 0.4.1
 =====
 
