@@ -1,3 +1,5 @@
+from unittest import expectedFailure
+
 from django.db import models
 
 from ..models import SafeDeleteModel
@@ -17,6 +19,19 @@ class PrefetchSister(SafeDeleteModel):
 
 class PrefetchTestCase(SafeDeleteTestCase):
 
+    def setUp(self):
+        brother1 = PrefetchBrother.objects.create()
+        brother2 = PrefetchBrother.objects.create()
+
+        PrefetchSister.objects.create(sibling=brother1)
+        PrefetchSister.objects.create(sibling=brother1)
+        PrefetchSister.objects.create(sibling=brother1)
+        PrefetchSister.objects.create(sibling=brother1).delete()
+        PrefetchSister.objects.create(sibling=brother2)
+        PrefetchSister.objects.create(sibling=brother2)
+        PrefetchSister.objects.create(sibling=brother2).delete()
+        PrefetchSister.objects.create(sibling=brother2).delete()
+
     def test_prefetch_related(self):
         """prefetch_related() queryset should not be filtered by core_filter."""
         brothers = PrefetchBrother.objects.all().prefetch_related(
@@ -31,3 +46,10 @@ class PrefetchTestCase(SafeDeleteTestCase):
                     ).sisters.all().order_by('pk')
                 ]
             )
+
+    @expectedFailure
+    def test_prefetch_related_is_evaluated_once(self):
+        with self.assertNumQueries(2):
+            brothers = PrefetchBrother.objects.all().prefetch_related('sisters')
+            for brother in brothers:
+                list(brother.sisters.all())
