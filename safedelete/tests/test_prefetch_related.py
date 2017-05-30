@@ -1,5 +1,3 @@
-from unittest import expectedFailure
-
 from django.db import models
 
 from ..models import SafeDeleteModel
