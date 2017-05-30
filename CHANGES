@@ -9,6 +9,11 @@ CHANGELOG
 
 - iterator() now filter the deleted objects correctly.
 
+** Refactoring **
+
+- Resolve Django 1.9+ allow_tags deprecation warning
+- Fix docstring typo in SafeDeleteManager, SOFT_DELETE should be DELETED_INVISIBLE
+
 
 0.4.1
 =====

@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.template.response import TemplateResponse
 from django.utils.encoding import force_text
-from django.utils.html import conditional_escape
+from django.utils.html import conditional_escape, format_html
 from django.utils.six import text_type
 from django.utils.translation import ugettext_lazy as _
 
@@ -21,11 +21,10 @@ def highlight_deleted(obj):
     if not getattr(obj, 'deleted', False):
         return obj_str
     else:
-        return '<span class="deleted">{0}</span>'.format(obj_str)
+        return format_html('<span class="deleted">{0}</span>', obj_str)
 
 
 highlight_deleted.short_description = _("Name")
-highlight_deleted.allow_tags = True
 
 
 class SafeDeleteAdmin(admin.ModelAdmin):
