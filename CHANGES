@@ -2,12 +2,13 @@
 CHANGELOG
 =========
 
-0.4.2
+0.4.2 (UNRELEASED)
 =====
 
 ** Bugfixes **
 
 - iterator() now filter the deleted objects correctly.
+- Fix prefetch_related() with all()
 
 ** Refactoring **
 

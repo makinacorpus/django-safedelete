@@ -47,7 +47,6 @@ class PrefetchTestCase(SafeDeleteTestCase):
                 ]
             )
 
-    @expectedFailure
     def test_prefetch_related_is_evaluated_once(self):
         with self.assertNumQueries(2):
             brothers = PrefetchBrother.objects.all().prefetch_related('sisters')
