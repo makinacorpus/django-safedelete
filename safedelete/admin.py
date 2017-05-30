@@ -21,7 +21,7 @@ def highlight_deleted(obj):
     if not getattr(obj, 'deleted', False):
         return obj_str
     else:
-        return format_html('<span class="deleted">{0}</span>'.format(obj_str))
+        return format_html('<span class="deleted">{0}</span>', obj_str)
 
 
 highlight_deleted.short_description = _("Name")
