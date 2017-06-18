@@ -75,6 +75,16 @@ class QuerySetTestCase(SafeDeleteTestCase):
             1
         )
 
+    def test_iterator(self):
+        self.assertEqual(
+            len(list(QuerySetModel.objects.iterator())),
+            0
+        )
+        self.assertEqual(
+            len(list(QuerySetModel.all_objects.iterator())),
+            1
+        )
+
     def test_exists(self):
         self.assertFalse(
             QuerySetModel.objects.filter(

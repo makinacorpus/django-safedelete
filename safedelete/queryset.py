@@ -114,7 +114,7 @@ class SafeDeleteQueryset(query.QuerySet):
         # visiblity set.
         evaluation_methods = (
             '_fetch_all', 'count', 'exists', 'aggregate', 'update', '_update',
-            'delete', 'undelete',
+            'delete', 'undelete', 'iterator',
         )
         if hasattr(attr, '__call__') and name in evaluation_methods:
             def decorator(*args, **kwargs):

@@ -12,7 +12,7 @@ class SafeDeleteManager(models.Manager):
 
     :attribute _safedelete_visibility: define what happens when you query masked objects.
         It can be one of ``DELETED_INVISIBLE`` and ``DELETED_VISIBLE_BY_PK``.
-        Defaults to ``SOFT_DELETE``.
+        Defaults to ``DELETED_INVISIBLE``.
 
         >>> from safedelete.models import SafeDeleteModel
         >>> from safedelete.managers import SafeDeleteManager
@@ -92,9 +92,13 @@ class SafeDeleteManager(models.Manager):
             The ``show_deleted`` argument is meant for related managers when no
             other managers like ``all_objects`` or ``deleted_objects`` are available.
         """
-        # get_queryset().all(**kwargs) is used instead of a get_queryset(**kwargs)
-        # implementation because get_queryset() is different for related managers.
-        return self.get_queryset().all(**kwargs)
+        force_visibility = kwargs.pop('force_visibility', None)
+
+        # We don't call all() on the queryset, see https://github.com/makinacorpus/django-safedelete/issues/81
+        qs = self.get_queryset()
+        if force_visibility is not None:
+            qs._safedelete_force_visibility = force_visibility
+        return qs
 
 
 class SafeDeleteAllManager(SafeDeleteManager):
