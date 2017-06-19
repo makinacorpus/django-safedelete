@@ -9,6 +9,7 @@ CHANGELOG
 
 - iterator() now filter the deleted objects correctly.
 - Fix prefetch_related() with all()
+- Fix: "Cannot filter a query once a slice has been taken" error.
 
 ** Refactoring **
 
