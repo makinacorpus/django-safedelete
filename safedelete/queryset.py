@@ -13,6 +13,7 @@ class SafeDeleteQueryset(query.QuerySet):
     The deleted policy is evaluated at the very end of the chain when the
     QuerySet itself is evaluated.
     """
+    _safedelete_filter_applied = False
 
     def delete(self, force_policy=None):
         """Overrides bulk delete behaviour.
@@ -93,7 +94,8 @@ class SafeDeleteQueryset(query.QuerySet):
         visibility = force_visibility \
             if force_visibility is not None \
             else self._safedelete_visibility
-        if visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD, DELETED_ONLY_VISIBLE):
+        if not self._safedelete_filter_applied and \
+           visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD, DELETED_ONLY_VISIBLE):
             assert self.query.can_filter(), \
                 "Cannot filter a query once a slice has been taken."
 
@@ -107,6 +109,17 @@ class SafeDeleteQueryset(query.QuerySet):
                 )
             )
 
+            self._safedelete_filter_applied = True
+
+    def __getitem__(self, key):
+        """
+        Override __getitem__ just before it hits the original queryset
+        to apply the filter visibility method.
+        """
+        self._filter_visibility()
+
+        return super(SafeDeleteQueryset, self).__getitem__(key)
+
     def __getattribute__(self, name):
         """Methods that do not return a QuerySet should call ``_filter_visibility`` first."""
         attr = object.__getattribute__(self, name)
@@ -114,7 +127,7 @@ class SafeDeleteQueryset(query.QuerySet):
         # visiblity set.
         evaluation_methods = (
             '_fetch_all', 'count', 'exists', 'aggregate', 'update', '_update',
-            'delete', 'undelete', 'iterator',
+            'delete', 'undelete', 'iterator', 'first', 'last'
         )
         if hasattr(attr, '__call__') and name in evaluation_methods:
             def decorator(*args, **kwargs):
@@ -128,6 +141,7 @@ class SafeDeleteQueryset(query.QuerySet):
         clone = super(SafeDeleteQueryset, self)._clone(**kwargs)
         clone._safedelete_visibility = self._safedelete_visibility
         clone._safedelete_visibility_field = self._safedelete_visibility_field
+        clone._safedelete_filter_applied = self._safedelete_filter_applied
         if hasattr(self, '_safedelete_force_visibility'):
             clone._safedelete_force_visibility = self._safedelete_force_visibility
         return clone

@@ -1,3 +1,5 @@
+import random
+
 from django.db import models
 
 from ..config import DELETED_VISIBLE_BY_FIELD
@@ -114,3 +116,51 @@ class QuerySetTestCase(SafeDeleteTestCase):
                 'max_id': self.instance.id
             }
         )
+
+    def test_first(self):
+        self.assertEqual(
+            QuerySetModel.objects.filter(id=self.instance.pk).first(),
+            None)
+
+        self.assertEqual(
+            QuerySetModel.all_objects.filter(id=self.instance.pk).first(),
+            self.instance)
+
+    def test_last(self):
+        self.assertEqual(
+            QuerySetModel.objects.filter(id=self.instance.pk).last(),
+            None)
+
+        self.assertEqual(
+            QuerySetModel.all_objects.filter(id=self.instance.pk).last(),
+            self.instance)
+
+    def test_all(self):
+        amount = random.randint(1, 4)
+
+        # Create an other object for more testing
+        [QuerySetModel.objects.create(other=self.other).delete()
+         for x in range(amount)]
+
+        self.assertEqual(
+            len(QuerySetModel.objects.all()),
+            0)
+
+        self.assertEqual(
+            len(QuerySetModel.all_objects.all()),
+            amount + 1)  # Count for the already created instance
+
+    def test_all_slicing(self):
+        amount = random.randint(1, 4)
+
+        # Create an other object for more testing
+        [QuerySetModel.objects.create(other=self.other).delete()
+         for x in range(amount)]
+
+        self.assertEqual(
+            len(QuerySetModel.objects.all()[:amount]),
+            0)
+
+        self.assertEqual(
+            len(QuerySetModel.all_objects.all()[1:amount]),
+            amount - 1)
