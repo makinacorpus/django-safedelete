@@ -2,6 +2,14 @@
 CHANGELOG
 =========
 
+0.4.3
+=====
+
+** Bugfixes **
+
+- Fix SafeDeleteMixin not being abstract, it is an abstract model now.
+
+
 0.4.2
 =====
 

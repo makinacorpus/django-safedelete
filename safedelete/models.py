@@ -208,6 +208,9 @@ class SafeDeleteMixin(SafeDeleteModel):
         Use :class:`SafeDeleteModel` instead.
     """
 
+    class Meta:
+        abstract = True
+
     def __init__(self, *args, **kwargs):
         warnings.warn('The SafeDeleteMixin class was renamed SafeDeleteModel',
                       DeprecationWarning)
