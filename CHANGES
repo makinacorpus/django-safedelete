@@ -2,6 +2,14 @@
 CHANGELOG
 =========
 
+0.4.3 (UNRELEASED)
+==================
+
+** Bugfixes **
+
+- Set SafeDeleteMixin as abstract
+
+
 0.4.2
 =====
 
