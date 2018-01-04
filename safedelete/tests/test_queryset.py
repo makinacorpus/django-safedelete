@@ -22,6 +22,8 @@ class QuerySetModel(SafeDeleteMixin):
         on_delete=models.CASCADE
     )
 
+    creation_date = models.DateTimeField('Created', auto_now_add=True)
+
     objects = FieldManager()
 
 
@@ -133,6 +135,26 @@ class QuerySetTestCase(SafeDeleteTestCase):
 
         self.assertEqual(
             QuerySetModel.all_objects.filter(id=self.instance.pk).last(),
+            self.instance)
+
+    def test_latest(self):
+        self.assertRaises(
+            QuerySetModel.DoesNotExist,
+            QuerySetModel.objects.filter(id=self.instance.pk).latest,
+            'creation_date')
+
+        self.assertEqual(
+            QuerySetModel.all_objects.filter(id=self.instance.pk).latest('creation_date'),
+            self.instance)
+
+    def test_earliest(self):
+        self.assertRaises(
+            QuerySetModel.DoesNotExist,
+            QuerySetModel.objects.filter(id=self.instance.pk).earliest,
+            'creation_date')
+
+        self.assertEqual(
+            QuerySetModel.all_objects.filter(id=self.instance.pk).earliest('creation_date'),
             self.instance)
 
     def test_all(self):
