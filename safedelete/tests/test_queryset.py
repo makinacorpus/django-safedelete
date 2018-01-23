@@ -199,7 +199,7 @@ class QuerySetTestCase(SafeDeleteTestCase):
         )
         self.assertEqual(
             instance.id,
-            len(QuerySetModel.objects
+            QuerySetModel.objects
                 .filter(id=instance.id)
-                .values_list('pk', flat=True)[0])
+                .values_list('pk', flat=True)[0]
         )
