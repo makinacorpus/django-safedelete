@@ -69,8 +69,6 @@ matrix:
       env: DJANGO_VERSION="stable/1.10.x"
 
   allow_failures:
-    - python: 3.4
-      env: DJANGO_VERSION="stable/2.0.x"
     - python: 3.5
       env: DJANGO_VERSION="stable/2.0.x"
     - python: 3.6
