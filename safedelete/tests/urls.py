@@ -8,9 +8,17 @@ try:
         (r'^admin/', include(admin.site.urls)),
     )
 except ImportError:
-    # Django >= 1.10
-    from django.conf.urls import url, include
+    try:
+        # Django >= 2.0
+        from django.urls import path
 
-    urlpatterns = [
-        url(r'^admin/', include(admin.site.urls)),
-    ]
+        urlpatterns = [
+            path('admin/', admin.site.urls),
+        ]
+    except ImportError:
+        # Django >= 1.10
+        from django.conf.urls import url, include
+
+        urlpatterns = [
+            url(r'^admin/', include(admin.site.urls)),
+        ]
