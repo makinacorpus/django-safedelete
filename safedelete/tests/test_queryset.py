@@ -186,3 +186,20 @@ class QuerySetTestCase(SafeDeleteTestCase):
         self.assertEqual(
             len(QuerySetModel.all_objects.all()[1:amount]),
             amount - 1)
+
+    def test_values_list(self):
+        instance = QuerySetModel.objects.create(
+            other=self.other
+        )
+        self.assertEqual(
+            1,
+            len(QuerySetModel.objects
+                .filter(id=instance.id)
+                .values_list('pk', flat=True))
+        )
+        self.assertEqual(
+            instance.id,
+            len(QuerySetModel.objects
+                .filter(id=instance.id)
+                .values_list('pk', flat=True)[0])
+        )
