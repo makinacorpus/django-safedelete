@@ -7,12 +7,12 @@ from safedelete.tests.models import Article, Author, Category
 
 class Press(SafeDeleteModel):
     name = models.CharField(max_length=200)
-    article = models.ForeignKey(Article)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
 
 
 class PressNormalModel(models.Model):
     name = models.CharField(max_length=200)
-    article = models.ForeignKey(Article)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
 
 
 class CustomAbstractModel(SafeDeleteModel):
@@ -24,7 +24,7 @@ class CustomAbstractModel(SafeDeleteModel):
 class ArticleView(CustomAbstractModel):
     _safedelete_policy = SOFT_DELETE_CASCADE
 
-    article = models.ForeignKey(Article)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
 
 
 class SimpleTest(TestCase):
