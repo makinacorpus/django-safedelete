@@ -36,7 +36,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         >>> from safedelete.admin import SafeDeleteAdmin, highlight_deleted
         >>> class ContactAdmin(SafeDeleteAdmin):
         ...    list_display = (highlight_deleted, "first_name", "last_name", "email") + SafeDeleteAdmin.list_display
-        ...    list_filter = ("last_name") + SafeDeleteAdmin.list_filter
+        ...    list_filter = ("last_name",) + SafeDeleteAdmin.list_filter
     """
     undelete_selected_confirmation_template = "safedelete/undelete_selected_confirmation.html"
 
