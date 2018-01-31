@@ -1,3 +1,6 @@
+from distutils.version import LooseVersion
+
+import django
 from django.db.models import query
 from django.db.models.query_utils import Q
 
@@ -136,9 +139,12 @@ class SafeDeleteQueryset(query.QuerySet):
             return decorator
         return attr
 
-    def _clone(self, **kwargs):
+    def _clone(self, klass=None, **kwargs):
         """Called by django when cloning a QuerySet."""
-        clone = super(SafeDeleteQueryset, self)._clone(**kwargs)
+        if LooseVersion(django.get_version()) < LooseVersion('1.9'):
+            clone = super(SafeDeleteQueryset, self)._clone(klass, **kwargs)
+        else:
+            clone = super(SafeDeleteQueryset, self)._clone(**kwargs)
         clone._safedelete_visibility = self._safedelete_visibility
         clone._safedelete_visibility_field = self._safedelete_visibility_field
         clone._safedelete_filter_applied = self._safedelete_filter_applied
