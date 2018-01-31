@@ -11,7 +11,8 @@ class PrefetchBrother(SafeDeleteModel):
 class PrefetchSister(SafeDeleteModel):
     sibling = models.ForeignKey(
         PrefetchBrother,
-        related_name='sisters'
+        related_name='sisters',
+        on_delete=models.CASCADE
     )
 
 
