@@ -92,7 +92,9 @@ Installing from github. ::
 
     pip install -e git://github.com/makinacorpus/django-safedelete.git#egg=django-safedelete
 
-Add ``safedelete`` in your ``INSTALLED_APPS``::
+Add ``safedelete`` in your ``INSTALLED_APPS``:
+
+.. code-block:: python
 
     INSTALLED_APPS = [
         'safedelete',
