@@ -12,6 +12,8 @@ from django.utils.html import conditional_escape, format_html
 from django.utils.six import text_type
 from django.utils.translation import ugettext_lazy as _
 
+from .utils import related_objects
+
 
 def highlight_deleted(obj):
     """
@@ -123,6 +125,8 @@ class SafeDeleteAdmin(admin.ModelAdmin):
             objects_name = force_text(opts.verbose_name_plural)
         title = _("Are you sure?")
 
+        related_list = [list(related_objects(obj)) for obj in queryset]
+
         context = {
             'title': title,
             'objects_name': objects_name,
@@ -130,6 +134,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
             "opts": opts,
             "app_label": opts.app_label,
             'action_checkbox_name': helpers.ACTION_CHECKBOX_NAME,
+            'related_list': related_list
         }
 
         if LooseVersion(django.get_version()) < LooseVersion('1.10'):

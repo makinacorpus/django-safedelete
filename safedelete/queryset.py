@@ -35,7 +35,7 @@ class SafeDeleteQueryset(query.QuerySet):
         self._result_cache = None
     delete.alters_data = True
 
-    def undelete(self):
+    def undelete(self, force_policy=None):
         """Undelete all soft deleted models.
 
         .. note::
@@ -48,7 +48,7 @@ class SafeDeleteQueryset(query.QuerySet):
         assert self.query.can_filter(), "Cannot use 'limit' or 'offset' with undelete."
         # TODO: Replace this by bulk update if we can (need to call pre/post-save signal)
         for obj in self.all():
-            obj.undelete()
+            obj.undelete(force_policy=force_policy)
         self._result_cache = None
     undelete.alters_data = True
 

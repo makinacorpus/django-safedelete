@@ -89,3 +89,12 @@ class SimpleTest(TestCase):
 
         self.assertEqual(ArticleView.objects.count(), 0)
         self.assertEqual(ArticleView.all_objects.count(), 1)
+
+    def test_undelete_with_soft_delete_cascade_policy(self):
+        self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
+        self.authors[2].undelete(force_policy=SOFT_DELETE_CASCADE)
+
+        self.assertEqual(Author.objects.count(), 3)
+        self.assertEqual(Article.objects.count(), 3)
+        self.assertEqual(Category.objects.count(), 3)
+        self.assertEqual(Press.objects.count(), 1)
