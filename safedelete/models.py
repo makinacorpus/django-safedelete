@@ -160,12 +160,13 @@ class SafeDeleteModel(models.Model):
             # soft-delete the object
             self.delete(force_policy=SOFT_DELETE, **kwargs)
 
-    def has_unique_fields(self):
+    @staticmethod
+    def has_unique_fields(model):
         """
         Checks if one of the fields of this model have a unique constraint set (unique=True)
         :return: boolean
         """
-        for field in self.model._meta.fields:
+        for field in model._meta.fields:
             if field._unique:
                 return True
         return False
