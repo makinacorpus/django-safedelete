@@ -110,7 +110,7 @@ class SafeDeleteManager(models.Manager):
         """
 
         # Check if we are looking at a soft-delete and if one of the model fields contains a unique constraint
-        if self.model.get_delete_policy() in self.get_soft_delete_policies() and \
+        if self.model.get_delete_policy(self.model) in self.get_soft_delete_policies() and \
                 self.model.has_unique_fields(self.model):
             # Check if object is already soft-deleted
             deleted_object = self.all_with_deleted().filter(**kwargs).exclude(deleted=None).first()
