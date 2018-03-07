@@ -25,7 +25,7 @@ msgstr "Name"
 #: admin.py:109 admin.py:116
 #, python-format
 msgid "Successfully undeleted %(count)d %(items)s."
-msgstr "%(count)d %(items)s gelöscht."
+msgstr "%(count)d %(items)s wiederhergestellt."
 
 #: admin.py:129
 msgid "Are you sure?"
