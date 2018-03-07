@@ -128,4 +128,4 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         self.assertEqual(obj.name, 'unique-test')
 
     def test_policy_getter(self):
-        self.assertEqual(self.instance.get_delete_policy() in SoftDeleteModel.get_soft_delete_policies(), True)
+        self.assertEqual(self.instance.get_delete_policy() in SoftDeleteModel.objects.get_soft_delete_policies(), True)

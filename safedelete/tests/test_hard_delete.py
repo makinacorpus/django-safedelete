@@ -17,7 +17,7 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         self.assertHardDelete(self.instance)
 
     def test_policy_getter(self):
-        self.assertEqual(self.instance.get_delete_policy() in HardDeleteModel.get_soft_delete_policies(), False)
+        self.assertEqual(self.instance.get_delete_policy() in HardDeleteModel.objects.get_soft_delete_policies(), False)
 
     def test_update_or_create_no_unique_field(self):
         HardDeleteModel.objects.update_or_create(id=1)
