@@ -162,7 +162,7 @@ class SafeDeleteModel(models.Model):
 
     @staticmethod
     def has_unique_fields(model):
-        """Checks if one of the fields of this model have a unique constraint set (unique=True)
+        """Checks if one of the fields of this model has a unique constraint set (unique=True)
 
         Args:
             model: Model instance to check
