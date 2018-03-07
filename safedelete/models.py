@@ -172,6 +172,10 @@ class SafeDeleteModel(models.Model):
                 return True
         return False
 
+    def get_delete_policy(self):
+        """Getter for the delete policy"""
+        return self._safedelete_policy
+
     # We need to overwrite this check to ensure uniqueness is also checked
     # against "deleted" (but still in db) objects.
     # FIXME: Better/cleaner way ?
