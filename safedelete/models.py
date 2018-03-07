@@ -162,9 +162,10 @@ class SafeDeleteModel(models.Model):
 
     @staticmethod
     def has_unique_fields(model):
-        """
-        Checks if one of the fields of this model have a unique constraint set (unique=True)
-        :return: boolean
+        """Checks if one of the fields of this model have a unique constraint set (unique=True)
+
+        Args:
+            model: Model instance to check
         """
         for field in model._meta.fields:
             if field._unique:
@@ -210,14 +211,6 @@ class SafeDeleteModel(models.Model):
                     self.unique_error_message(model_class, unique_check)
                 )
         return errors
-
-    @property
-    def safedelete_policy(self):
-        """
-        Returns the current set softdelete policy
-        :return: int
-        """
-        return self._safedelete_policy
 
 
 class SafeDeleteMixin(SafeDeleteModel):

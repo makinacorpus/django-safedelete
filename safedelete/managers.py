@@ -101,11 +101,11 @@ class SafeDeleteManager(models.Manager):
         return qs
 
     def update_or_create(self, defaults=None, **kwargs):
-        """
-        Regular update_or_create() fails on soft-deleted, existing record with unique constraint on non-id field
-        :param defaults:
-        :param kwargs:
-        :return:
+        """Regular update_or_create() fails on soft-deleted, existing record with unique constraint on non-id field
+
+        Args:
+            defaults: Dict with defaults to update/create model instance with
+            kwargs: Attributes to lookup model instance with
         """
 
         # Check if one of the model fields contains a unique constraint
