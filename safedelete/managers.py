@@ -109,20 +109,22 @@ class SafeDeleteManager(models.Manager):
             kwargs: Attributes to lookup model instance with
         """
 
-        # Check if one of the model fields contains a unique constraint
-        if self.model.has_unique_fields(self.model):
+        # Check if we are looking at a soft-delete and if one of the model fields contains a unique constraint
+        if self.model.get_delete_policy() in self.get_soft_delete_policies() and \
+                self.model.has_unique_fields(self.model):
             # Check if object is already soft-deleted
             deleted_object = self.all_with_deleted().filter(**kwargs).exclude(deleted=None).first()
 
             # If object is soft-deleted, reset delete-state...
-            if deleted_object.get_delete_policy() in self.get_soft_delete_policies() and deleted_object:
+            if deleted_object:
                 deleted_object.deleted = None
                 deleted_object.save()
 
         # Do the standard logic
         return super(SafeDeleteManager, self).update_or_create(defaults, **kwargs)
 
-    def get_soft_delete_policies(self):
+    @staticmethod
+    def get_soft_delete_policies():
         """Returns all stati which stand for some kind of soft-delete"""
         return [config.SOFT_DELETE, config.SOFT_DELETE_CASCADE]
 
