@@ -100,6 +100,27 @@ class SafeDeleteManager(models.Manager):
             qs._safedelete_force_visibility = force_visibility
         return qs
 
+    def update_or_create(self, defaults=None, **kwargs):
+        """
+        Regular update_or_create() fails on soft-deleted, existing record with unique constraint on non-id field
+        :param defaults:
+        :param kwargs:
+        :return:
+        """
+
+        # Check if one of the model fields contains a unique constraint
+        if self.model.has_unique_fields():
+            # Check if object is already soft-deleted
+            deleted_object = self.all_with_deleted().filter(**kwargs).exclude(deleted=None).first()
+
+            # If object is soft-deleted, reset delete-state...
+            if deleted_object:
+                deleted_object.deleted = None
+                deleted_object.save()
+
+        # Do the standard logic
+        return super(SafeDeleteManager, self).update_or_create(defaults, **kwargs)
+
 
 class SafeDeleteAllManager(SafeDeleteManager):
     """SafeDeleteManager with ``_safedelete_visibility`` set to ``DELETED_VISIBLE``.
