@@ -107,12 +107,12 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
 
     def test_check_unique_fields_exists(self):
         # No unique fields
-        self.assertEqual(self.instance.has_unique_fields(), False)
+        self.assertEqual(self.instance.has_unique_fields(self.instance), False)
         # Unique fields
         unique_model = UniqueSoftDeleteModel.objects.create(
             name='test-unique'
         )
-        self.assertEqual(unique_model.has_unique_fields(), True)
+        self.assertEqual(unique_model.has_unique_fields(unique_model), True)
 
     def test_update_or_create_no_unique_field(self):
         SoftDeleteModel.objects.update_or_create(id=1)
