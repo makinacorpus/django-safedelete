@@ -116,13 +116,13 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
 
     def test_update_or_create_no_unique_field(self):
         SoftDeleteModel.objects.update_or_create(id=1)
-        obj = SoftDeleteModel.objects.update_or_create(id=1)
+        obj, created = SoftDeleteModel.objects.update_or_create(id=1)
         self.assertEqual(obj.id, 1)
 
     def test_update_or_create_with_unique_field(self):
         # Create and soft-delete object
-        obj = UniqueSoftDeleteModel.objects.update_or_create(name='unique-test')
+        obj, created = UniqueSoftDeleteModel.objects.update_or_create(name='unique-test')
         obj.delete()
         # Update it and see if it fails
-        obj = UniqueSoftDeleteModel.objects.update_or_create(name='unique-test')
+        obj, created = UniqueSoftDeleteModel.objects.update_or_create(name='unique-test')
         self.assertEqual(obj.name, 'unique-test')
