@@ -78,6 +78,8 @@ Current branch (0.4.x) has been tested with :
 *  Django 1.8 using python 2.7 and python 3.3 to 3.4.
 *  Django 1.9 using python 2.7 and python 3.4 to 3.5.
 *  Django 1.10 using python 2.7 and python 3.4 to 3.5.
+*  Django 1.11 using python 2.7 and python 3.4 to 3.6.
+*  Django 2.0 using python 3.5 to 3.6.
 
 
 Installation
