@@ -122,3 +122,4 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         # Update it and see if it fails
         obj, created = UniqueSoftDeleteModel.objects.update_or_create(name='unique-test')
         self.assertEqual(obj.name, 'unique-test')
+        self.assertEqual(created, False)
