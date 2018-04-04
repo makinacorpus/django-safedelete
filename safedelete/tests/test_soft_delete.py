@@ -107,12 +107,8 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
 
     def test_check_unique_fields_exists(self):
         # No unique fields
-        self.assertEqual(self.instance.has_unique_fields(self.instance), False)
-        # Unique fields
-        unique_model = UniqueSoftDeleteModel.objects.create(
-            name='test-unique'
-        )
-        self.assertEqual(unique_model.has_unique_fields(unique_model), True)
+        self.assertEqual(SoftDeleteModel.has_unique_fields(), False)
+        self.assertEqual(UniqueSoftDeleteModel.has_unique_fields(), True)
 
     def test_update_or_create_no_unique_field(self):
         SoftDeleteModel.objects.update_or_create(id=1)
@@ -126,6 +122,3 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         # Update it and see if it fails
         obj, created = UniqueSoftDeleteModel.objects.update_or_create(name='unique-test')
         self.assertEqual(obj.name, 'unique-test')
-
-    def test_policy_getter(self):
-        self.assertEqual(self.instance.get_delete_policy() in SoftDeleteModel.objects.get_soft_delete_policies(), True)

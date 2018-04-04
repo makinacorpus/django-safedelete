@@ -1,7 +1,6 @@
 from django.db import models
 
-from safedelete import config
-from .config import DELETED_INVISIBLE, DELETED_ONLY_VISIBLE, DELETED_VISIBLE
+from .config import DELETED_INVISIBLE, DELETED_ONLY_VISIBLE, DELETED_VISIBLE, SOFT_DELETE, SOFT_DELETE_CASCADE
 from .queryset import SafeDeleteQueryset
 
 
@@ -102,7 +101,11 @@ class SafeDeleteManager(models.Manager):
         return qs
 
     def update_or_create(self, defaults=None, **kwargs):
-        """Regular update_or_create() fails on soft-deleted, existing record with unique constraint on non-id field
+        """
+        Change to regular djangoesk function:
+        Regular update_or_create() fails on soft-deleted, existing record with unique constraint on non-id field
+        If object is soft-deleted we don't update-or-create it but reset the deleted field to None.
+        So the object is visible again like a create in any other case.
 
         Args:
             defaults: Dict with defaults to update/create model instance with
@@ -115,7 +118,7 @@ class SafeDeleteManager(models.Manager):
             deleted_object = self.all_with_deleted().filter(**kwargs).exclude(deleted=None).first()
 
             # If object is soft-deleted, reset delete-state...
-            if deleted_object and deleted_object.get_delete_policy() in self.get_soft_delete_policies():
+            if deleted_object and deleted_object._safedelete_policy in self.get_soft_delete_policies():
                 deleted_object.deleted = None
                 deleted_object.save()
 
@@ -125,7 +128,7 @@ class SafeDeleteManager(models.Manager):
     @staticmethod
     def get_soft_delete_policies():
         """Returns all stati which stand for some kind of soft-delete"""
-        return [config.SOFT_DELETE, config.SOFT_DELETE_CASCADE]
+        return [SOFT_DELETE, SOFT_DELETE_CASCADE]
 
 
 class SafeDeleteAllManager(SafeDeleteManager):
