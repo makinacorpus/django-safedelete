@@ -102,7 +102,8 @@ class SafeDeleteManager(models.Manager):
         return qs
 
     def update_or_create(self, defaults=None, **kwargs):
-        """
+        """See :func:`~django.db.models.Query.update_or_create.`.
+
         Change to regular djangoesk function:
         Regular update_or_create() fails on soft-deleted, existing record with unique constraint on non-id field
         If object is soft-deleted we don't update-or-create it but reset the deleted field to None.
