@@ -123,3 +123,14 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         obj, created = UniqueSoftDeleteModel.objects.update_or_create(name='unique-test')
         self.assertEqual(obj.name, 'unique-test')
         self.assertEqual(created, False)
+
+    def test_update_or_create_flag_with_settings_flag_active(self):
+        self.modify_settings(SAFE_DELETE_INTERPRET_UNDELETED_OBJECTS_AS_CREATED=True)
+        # Create and soft-delete object
+        obj, created = UniqueSoftDeleteModel.objects.update_or_create(name='unique-test')
+        obj.delete()
+        # Update it and see if it fails
+        obj, created = UniqueSoftDeleteModel.objects.update_or_create(name='unique-test')
+        self.assertEqual(obj.name, 'unique-test')
+        # Settings flag is active so the revived object should be interpreted as created
+        self.assertEqual(created, True)
