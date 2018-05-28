@@ -187,8 +187,6 @@ class SafeDeleteModel(models.Model):
             if len(unique_check) != len(lookup_kwargs):
                 continue
 
-            qs = model_class.all_objects.filter(**lookup_kwargs)
-
             # This is the changed line
             if hasattr(model_class, 'all_objects'):
                 qs = model_class.all_objects.filter(**lookup_kwargs)
