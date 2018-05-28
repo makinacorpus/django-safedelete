@@ -5,7 +5,7 @@ except ImportError:
 
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.test import modify_settings
+from django.test import override_settings
 
 from ..models import SafeDeleteMixin
 from ..models import SafeDeleteModel
@@ -125,7 +125,7 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         self.assertEqual(obj.name, 'unique-test')
         self.assertEqual(created, False)
 
-    @modify_settings(SAFE_DELETE_INTERPRET_UNDELETED_OBJECTS_AS_CREATED=True)
+    @override_settings(SAFE_DELETE_INTERPRET_UNDELETED_OBJECTS_AS_CREATED=True)
     def test_update_or_create_flag_with_settings_flag_active(self):
         # Create and soft-delete object
         obj, created = UniqueSoftDeleteModel.objects.update_or_create(name='unique-test')
