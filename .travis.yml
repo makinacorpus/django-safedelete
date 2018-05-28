@@ -30,7 +30,7 @@ install:
  - pip install 'coverage>=3,<4'
 
  - pip install pep8
- - pip install pyflakes
+ - pip install "pyflakes<2"
 
 before_script:
     - "pep8 --ignore=E501 safedelete"
