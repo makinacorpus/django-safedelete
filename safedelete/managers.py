@@ -1,6 +1,7 @@
+from django.conf import settings
 from django.db import models
 
-from .config import DELETED_INVISIBLE, DELETED_ONLY_VISIBLE, DELETED_VISIBLE
+from .config import DELETED_INVISIBLE, DELETED_ONLY_VISIBLE, DELETED_VISIBLE, SOFT_DELETE, SOFT_DELETE_CASCADE
 from .queryset import SafeDeleteQueryset
 
 
@@ -99,6 +100,50 @@ class SafeDeleteManager(models.Manager):
         if force_visibility is not None:
             qs._safedelete_force_visibility = force_visibility
         return qs
+
+    def update_or_create(self, defaults=None, **kwargs):
+        """See :func:`~django.db.models.Query.update_or_create.`.
+
+        Change to regular djangoesk function:
+        Regular update_or_create() fails on soft-deleted, existing record with unique constraint on non-id field
+        If object is soft-deleted we don't update-or-create it but reset the deleted field to None.
+        So the object is visible again like a create in any other case.
+
+        Attention: If the object is "revived" from a soft-deleted state the created return value will
+        still be false because the object is technically not created unless you set
+        SAFE_DELETE_INTERPRET_UNDELETED_OBJECTS_AS_CREATED = True in the django settings.
+
+        Args:
+            defaults: Dict with defaults to update/create model instance with
+            kwargs: Attributes to lookup model instance with
+        """
+
+        # Check if one of the model fields contains a unique constraint
+        revived_soft_deleted_object = False
+        if self.model.has_unique_fields():
+            # Check if object is already soft-deleted
+            deleted_object = self.all_with_deleted().filter(**kwargs).exclude(deleted=None).first()
+
+            # If object is soft-deleted, reset delete-state...
+            if deleted_object and deleted_object._safedelete_policy in self.get_soft_delete_policies():
+                deleted_object.deleted = None
+                deleted_object.save()
+                revived_soft_deleted_object = True
+
+        # Do the standard logic
+        obj, created = super(SafeDeleteManager, self).update_or_create(defaults, **kwargs)
+
+        # If object was soft-deleted and is "revived" and settings flag is True, show object as created
+        if revived_soft_deleted_object and \
+                getattr(settings, 'SAFE_DELETE_INTERPRET_UNDELETED_OBJECTS_AS_CREATED', False):
+            created = True
+
+        return obj, created
+
+    @staticmethod
+    def get_soft_delete_policies():
+        """Returns all stati which stand for some kind of soft-delete"""
+        return [SOFT_DELETE, SOFT_DELETE_CASCADE]
 
 
 class SafeDeleteAllManager(SafeDeleteManager):

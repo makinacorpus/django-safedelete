@@ -5,6 +5,7 @@ except ImportError:
 
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.test import override_settings
 
 from ..models import SafeDeleteMixin
 from ..models import SafeDeleteModel
@@ -124,3 +125,33 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
                 name='test'
             ).validate_unique
         )
+
+    def test_check_unique_fields_exists(self):
+        # No unique fields
+        self.assertEqual(SoftDeleteModel.has_unique_fields(), False)
+        self.assertEqual(UniqueSoftDeleteModel.has_unique_fields(), True)
+
+    def test_update_or_create_no_unique_field(self):
+        SoftDeleteModel.objects.update_or_create(id=1)
+        obj, created = SoftDeleteModel.objects.update_or_create(id=1)
+        self.assertEqual(obj.id, 1)
+
+    def test_update_or_create_with_unique_field(self):
+        # Create and soft-delete object
+        obj, created = UniqueSoftDeleteModel.objects.update_or_create(name='unique-test')
+        obj.delete()
+        # Update it and see if it fails
+        obj, created = UniqueSoftDeleteModel.objects.update_or_create(name='unique-test')
+        self.assertEqual(obj.name, 'unique-test')
+        self.assertEqual(created, False)
+
+    @override_settings(SAFE_DELETE_INTERPRET_UNDELETED_OBJECTS_AS_CREATED=True)
+    def test_update_or_create_flag_with_settings_flag_active(self):
+        # Create and soft-delete object
+        obj, created = UniqueSoftDeleteModel.objects.update_or_create(name='unique-test')
+        obj.delete()
+        # Update it and see if it fails
+        obj, created = UniqueSoftDeleteModel.objects.update_or_create(name='unique-test')
+        self.assertEqual(obj.name, 'unique-test')
+        # Settings flag is active so the revived object should be interpreted as created
+        self.assertEqual(created, True)

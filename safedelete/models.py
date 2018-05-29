@@ -168,6 +168,18 @@ class SafeDeleteModel(models.Model):
             # soft-delete the object
             self.delete(force_policy=SOFT_DELETE, **kwargs)
 
+    @classmethod
+    def has_unique_fields(cls):
+        """Checks if one of the fields of this model has a unique constraint set (unique=True)
+
+        Args:
+            model: Model instance to check
+        """
+        for field in cls._meta.fields:
+            if field._unique:
+                return True
+        return False
+
     # We need to overwrite this check to ensure uniqueness is also checked
     # against "deleted" (but still in db) objects.
     # FIXME: Better/cleaner way ?
