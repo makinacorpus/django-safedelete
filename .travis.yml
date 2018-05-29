@@ -6,7 +6,7 @@ python:
   - 3.4
   - 3.5
   - 3.6
-  - 3.7
+#  - 3.7
 
 env:
   - DJANGO_VERSION="stable/1.11.x"
@@ -51,7 +51,7 @@ matrix:
       env: DJANGO_VERSION="stable/2.1.x"
     - python: 3.4
       env: DJANGO_VERSION="stable/2.1.x"
-    - python: 3.7
-      env: DJANGO_VERSION="stable/1.11.x"
-    - python: 3.7
-      env: DJANGO_VERSION="stable/2.0.x"
+#    - python: 3.7
+#      env: DJANGO_VERSION="stable/1.11.x"
+#    - python: 3.7
+#      env: DJANGO_VERSION="stable/2.0.x"
