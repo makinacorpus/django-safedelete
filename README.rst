@@ -108,7 +108,7 @@ The application doesn't have any special requirement.
 
 
 Configuration
-------------
+-------------
 
 In the main django settings you can activate the boolean variable ``SAFE_DELETE_INTERPRET_UNDELETED_OBJECTS_AS_CREATED``.
 If you do this the ``update_or_create()`` function from django's standard manager class will return ``True`` for
