@@ -18,6 +18,7 @@ without having them deleted from your database.
 
 You can choose what happens when you delete an object :
  - it can be masked from your database (soft delete, the default behavior)
+ - it can be masked from your database and mask any dependent models. (cascading soft delete)
  - it can be normally deleted (hard delete)
  - it can be hard-deleted, but if its deletion would delete other objects, it will only be masked
  - it can be never deleted or masked from your database (no delete, use with caution)
@@ -72,12 +73,13 @@ Compatibilities
 * Branch 0.2.x is compatible with django >= 1.2
 * Branch 0.3.x is compatible with django >= 1.4
 * Branch 0.4.x is compatible with django >= 1.8
+* Branch 0.5.x is compatible with django >= 1.11
 
-Current branch (0.4.x) has been tested with :
+Current branch (0.5.x) has been tested with :
 
-*  Django 1.8 using python 2.7 and python 3.3 to 3.4.
-*  Django 1.9 using python 2.7 and python 3.4 to 3.5.
-*  Django 1.10 using python 2.7 and python 3.4 to 3.5.
+*  Django 1.11 using python 2.7 and python 3.4 to 3.6.
+*  Django 2.0 using python 3.4 to 3.6.
+*  Django 2.1 using python 3.5 to 3.7.
 
 
 Installation

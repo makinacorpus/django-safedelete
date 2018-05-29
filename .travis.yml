@@ -3,17 +3,15 @@ sudo: false
 
 python:
   - 2.7
-  - 3.3
   - 3.4
   - 3.5
   - 3.6
+#  - 3.7
 
 env:
-  - DJANGO_VERSION="stable/1.8.x"
-  - DJANGO_VERSION="stable/1.9.x"
-  - DJANGO_VERSION="stable/1.10.x"
   - DJANGO_VERSION="stable/1.11.x"
   - DJANGO_VERSION="stable/2.0.x"
+  - DJANGO_VERSION="stable/2.1.x"
 
 install:
    # This is a dependency of our Django test script
@@ -44,26 +42,15 @@ after_success:
  - coveralls
 
 
-# 1.9: Dropped support for 3.2-3.3: https://docs.djangoproject.com/en/dev/releases/1.9/#python-compatibility
 matrix:
   exclude:
     - python: 2.7
       env: DJANGO_VERSION="stable/2.0.x"
-    - python: 3.3
-      env: DJANGO_VERSION="stable/1.9.x"
-    - python: 3.3
-      env: DJANGO_VERSION="stable/1.10.x"
-    - python: 3.3
-      env: DJANGO_VERSION="stable/1.11.x"
-    - python: 3.3
-      env: DJANGO_VERSION="stable/2.0.x"
+    - python: 2.7
+      env: DJANGO_VERSION="stable/2.1.x"
     - python: 3.4
-      env: DJANGO_VERSION="stable/2.0.x"
-    - python: 3.5
-      env: DJANGO_VERSION="stable/1.8.x"
-    - python: 3.6
-      env: DJANGO_VERSION="stable/1.8.x"
-    - python: 3.6
-      env: DJANGO_VERSION="stable/1.9.x"
-    - python: 3.6
-      env: DJANGO_VERSION="stable/1.10.x"
+      env: DJANGO_VERSION="stable/2.1.x"
+#    - python: 3.7
+#      env: DJANGO_VERSION="stable/1.11.x"
+#    - python: 3.7
+#      env: DJANGO_VERSION="stable/2.0.x"

@@ -101,17 +101,25 @@ class SafeDeleteModel(models.Model):
             using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
             post_undelete.send(sender=self.__class__, instance=self, using=using)
 
-    def undelete(self, **kwargs):
+    def undelete(self, force_policy=None, **kwargs):
         """Undelete a soft-deleted model.
 
         Args:
+            force_policy: Force a specific undelete policy. (default: {None})
             kwargs: Passed onto :func:`save`.
 
         .. note::
             Will raise a :class:`AssertionError` if the model was not soft-deleted.
         """
+        current_policy = force_policy or self._safedelete_policy
+
         assert self.deleted
         self.save(keep_deleted=False, **kwargs)
+
+        if current_policy == SOFT_DELETE_CASCADE:
+            for related in related_objects(self):
+                if is_safedelete_cls(related.__class__) and related.deleted:
+                    related.undelete()
 
     def delete(self, force_policy=None, **kwargs):
         """Overrides Django's delete behaviour based on the model's delete policy.
@@ -190,8 +198,6 @@ class SafeDeleteModel(models.Model):
                 lookup_kwargs[str(field_name)] = lookup_value
             if len(unique_check) != len(lookup_kwargs):
                 continue
-
-            qs = model_class.all_objects.filter(**lookup_kwargs)
 
             # This is the changed line
             if hasattr(model_class, 'all_objects'):
