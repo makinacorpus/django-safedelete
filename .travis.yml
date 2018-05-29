@@ -42,7 +42,6 @@ after_success:
  - coveralls
 
 
-# 1.9: Dropped support for 3.2-3.3: https://docs.djangoproject.com/en/dev/releases/1.9/#python-compatibility
 matrix:
   exclude:
     - python: 2.7

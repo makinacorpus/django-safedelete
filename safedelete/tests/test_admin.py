@@ -55,21 +55,26 @@ class AdminTestCase(TestCase):
         self.modeladmin_default = admin.ModelAdmin(Category, AdminSite())
         self.modeladmin = CategoryAdmin(Category, AdminSite())
 
-        User.objects.create_superuser('super', 'email@domain.com', 'secret')
+        user = User.objects.create_superuser('super', 'email@domain.com', 'secret')
         self.client.login(username='super', password='secret')
+        self.request.user = user
 
     def tearDown(self):
         self.client.logout()
 
     def get_changelist(self, request, model, modeladmin):
-        return ChangeList(
+        args = [
             request, model, modeladmin.list_display,
             modeladmin.list_display_links, modeladmin.list_filter,
             modeladmin.date_hierarchy, modeladmin.search_fields,
             modeladmin.list_select_related, modeladmin.list_per_page,
             modeladmin.list_max_show_all, modeladmin.list_editable,
             modeladmin
-        )
+        ]
+        # New parameter in Django 2.1
+        if hasattr(modeladmin, 'sortable_by'):
+            args.append(modeladmin.sortable_by)
+        return ChangeList(*args)
 
     def test_admin_model(self):
         changelist_default = self.get_changelist(self.request, Category, self.modeladmin_default)
