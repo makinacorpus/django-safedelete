@@ -2,8 +2,11 @@
 CHANGELOG
 =========
 
-0.4.6 (unreleased)
+0.5.0 (unreleased)
 ==================
+
+- Remove support for Django 1.8 to 1.10 and Python 3.3.
+     (it should still works for now but isn't tested, use at your own risks).
 
 
 0.4.5 (2018-01-31)
