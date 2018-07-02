@@ -2,9 +2,10 @@
 CHANGELOG
 =========
 
-0.5.1 (unreleased)
+0.5.1 (2018-07-02)
 ==================
 
+- Fix possible unicode error in admin
 
 0.5.0 (2018-05-29)
 ==================
