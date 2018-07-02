@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from django.contrib import admin
 from django.contrib.admin.sites import AdminSite
 from django.contrib.admin.views.main import ChangeList
@@ -28,7 +30,7 @@ class AdminTestCase(TestCase):
         self.author = Author.objects.create()
 
         self.categories = (
-            Category.objects.create(),
+            Category.objects.create(name='é'),
             Category.objects.create(),
             Category.objects.create(),
         )

@@ -21,6 +21,9 @@ class Category(SafeDeleteModel):
         blank=True
     )
 
+    def __str__(self):
+        return self.name
+
 
 # Explicitly use SafeDeleteModel instead of SafeDeleteModel to test both
 class Article(SafeDeleteModel):
