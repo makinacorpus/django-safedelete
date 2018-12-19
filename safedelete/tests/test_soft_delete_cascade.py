@@ -1,10 +1,14 @@
-from unittest.mock import patch
-
 from django.db import models
 from django.test import TestCase
 from safedelete import SOFT_DELETE_CASCADE, SOFT_DELETE
 from safedelete.models import SafeDeleteModel
 from safedelete.tests.models import Article, Author, Category
+
+
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch  # for python 2 supporting
 
 
 class Press(SafeDeleteModel):
