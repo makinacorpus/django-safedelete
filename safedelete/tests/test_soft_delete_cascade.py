@@ -1,6 +1,8 @@
+from unittest.mock import patch
+
 from django.db import models
 from django.test import TestCase
-from safedelete import SOFT_DELETE_CASCADE
+from safedelete import SOFT_DELETE_CASCADE, SOFT_DELETE
 from safedelete.models import SafeDeleteModel
 from safedelete.tests.models import Article, Author, Category
 
@@ -89,6 +91,14 @@ class SimpleTest(TestCase):
 
         self.assertEqual(ArticleView.objects.count(), 0)
         self.assertEqual(ArticleView.all_objects.count(), 1)
+
+    def test_soft_delete_cascade_deleted(self):
+        self.articles[0].delete(force_policy=SOFT_DELETE)
+        self.assertEqual(Article.objects.filter(author=self.authors[1]).count(), 1)
+
+        with patch('safedelete.tests.models.Article.delete') as delete_article_mock:
+            self.authors[1].delete(force_policy=SOFT_DELETE_CASCADE)
+            delete_article_mock.assert_called_once()
 
     def test_undelete_with_soft_delete_cascade_policy(self):
         self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
