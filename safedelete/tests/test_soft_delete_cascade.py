@@ -94,11 +94,13 @@ class SimpleTest(TestCase):
 
     def test_soft_delete_cascade_deleted(self):
         self.articles[0].delete(force_policy=SOFT_DELETE)
-        self.assertEqual(Article.objects.filter(author=self.authors[1]).count(), 1)
+        self.assertEqual(self.authors[1].article_set.count(), 1)
 
         with patch('safedelete.tests.models.Article.delete') as delete_article_mock:
             self.authors[1].delete(force_policy=SOFT_DELETE_CASCADE)
-            delete_article_mock.assert_called_once()
+
+            # delete_article_mock.assert_called_once doesn't work on py35
+            self.assertEqual(delete_article_mock.call_count, 1)
 
     def test_undelete_with_soft_delete_cascade_policy(self):
         self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
