@@ -5,7 +5,7 @@ CHANGELOG
 0.5.2 (unreleased)
 ==================
 
-
+- Fix executing soft delete on already soft-deleted items during cascade soft delete
 
 0.5.1 (2018-07-02)
 ==================
