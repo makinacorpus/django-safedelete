@@ -42,7 +42,7 @@ class SafeDeleteManager(models.Manager):
 
         Example:
 
-            class CustomQueryset(models.QuerySet):
+            class CustomQueryset(SafeDeleteQueryset):
                 pass
 
             class MyModel(models.Model):
