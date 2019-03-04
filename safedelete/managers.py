@@ -87,10 +87,10 @@ class SafeDeleteManager(models.Manager):
         """Pass kwargs to ``SafeDeleteQuerySet.all()``.
 
         Args:
-            show_deleted: Show deleted models. (default: {False})
+            force_visibility: Show deleted models. (default: {None})
 
         .. note::
-            The ``show_deleted`` argument is meant for related managers when no
+            The ``force_visibility`` argument is meant for related managers when no
             other managers like ``all_objects`` or ``deleted_objects`` are available.
         """
         force_visibility = kwargs.pop('force_visibility', None)
