@@ -1,26 +1,25 @@
-from django.db import models
-
 from ..config import DELETED_VISIBLE
 from ..models import SafeDeleteModel
+from ..fields import SafeDeleteManyToManyField
 from .testcase import SafeDeleteTestCase
 
 
-class ManyToManyChild(models.Model):
+class ManyToManyChild(SafeDeleteModel):
     pass
 
 
 class ManyToManyParent(SafeDeleteModel):
-    children = models.ManyToManyField(
+    children = SafeDeleteManyToManyField(
         ManyToManyChild,
         blank=True,
-        related_name='parents'
+        related_name="parents",
     )
 
 
 class ManyToManyTestCase(SafeDeleteTestCase):
 
     def test_many_to_many(self):
-        """Test whether related queries still works."""
+        """Test whether related queries still work."""
         parent1 = ManyToManyParent.objects.create()
         parent2 = ManyToManyParent.objects.create()
         child = ManyToManyChild.objects.create()

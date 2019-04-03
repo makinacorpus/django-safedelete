@@ -47,3 +47,14 @@ The different policies are:
 
     This policy will:
         - Keep the objects from being masked or deleted from your database. The only way of removing objects will be by using raw SQL.
+
+
+ Fields
+------
+
+ When you use custom ``through`` model for M2M relations, you may want
+that related manager return only not-deleted relations. If so, you may want
+to use ``safedelete.fields.SafeDeleteManyToManyField``.
+
+ You still will be able to retrieve deleted instances for intermediate model using
+it's manager.
