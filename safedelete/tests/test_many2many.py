@@ -44,3 +44,21 @@ class ManyToManyTestCase(SafeDeleteTestCase):
             child.parents.all(force_visibility=DELETED_VISIBLE).count(),
             2
         )
+
+    def test_many_to_many_prefetch_related(self):
+        """Test whether prefetch_related works as expected."""
+        parent1 = ManyToManyParent.objects.create()
+        parent2 = ManyToManyParent.objects.create()
+        child = ManyToManyChild.objects.create()
+
+        parent1.children.add(child)
+        parent2.children.add(child)
+
+        # Soft deleting one parent, should "hide" it from the related field
+        parent1.delete()
+
+        query = ManyToManyChild.objects.filter(id=child.id).prefetch_related("parents")
+        self.assertEqual(
+            len(query[0].parents.all()),
+            1
+        )

@@ -30,7 +30,7 @@ class ManyToManyIntermediateTestCase(SafeDeleteTestCase):
         person = Person.objects.create(name="Great singer")
         group = Group.objects.create(name="Cool band")
 
-        # can"t use group.members.add() with intermediate model
+        # can't use group.members.add() with intermediate model
         membership = Membership.objects.create(
             person=person,
             group=group,
@@ -47,3 +47,22 @@ class ManyToManyIntermediateTestCase(SafeDeleteTestCase):
 
         self.assertEqual(group.members.count(), 0)
         self.assertEqual(person.group_set.count(), 0)
+
+    def test_many_to_many_prefetch_related(self):
+        """Test whether prefetch_related works as expected."""
+        person = Person.objects.create(name="Great singer")
+        group = Group.objects.create(name="Cool band")
+
+        membership = Membership.objects.create(
+            person=person,
+            group=group,
+            invite_reason="Need a new drummer"
+        )
+
+        membership.delete()
+
+        query = Group.objects.filter(id=group.id).prefetch_related("members")
+        self.assertEqual(
+            query[0].members.count(),
+            0
+        )

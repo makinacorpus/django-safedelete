@@ -51,3 +51,5 @@ class PrefetchTestCase(SafeDeleteTestCase):
             brothers = PrefetchBrother.objects.all().prefetch_related('sisters')
             for brother in brothers:
                 list(brother.sisters.all())
+
+    # See prefetch_related tests for M2M models in test_many_to_many.py and test_many2many_intermediate.py
