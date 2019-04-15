@@ -1,5 +1,8 @@
+import datetime
+
 from django.db import models
 from django.test import TestCase
+from django.utils import timezone
 from safedelete import SOFT_DELETE_CASCADE, SOFT_DELETE
 from safedelete.models import SafeDeleteModel
 from safedelete.tests.models import Article, Author, Category
@@ -53,7 +56,11 @@ class SimpleTest(TestCase):
             Article.objects.create(author=self.authors[1]),
             Article.objects.create(author=self.authors[1], category=self.categories[1]),
             Article.objects.create(author=self.authors[2], category=self.categories[2]),
+            Article.objects.create(author=self.authors[2], category=self.categories[2])
         )
+
+        with patch.object(timezone, 'now', return_value=datetime.datetime(2012, 12, 21)) as mock_now:
+            self.articles[3].delete(force_policy=SOFT_DELETE_CASCADE)
 
         self.press = (
             Press.objects.create(name='press 0', article=self.articles[2])
@@ -70,7 +77,7 @@ class SimpleTest(TestCase):
         self.assertEqual(Author.objects.count(), 2)
         self.assertEqual(Author.all_objects.count(), 3)
         self.assertEqual(Article.objects.count(), 2)
-        self.assertEqual(Article.all_objects.count(), 3)
+        self.assertEqual(Article.all_objects.count(), 4)
         self.assertEqual(Press.objects.count(), 0)
         self.assertEqual(Press.all_objects.count(), 1)
 
@@ -81,7 +88,7 @@ class SimpleTest(TestCase):
         self.assertEqual(Author.objects.count(), 2)
         self.assertEqual(Author.all_objects.count(), 3)
         self.assertEqual(Article.objects.count(), 2)
-        self.assertEqual(Article.all_objects.count(), 3)
+        self.assertEqual(Article.all_objects.count(), 4)
         self.assertEqual(Press.objects.count(), 0)
         self.assertEqual(Press.all_objects.count(), 1)
 
@@ -91,7 +98,7 @@ class SimpleTest(TestCase):
         self.articles[2].delete(force_policy=SOFT_DELETE_CASCADE)
 
         self.assertEqual(Article.objects.count(), 2)
-        self.assertEqual(Article.all_objects.count(), 3)
+        self.assertEqual(Article.all_objects.count(), 4)
 
         self.assertEqual(ArticleView.objects.count(), 0)
         self.assertEqual(ArticleView.all_objects.count(), 1)

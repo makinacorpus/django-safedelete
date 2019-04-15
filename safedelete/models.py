@@ -114,11 +114,12 @@ class SafeDeleteModel(models.Model):
         current_policy = force_policy or self._safedelete_policy
 
         assert self.deleted
+        deleted_date = self.deleted
         self.save(keep_deleted=False, **kwargs)
 
         if current_policy == SOFT_DELETE_CASCADE:
             for related in related_objects(self):
-                if is_safedelete_cls(related.__class__) and related.deleted:
+                if is_safedelete_cls(related.__class__) and related.deleted and abs((deleted_date - related.deleted).total_seconds()) < 60:
                     related.undelete()
 
     def delete(self, force_policy=None, **kwargs):
