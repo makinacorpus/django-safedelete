@@ -133,10 +133,8 @@ class SafeDeleteQueryset(query.QuerySet):
             'delete', 'undelete', 'iterator', 'first', 'last', 'latest', 'earliest'
         )
         if hasattr(attr, '__call__') and name in evaluation_methods:
-            def decorator(*args, **kwargs):
-                self._filter_visibility()
-                return attr(*args, **kwargs)
-            return decorator
+            self._filter_visibility()
+
         return attr
 
     def _clone(self, klass=None, **kwargs):
