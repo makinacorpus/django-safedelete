@@ -2,9 +2,10 @@
 CHANGELOG
 =========
 
-0.5.2 (unreleased)
+0.5.2 (2019-08-19)
 ==================
 
+- Fix performance issue with Django 2.2
 - Fix executing soft delete on already soft-deleted items during cascade soft delete
 
 0.5.1 (2018-07-02)
