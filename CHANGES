@@ -2,7 +2,7 @@
 CHANGELOG
 =========
 
-0.5.3 (unreleased)
+0.5.3 (2019-12-02)
 ==================
 
 - Fix "Doing a .get on a queryset adds deleted objects #131"
