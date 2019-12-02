@@ -11,10 +11,15 @@ from django.core.exceptions import PermissionDenied
 from django.template.response import TemplateResponse
 from django.utils.encoding import force_text
 from django.utils.html import conditional_escape, format_html
-from django.utils.six import text_type
 from django.utils.translation import ugettext_lazy as _
 
 from .utils import related_objects
+
+# Django 3.0 compatibility
+try:
+    from django.utils.six import text_type
+except ImportError:
+    text_type = str
 
 
 def highlight_deleted(obj):
