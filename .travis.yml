@@ -7,12 +7,14 @@ python:
   - 3.5
   - 3.6
   - 3.7
+  - 3.8
 
 env:
   - DJANGO_VERSION="stable/1.11.x"
   - DJANGO_VERSION="stable/2.0.x"
   - DJANGO_VERSION="stable/2.1.x"
   - DJANGO_VERSION="stable/2.2.x"
+  - DJANGO_VERSION="stable/3.0.x"
 
 install:
    # This is a dependency of our Django test script
@@ -53,7 +55,19 @@ matrix:
       env: DJANGO_VERSION="stable/2.1.x"
     - python: 2.7
       env: DJANGO_VERSION="stable/2.2.x"
+    - python: 2.7
+      env: DJANGO_VERSION="stable/3.0.x"
     - python: 3.4
       env: DJANGO_VERSION="stable/2.2.x"
-#    - python: 3.7
-#      env: DJANGO_VERSION="stable/2.0.x"
+    - python: 3.4
+      env: DJANGO_VERSION="stable/3.0.x"
+    - python: 3.5
+      env: DJANGO_VERSION="stable/3.0.x"
+    - python: 3.8
+      env: DJANGO_VERSION="stable/1.11.x"
+    - python: 3.8
+      env: DJANGO_VERSION="stable/2.0.x"
+    - python: 3.8
+      env: DJANGO_VERSION="stable/2.1.x"
+    - python: 3.8
+      env: DJANGO_VERSION="stable/2.2.x"
