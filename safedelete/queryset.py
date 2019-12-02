@@ -89,6 +89,8 @@ class SafeDeleteQueryset(query.QuerySet):
         # Return a copy, see #131
         queryset = self._clone()
         queryset._check_field_filter(**kwargs)
+        # Filter visibility here because Django 3.0 adds a limit in get and we cannot filter afterward
+        queryset._filter_visibility()
         return super(SafeDeleteQueryset, queryset).get(*args, **kwargs)
 
     def _filter_visibility(self):
@@ -123,7 +125,9 @@ class SafeDeleteQueryset(query.QuerySet):
         Override __getitem__ just before it hits the original queryset
         to apply the filter visibility method.
         """
-        self._filter_visibility()
+        # get method add a limit in Django 3.0 and thus we can't filter here anymore in this case
+        if self.query.can_filter:
+            self._filter_visibility()
 
         return super(SafeDeleteQueryset, self).__getitem__(key)
 
