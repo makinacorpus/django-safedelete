@@ -54,6 +54,14 @@ class QuerySetTestCase(SafeDeleteTestCase):
             pk=self.instance.pk
         )
 
+    def test_get_does_not_modify_the_queryset(self):
+        instance = QuerySetModel.objects.create(
+            other=self.other
+        )
+        queryset = QuerySetModel.objects.all()
+        queryset.get(pk=instance.pk)
+        self.assertEqual(queryset.count(), 1)
+
     def test_filter_filter(self):
         self.assertEqual(
             QuerySetModel.objects.filter(

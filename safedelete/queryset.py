@@ -80,12 +80,16 @@ class SafeDeleteQueryset(query.QuerySet):
             self._safedelete_force_visibility = DELETED_VISIBLE
 
     def filter(self, *args, **kwargs):
-        self._check_field_filter(**kwargs)
-        return super(SafeDeleteQueryset, self).filter(*args, **kwargs)
+        # Return a copy, see #131
+        queryset = self._clone()
+        queryset._check_field_filter(**kwargs)
+        return super(SafeDeleteQueryset, queryset).filter(*args, **kwargs)
 
     def get(self, *args, **kwargs):
-        self._check_field_filter(**kwargs)
-        return super(SafeDeleteQueryset, self).get(*args, **kwargs)
+        # Return a copy, see #131
+        queryset = self._clone()
+        queryset._check_field_filter(**kwargs)
+        return super(SafeDeleteQueryset, queryset).get(*args, **kwargs)
 
     def _filter_visibility(self):
         """Add deleted filters to the current QuerySet.

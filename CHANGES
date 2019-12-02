@@ -5,7 +5,7 @@ CHANGELOG
 0.5.3 (unreleased)
 ==================
 
--
+- Fix "Doing a .get on a queryset adds deleted objects #131"
 
 0.5.2 (2019-08-19)
 ==================
