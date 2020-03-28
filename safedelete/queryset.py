@@ -68,7 +68,7 @@ class SafeDeleteQueryset(query.QuerySet):
         return super(SafeDeleteQueryset, self).all()
 
     def _check_field_filter(self, **kwargs):
-        """Check if the visibility for DELETED_VISIBLE_BY_FIELD needs t be put into effect.
+        """Check if the visibility for DELETED_VISIBLE_BY_FIELD needs to be put into effect.
 
         DELETED_VISIBLE_BY_FIELD is a temporary visibility flag that changes
         to DELETED_VISIBLE once asked for the named parameter defined in
