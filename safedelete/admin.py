@@ -11,7 +11,7 @@ from django.core.exceptions import PermissionDenied
 from django.template.response import TemplateResponse
 from django.utils.encoding import force_text
 from django.utils.html import conditional_escape, format_html
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from .utils import related_objects
 
