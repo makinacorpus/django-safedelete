@@ -13,6 +13,7 @@ from django.utils.encoding import force_text
 from django.utils.html import conditional_escape, format_html
 from django.utils.translation import ugettext_lazy as _
 
+from .config import FIELD_NAME
 from .utils import related_objects
 
 # Django 3.0 compatibility
@@ -27,7 +28,7 @@ def highlight_deleted(obj):
         Display in red lines when object is deleted.
     """
     obj_str = conditional_escape(text_type(obj))
-    if not getattr(obj, 'deleted', False):
+    if not getattr(obj, FIELD_NAME, False):
         return obj_str
     else:
         return format_html('<span class="deleted">{0}</span>', obj_str)
@@ -49,9 +50,9 @@ class SafeDeleteAdmin(admin.ModelAdmin):
     """
     undelete_selected_confirmation_template = "safedelete/undelete_selected_confirmation.html"
 
-    list_display = ('deleted',)
-    list_filter = ('deleted',)
-    exclude = ('deleted',)
+    list_display = (FIELD_NAME,)
+    list_filter = (FIELD_NAME,)
+    exclude = (FIELD_NAME,)
     actions = ('undelete_selected',)
 
     class Meta:
@@ -98,7 +99,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         assert hasattr(queryset, 'undelete')
 
         # Remove not deleted item from queryset
-        queryset = queryset.filter(deleted__isnull=False)
+        queryset = queryset.filter(**{FIELD_NAME + '__isnull': False})
         # Undeletion confirmed
         if request.POST.get('post'):
             n = queryset.count()

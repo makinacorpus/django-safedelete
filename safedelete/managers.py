@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.db import models
 
-from .config import DELETED_INVISIBLE, DELETED_ONLY_VISIBLE, DELETED_VISIBLE, SOFT_DELETE, SOFT_DELETE_CASCADE
+from .config import DELETED_INVISIBLE, DELETED_ONLY_VISIBLE, DELETED_VISIBLE, SOFT_DELETE, SOFT_DELETE_CASCADE, \
+    FIELD_NAME
 from .queryset import SafeDeleteQueryset
 
 
@@ -122,11 +123,11 @@ class SafeDeleteManager(models.Manager):
         revived_soft_deleted_object = False
         if self.model.has_unique_fields():
             # Check if object is already soft-deleted
-            deleted_object = self.all_with_deleted().filter(**kwargs).exclude(deleted=None).first()
+            deleted_object = self.all_with_deleted().filter(**kwargs).exclude(**{FIELD_NAME: None}).first()
 
             # If object is soft-deleted, reset delete-state...
             if deleted_object and deleted_object._safedelete_policy in self.get_soft_delete_policies():
-                deleted_object.deleted = None
+                setattr(deleted_object, FIELD_NAME, None)
                 deleted_object.save()
                 revived_soft_deleted_object = True
 

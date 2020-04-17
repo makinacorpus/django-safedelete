@@ -1,3 +1,6 @@
+import string
+import random
+
 SECRET_KEY = 'secret'
 
 ROOT_URLCONF = 'safedelete.tests.urls'
@@ -53,3 +56,5 @@ TEMPLATES = [
         },
     },
 ]
+
+SAFE_DELETE_FIELD_NAME = ''.join(random.choice(string.ascii_uppercase) for i in range(10))

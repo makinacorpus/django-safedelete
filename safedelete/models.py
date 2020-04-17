@@ -4,7 +4,7 @@ from django.db import models, router
 from django.utils import timezone
 
 from .config import (HARD_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE,
-                     SOFT_DELETE, SOFT_DELETE_CASCADE)
+                     SOFT_DELETE, SOFT_DELETE_CASCADE, FIELD_NAME)
 from .managers import (SafeDeleteAllManager, SafeDeleteDeletedManager,
                        SafeDeleteManager)
 from .signals import post_softdelete, post_undelete, pre_softdelete
@@ -62,8 +62,6 @@ class SafeDeleteModel(models.Model):
 
     _safedelete_policy = SOFT_DELETE
 
-    deleted = models.DateTimeField(editable=False, null=True)
-
     objects = SafeDeleteManager()
     all_objects = SafeDeleteAllManager()
     deleted_objects = SafeDeleteDeletedManager()
@@ -90,9 +88,9 @@ class SafeDeleteModel(models.Model):
 
         was_undeleted = False
         if not keep_deleted:
-            if self.deleted and self.pk:
+            if getattr(self, FIELD_NAME) and self.pk:
                 was_undeleted = True
-            self.deleted = None
+            setattr(self, FIELD_NAME, None)
 
         super(SafeDeleteModel, self).save(**kwargs)
 
@@ -113,12 +111,12 @@ class SafeDeleteModel(models.Model):
         """
         current_policy = force_policy or self._safedelete_policy
 
-        assert self.deleted
+        assert getattr(self, FIELD_NAME)
         self.save(keep_deleted=False, **kwargs)
 
         if current_policy == SOFT_DELETE_CASCADE:
             for related in related_objects(self):
-                if is_safedelete_cls(related.__class__) and related.deleted:
+                if is_safedelete_cls(related.__class__) and getattr(related, FIELD_NAME):
                     related.undelete()
 
     def delete(self, force_policy=None, **kwargs):
@@ -138,7 +136,7 @@ class SafeDeleteModel(models.Model):
         elif current_policy == SOFT_DELETE:
 
             # Only soft-delete the object, marking it as deleted.
-            self.deleted = timezone.now()
+            setattr(self, FIELD_NAME, timezone.now())
             using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
             # send pre_softdelete signal
             pre_softdelete.send(sender=self.__class__, instance=self, using=using)
@@ -163,7 +161,7 @@ class SafeDeleteModel(models.Model):
         elif current_policy == SOFT_DELETE_CASCADE:
             # Soft-delete on related objects before
             for related in related_objects(self):
-                if is_safedelete_cls(related.__class__) and not related.deleted:
+                if is_safedelete_cls(related.__class__) and not getattr(related, FIELD_NAME):
                     related.delete(force_policy=SOFT_DELETE, **kwargs)
             # soft-delete the object
             self.delete(force_policy=SOFT_DELETE, **kwargs)
@@ -217,6 +215,9 @@ class SafeDeleteModel(models.Model):
                     self.unique_error_message(model_class, unique_check)
                 )
         return errors
+
+
+SafeDeleteModel.add_to_class(FIELD_NAME, models.DateTimeField(editable=False, null=True))
 
 
 class SafeDeleteMixin(SafeDeleteModel):
