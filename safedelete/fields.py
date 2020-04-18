@@ -2,8 +2,8 @@ from django.db import models
 from django.db.models.fields.related_descriptors import ManyToManyDescriptor
 from django.utils.functional import cached_property
 
-from .utils import is_safedelete_cls
-from .config import DEFAULT_DELETED
+from .config import DEFAULT_DELETED, FIELD_NAME
+from .models import is_safedelete_cls
 
 __all__ = ["SafeDeleteManyToManyField"]
 
@@ -89,7 +89,7 @@ class SafeDeleteManyToManyDescriptor(ManyToManyDescriptor):
                 field_name = self.query_field_name
                 if is_safedelete_cls(self.through):
                     field_name = self.target_field.related_query_name()
-                    filter_key = "{}__deleted".format(field_name)
+                    filter_key = ("{}__" + FIELD_NAME).format(field_name)
                     return {filter_key: DEFAULT_DELETED}
                 else:
                     return {}
