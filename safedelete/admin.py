@@ -93,6 +93,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
 
     def undelete_selected(self, request, queryset):
         """ Admin action to undelete objects in bulk with confirmation. """
+        original_queryset = queryset.all()
         if not self.has_delete_permission(request):
             raise PermissionDenied
         assert hasattr(queryset, 'undelete')
@@ -101,27 +102,53 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         queryset = queryset.filter(deleted__isnull=False)
         # Undeletion confirmed
         if request.POST.get('post'):
-            n = queryset.count()
-            if n:
+            requested = queryset.count()
+            if requested:
                 for obj in queryset:
                     obj_display = force_text(obj)
                     self.log_undeletion(request, obj, obj_display)
                 queryset.undelete()
-                if django.VERSION[1] <= 4:
-                    self.message_user(
-                        request,
-                        _("Successfully undeleted %(count)d %(items)s.") % {
-                            "count": n, "items": model_ngettext(self.opts, n)
-                        },
-                    )
+                changed = original_queryset.filter(deleted__isnull=True).count()
+                if changed < requested:
+                    if LooseVersion(django.get_version()) < LooseVersion('1.4'):
+                        self.message_user(
+                            request,
+                            _("Successfully undeleted %(count_changed)d of the "
+                              "%(count_requested)d selected %(items)s.") % {
+                                "count_requested": requested,
+                                "count_changed": changed,
+                                "items": model_ngettext(self.opts, requested)
+                            },
+                            )
+                    else:
+                        self.message_user(
+                            request,
+                            _("Successfully undeleted %(count_changed)d of the "
+                              "%(count_requested)d selected %(items)s.") % {
+                                "count_requested": requested,
+                                "count_changed": changed,
+                                "items": model_ngettext(self.opts, requested)
+                            },
+                            messages.WARNING,
+                            )
                 else:
-                    self.message_user(
-                        request,
-                        _("Successfully undeleted %(count)d %(items)s.") % {
-                            "count": n, "items": model_ngettext(self.opts, n)
-                        },
-                        messages.SUCCESS,
-                    )
+                    if LooseVersion(django.get_version()) <= LooseVersion('1.4'):
+                        self.message_user(
+                            request,
+                            _("Successfully undeleted %(count)d %(items)s.") % {
+                                "count": requested,
+                                "items": model_ngettext(self.opts, requested)
+                            },
+                            )
+                    else:
+                        self.message_user(
+                            request,
+                            _("Successfully undeleted %(count)d %(items)s.") % {
+                                "count": requested,
+                                "items": model_ngettext(self.opts, requested)
+                            },
+                            messages.SUCCESS,
+                            )
                 # Return None to display the change list page again.
                 return None
 
