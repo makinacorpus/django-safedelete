@@ -119,7 +119,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
                                 "count_changed": changed,
                                 "items": model_ngettext(self.opts, requested)
                             },
-                            )
+                        )
                     else:
                         self.message_user(
                             request,
@@ -130,7 +130,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
                                 "items": model_ngettext(self.opts, requested)
                             },
                             messages.WARNING,
-                            )
+                        )
                 else:
                     if LooseVersion(django.get_version()) <= LooseVersion('1.4'):
                         self.message_user(
@@ -139,7 +139,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
                                 "count": requested,
                                 "items": model_ngettext(self.opts, requested)
                             },
-                            )
+                        )
                     else:
                         self.message_user(
                             request,
@@ -148,7 +148,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
                                 "items": model_ngettext(self.opts, requested)
                             },
                             messages.SUCCESS,
-                            )
+                        )
                 # Return None to display the change list page again.
                 return None
 
