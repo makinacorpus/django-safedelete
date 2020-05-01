@@ -100,6 +100,6 @@ class SafeDeleteManyToManyDescriptor(ManyToManyDescriptor):
 
                 queryset = queryset.filter(**self._get_safedelete_filter()).distinct()
 
-                return super().get_prefetch_queryset(instances, queryset)
+                return super(SafeDeleteRelatedManager, self).get_prefetch_queryset(instances, queryset)
 
         return SafeDeleteRelatedManager
