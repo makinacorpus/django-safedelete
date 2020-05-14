@@ -2,7 +2,7 @@
 CHANGELOG
 =========
 
-0.5.5 (unreleased)
+0.5.5 (2020-05-14)
 ==================
 
 - Admin action now warns if some objects weren't undeleted
