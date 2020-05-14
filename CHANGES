@@ -5,7 +5,8 @@ CHANGELOG
 0.5.5 (unreleased)
 ==================
 
--
+- Admin action now warns if some objects weren't undeleted
+- Remove some pre-Django 1.11 support
 
 0.5.4 (2019-12-02)
 ==================

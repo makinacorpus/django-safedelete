@@ -28,7 +28,7 @@ install:
  - pip install -e django/
  - pip install -e .
 
- - pip install 'coverage>=3,<4'
+ - pip install 'coverage>=3,<5'
 
  - pip install pep8
  - pip install pyflakes
