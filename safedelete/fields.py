@@ -76,8 +76,8 @@ class SafeDeleteManyToManyDescriptor(ManyToManyDescriptor):
 
             def _apply_rel_filters(self, queryset):
                 """Filter queryset for not deleted instances"""
-                queryset = super(SafeDeleteRelatedManager, self)._apply_rel_filters(queryset)
-                return queryset.filter(**self._get_safedelete_filter())
+                self.core_filters.update(self._get_safedelete_filter())
+                return super(SafeDeleteRelatedManager, self)._apply_rel_filters(queryset)
 
             def _get_safedelete_filter(self):
                 """Build related filter dict
