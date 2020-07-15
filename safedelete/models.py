@@ -142,7 +142,7 @@ class SafeDeleteModel(models.Model):
             using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
             # send pre_softdelete signal
             pre_softdelete.send(sender=self.__class__, instance=self, using=using)
-            super(SafeDeleteModel, self).save(**kwargs)
+            self.save(keep_deleted=True, **kwargs)
             # send softdelete signal
             post_softdelete.send(sender=self.__class__, instance=self, using=using)
 
