@@ -2,10 +2,10 @@
 CHANGELOG
 =========
 
-0.5.6 (unreleased)
+0.5.6 (2020-07-20)
 ==================
 
--
+- call self.save() instead of super in delete()
 
 0.5.5 (2020-05-14)
 ==================
