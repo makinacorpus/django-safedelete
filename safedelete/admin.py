@@ -65,7 +65,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         return self.get_queryset(request)
 
     def get_list_display(self, request):
-        return super().get_list_display(request) + ('deleted',)
+        return (highlight_deleted, *super().get_list_display(request)) + ('deleted',)
 
     def get_list_filter(self, request):
         return super().get_list_filter(request) + ('deleted',)
