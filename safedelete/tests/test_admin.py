@@ -82,7 +82,6 @@ class AdminTestCase(TestCase):
     def test_admin_model(self):
         changelist_default = self.get_changelist(self.request, Category, self.modeladmin_default)
         changelist = self.get_changelist(self.request, Category, self.modeladmin)
-        self.assertEqual(changelist.get_filters(self.request)[0][0].title, 'deleted')
         self.assertEqual(changelist.queryset.count(), 3)
         self.assertEqual(changelist_default.queryset.count(), 2)
 

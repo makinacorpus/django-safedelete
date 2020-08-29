@@ -49,8 +49,6 @@ class SafeDeleteAdmin(admin.ModelAdmin):
     """
     undelete_selected_confirmation_template = "safedelete/undelete_selected_confirmation.html"
 
-    list_display = ('deleted',)
-    list_filter = ('deleted',)
     exclude = ('deleted',)
     actions = ('undelete_selected',)
 
@@ -65,6 +63,12 @@ class SafeDeleteAdmin(admin.ModelAdmin):
     def queryset(self, request):
         # Deprecated in latest Django versions
         return self.get_queryset(request)
+
+    def get_list_display(self, request):
+        return super().get_list_display(request) + ('deleted',)
+
+    def get_list_filter(self, request):
+        return super().get_list_filter(request) + ('deleted',)
 
     def get_queryset(self, request):
         try:
