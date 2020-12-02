@@ -1,5 +1,6 @@
 import warnings
 
+from django.contrib.admin.utils import NestedObjects
 from django.db import models, router
 from django.utils import timezone
 
@@ -165,6 +166,19 @@ class SafeDeleteModel(models.Model):
             for related in related_objects(self):
                 if is_safedelete_cls(related.__class__) and not related.deleted:
                     related.delete(force_policy=SOFT_DELETE, **kwargs)
+            
+            collector = NestedObjects(using=router.db_for_write(self))
+            collector.collect([self])
+            # update fields (SET, SET_DEFAULT or SET_NULL)
+            for model, instances_for_fieldvalues in collector.field_updates.items():
+                for (field, value), instances in instances_for_fieldvalues.items():
+                    query = models.sql.UpdateQuery(model)
+                    query.update_batch(
+                        [obj.pk for obj in instances],
+                        {field.name: value},
+                        collector.using,
+                    )
+            
             # soft-delete the object
             self.delete(force_policy=SOFT_DELETE, **kwargs)
 

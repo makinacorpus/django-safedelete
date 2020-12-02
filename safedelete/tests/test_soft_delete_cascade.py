@@ -1,3 +1,4 @@
+from django.db.models.fields.related import ForeignKey
 from django.db import models
 from django.test import TestCase
 from safedelete import SOFT_DELETE_CASCADE, SOFT_DELETE
@@ -84,6 +85,30 @@ class SimpleTest(TestCase):
         self.assertEqual(Article.all_objects.count(), 3)
         self.assertEqual(Press.objects.count(), 0)
         self.assertEqual(Press.all_objects.count(), 1)
+        self.assertEqual(PressNormalModel.objects.count(), 1)
+
+    def test_soft_delete_cascade_with_set_null(self):
+        PressNormalModel.article.field.null = True
+        PressNormalModel.article.field.remote_field.on_delete=models.SET_NULL
+        PressNormalModel.objects.create(name='press 0', article=self.articles[2])
+        self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
+
+        self.assertEqual(PressNormalModel.objects.first().article, None)
+
+    def test_soft_delete_cascade_with_set_default(self):
+        PressNormalModel.article.field.default=self.articles[1]
+        PressNormalModel.article.field.remote_field.on_delete=models.SET_DEFAULT
+        PressNormalModel.objects.create(name='press 0', article=self.articles[2])
+        self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
+
+        self.assertEqual(PressNormalModel.objects.first().article, self.articles[1])
+
+    def test_soft_delete_cascade_with_set(self):
+        PressNormalModel.article.field.remote_field.on_delete=models.SET(self.articles[0])
+        PressNormalModel.objects.create(name='press 0', article=self.articles[2])
+        self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
+
+        self.assertEqual(PressNormalModel.objects.first().article, self.articles[0])
 
     def test_soft_delete_cascade_with_abstract_model(self):
         ArticleView.objects.create(article=self.articles[2])
