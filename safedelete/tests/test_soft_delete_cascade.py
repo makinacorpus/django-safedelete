@@ -19,7 +19,7 @@ class Press(SafeDeleteModel):
 
 class PressNormalModel(models.Model):
     name = models.CharField(max_length=200)
-    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE, null=True)
 
 
 class CustomAbstractModel(SafeDeleteModel):
@@ -89,22 +89,22 @@ class SimpleTest(TestCase):
 
     def test_soft_delete_cascade_with_set_null(self):
         PressNormalModel.article.field.null = True
-        PressNormalModel.article.field.remote_field.on_delete=models.SET_NULL
+        PressNormalModel.article.field.remote_field.on_delete = models.SET_NULL
         PressNormalModel.objects.create(name='press 0', article=self.articles[2])
         self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
 
         self.assertEqual(PressNormalModel.objects.first().article, None)
 
     def test_soft_delete_cascade_with_set_default(self):
-        PressNormalModel.article.field.default=self.articles[1]
-        PressNormalModel.article.field.remote_field.on_delete=models.SET_DEFAULT
+        PressNormalModel.article.field.default = self.articles[1]
+        PressNormalModel.article.field.remote_field.on_delete = models.SET_DEFAULT
         PressNormalModel.objects.create(name='press 0', article=self.articles[2])
         self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
 
         self.assertEqual(PressNormalModel.objects.first().article, self.articles[1])
 
     def test_soft_delete_cascade_with_set(self):
-        PressNormalModel.article.field.remote_field.on_delete=models.SET(self.articles[0])
+        PressNormalModel.article.field.remote_field.on_delete = models.SET(self.articles[0])
         PressNormalModel.objects.create(name='press 0', article=self.articles[2])
         self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
 
