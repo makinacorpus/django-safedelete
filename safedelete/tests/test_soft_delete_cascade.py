@@ -1,4 +1,3 @@
-from django.db.models.fields.related import ForeignKey
 from django.db import models
 from django.test import TestCase
 from safedelete import SOFT_DELETE_CASCADE, SOFT_DELETE
