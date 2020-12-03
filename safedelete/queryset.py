@@ -145,6 +145,15 @@ class SafeDeleteQueryset(query.QuerySet):
 
         return attr
 
+    def _combinator_query(self, combinator, *other_qs, **kwargs):
+        # Filter visibility for operations like union, difference and intersection
+        self._filter_visibility()
+        for qs in other_qs:
+            qs._filter_visibility()
+        return super(SafeDeleteQueryset, self)._combinator_query(
+            combinator, *other_qs, **kwargs
+        )
+
     def _clone(self, klass=None, **kwargs):
         """Called by django when cloning a QuerySet."""
         if LooseVersion(django.get_version()) < LooseVersion('1.9'):
