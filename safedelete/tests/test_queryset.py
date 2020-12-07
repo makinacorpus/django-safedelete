@@ -209,3 +209,75 @@ class QuerySetTestCase(SafeDeleteTestCase):
             instance.id,
             QuerySetModel.objects.filter(id=instance.id).values_list('pk', flat=True)[0]
         )
+
+    def test_union(self):
+        # Test whether the soft deleted model can be found by union."""
+        queryset = QuerySetModel.objects.all()
+        self.assertEqual(
+            queryset.union(queryset).count(),
+            0
+        )
+
+        queryset = QuerySetModel.all_objects.all()
+        self.assertEqual(
+            queryset.union(queryset, all=False).count(),
+            1
+        )
+        self.assertEqual(
+            queryset.union(queryset, all=True).count(),
+            2
+        )
+
+    def test_difference(self):
+        # Test whether the soft deleted model can be found by difference."""
+        instance = QuerySetModel.objects.create(
+            other=self.other
+        )
+        queryset = QuerySetModel.objects.filter(id=instance.id)
+        self.assertEqual(
+            queryset.difference(
+                QuerySetModel.objects.all()
+            ).count(),
+            0
+        )
+
+        queryset = QuerySetModel.all_objects.all()
+        self.assertEqual(
+            queryset.difference(
+                QuerySetModel.objects.all()
+            ).count(),
+            1
+        )
+        self.assertEqual(
+            queryset.difference(
+                QuerySetModel.all_objects.all()
+            ).count(),
+            0
+        )
+
+    def test_intersection(self):
+        # Test whether the soft deleted model can be found by intersection."""
+        instance = QuerySetModel.objects.create(
+            other=self.other
+        )
+        queryset = QuerySetModel.objects.filter(id=instance.id)
+        self.assertEqual(
+            queryset.intersection(
+                QuerySetModel.objects.all()
+            ).count(),
+            1
+        )
+
+        queryset = QuerySetModel.all_objects.all()
+        self.assertEqual(
+            queryset.intersection(
+                QuerySetModel.objects.all()
+            ).count(),
+            1
+        )
+        self.assertEqual(
+            queryset.intersection(
+                QuerySetModel.all_objects.all()
+            ).count(),
+            2
+        )
