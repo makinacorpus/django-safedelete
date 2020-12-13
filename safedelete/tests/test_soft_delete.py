@@ -35,6 +35,15 @@ class UniqueSoftDeleteModel(SafeDeleteModel):
     )
 
 
+class UniqueTogetherSoftDeleteModel(SoftDeleteModel):
+
+    name = models.CharField(max_length=100)
+    team = models.CharField(max_length=100)
+
+    class Meta:
+        unique_together = ("name", "team")
+
+
 class SoftDeleteTestCase(SafeDeleteForceTestCase):
 
     def setUp(self):
@@ -143,6 +152,16 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         # Update it and see if it fails
         obj, created = UniqueSoftDeleteModel.objects.update_or_create(name='unique-test')
         self.assertEqual(obj.name, 'unique-test')
+        self.assertEqual(created, False)
+
+    def test_update_or_create_with_unique_together_constraint(self):
+        # Create and soft-delete object
+        obj, created = UniqueTogetherSoftDeleteModel.objects.update_or_create(name='thor', team='avengers')
+        obj.delete()
+        # Update it and see if it fails
+        obj, created = UniqueTogetherSoftDeleteModel.objects.update_or_create(name='thor', team='avengers')
+        self.assertEqual(obj.name, 'thor')
+        self.assertEqual(obj.team, 'avengers')
         self.assertEqual(created, False)
 
     @override_settings(SAFE_DELETE_INTERPRET_UNDELETED_OBJECTS_AS_CREATED=True)
