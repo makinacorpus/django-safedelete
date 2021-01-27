@@ -1,8 +1,7 @@
 Django safedelete
 =================
 
-.. image:: https://travis-ci.org/makinacorpus/django-safedelete.png
-    :target: https://travis-ci.org/makinacorpus/django-safedelete
+.. image:: https://github.com/makinacorpus/django-safedelete/workflows/Python%20application/badge.svg
 
 .. image:: https://coveralls.io/repos/makinacorpus/django-safedelete/badge.png
     :target: https://coveralls.io/r/makinacorpus/django-safedelete

@@ -119,7 +119,7 @@ class SafeDeleteQueryset(query.QuerySet):
             )
 
             self._safedelete_filter_applied = True
-            
+
     def resolve_expression(self, *args, **kwargs):
         self._filter_visibility()
         return super(SafeDeleteQueryset, self).resolve_expression(*args, **kwargs)

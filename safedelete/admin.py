@@ -69,7 +69,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         try:
             queryset = self.model.all_objects.all()
-        except:
+        except Exception:
             queryset = self.model._default_manager.all()
 
         ordering = self.get_ordering(request)
