@@ -8,6 +8,7 @@ CHANGELOG
 - Add visibility filter for union operations #145
 - Set related fields when soft deleted #144
 - has_unique_fields() now takes into account unique_together option #147
+- Fix filtering in subqueries #148
 
 0.5.6 (2020-07-20)
 ==================
