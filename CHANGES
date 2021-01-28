@@ -2,7 +2,7 @@
 CHANGELOG
 =========
 
-0.5.7 (unreleased)
+0.5.7 (2021-01-28)
 ==================
 
 - Add visibility filter for union operations #145
