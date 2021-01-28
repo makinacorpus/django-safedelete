@@ -2,6 +2,7 @@ Django safedelete
 =================
 
 .. image:: https://github.com/makinacorpus/django-safedelete/workflows/Python%20application/badge.svg
+    :target: https://github.com/makinacorpus/django-safedelete/actions?query=workflow%3A%22Python+application%22
 
 .. image:: https://coveralls.io/repos/makinacorpus/django-safedelete/badge.png
     :target: https://coveralls.io/r/makinacorpus/django-safedelete
