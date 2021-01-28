@@ -15,5 +15,5 @@ __all__ = [
     'DELETED_VISIBLE_BY_FIELD',
 ]
 
-__version__ = "0.5.7"
+__version__ = "0.5.8dev"
 default_app_config = 'safedelete.apps.SafeDeleteConfig'
