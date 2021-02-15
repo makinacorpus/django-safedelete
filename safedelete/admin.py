@@ -9,9 +9,9 @@ from django.contrib.admin.utils import model_ngettext
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.template.response import TemplateResponse
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.html import conditional_escape, format_html
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from .utils import related_objects
 
@@ -105,7 +105,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
             requested = queryset.count()
             if requested:
                 for obj in queryset:
-                    obj_display = force_text(obj)
+                    obj_display = force_str(obj)
                     self.log_undeletion(request, obj, obj_display)
                 queryset.undelete()
                 changed = original_queryset.filter(deleted__isnull=True).count()
@@ -134,9 +134,9 @@ class SafeDeleteAdmin(admin.ModelAdmin):
 
         opts = self.model._meta
         if len(queryset) == 1:
-            objects_name = force_text(opts.verbose_name)
+            objects_name = force_str(opts.verbose_name)
         else:
-            objects_name = force_text(opts.verbose_name_plural)
+            objects_name = force_str(opts.verbose_name_plural)
         title = _("Are you sure?")
 
         related_list = [list(related_objects(obj)) for obj in queryset]

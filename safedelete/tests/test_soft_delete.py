@@ -7,7 +7,6 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.test import override_settings
 
-from ..models import SafeDeleteMixin
 from ..models import SafeDeleteModel
 from ..config import SOFT_DELETE_CASCADE
 from .testcase import SafeDeleteForceTestCase
@@ -22,8 +21,8 @@ class SoftDeleteRelatedModel(SafeDeleteModel):
     related = models.ForeignKey(SoftDeleteModel, on_delete=models.CASCADE)
 
 
-class SoftDeleteMixinModel(SafeDeleteMixin):
-    # Legacy compatibility with the older SafeDeleteMixin name.
+class SoftDeleteMixinModel(SafeDeleteModel):
+    # Legacy compatibility with the older SafeDeleteModel name.
     pass
 
 
@@ -54,7 +53,7 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         self.assertSoftDelete(self.instance)
 
     def test_softdelete_mixin(self):
-        """Deprecated: Deleting a SafeDeleteMixin model with the soft delete policy should only mask it, not delete it."""
+        """Deprecated: Deleting a SafeDeleteModel model with the soft delete policy should only mask it, not delete it."""
         self.assertSoftDelete(SoftDeleteMixinModel.objects.create())
 
     @mock.patch('safedelete.models.post_undelete.send')

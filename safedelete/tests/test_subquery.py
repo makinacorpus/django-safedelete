@@ -1,6 +1,6 @@
 from django.db import models
 
-from safedelete.models import SafeDeleteMixin
+from safedelete.models import SafeDeleteModel
 from safedelete.tests.testcase import SafeDeleteTestCase
 
 
@@ -8,7 +8,7 @@ class Widget(models.Model):
     pass
 
 
-class WidgetItem(SafeDeleteMixin):
+class WidgetItem(SafeDeleteModel):
     widget = models.ForeignKey(
         Widget,
         on_delete=models.CASCADE,

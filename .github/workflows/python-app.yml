@@ -15,36 +15,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        django_version: [ '1.11', '2.0', '2.1', '2.2', '3.0', '3.1' ]
-        python_version: [ '3.4', '3.5', '3.6', '3.7', '3.8', '3.9' ]
+        django_version: [ '2.2', '3.0', '3.1' ]
+        python_version: [ '3.5', '3.6', '3.7', '3.8', '3.9' ]
         exclude:
-          - django_version: '1.11'
-            python_version: '3.8'
-          - django_version: '1.11'
-            python_version: '3.9'
 
-          - django_version: '2.0'
-            python_version: '3.8'
-          - django_version: '2.0'
-            python_version: '3.9'
-
-          - django_version: '2.1'
-            python_version: '3.4'
-          - django_version: '2.1'
-            python_version: '3.8'
-          - django_version: '2.1'
-            python_version: '3.9'
-
-          - django_version: '2.2'
-            python_version: '3.4'
-
-          - django_version: '3.0'
-            python_version: '3.4'
           - django_version: '3.0'
             python_version: '3.5'
 
-          - django_version: '3.1'
-            python_version: '3.4'
           - django_version: '3.1'
             python_version: '3.5'
     env:
@@ -75,7 +52,8 @@ jobs:
     - name: Test Django
       if: matrix.django_version != '1.11'
       run: |
-        python -m coverage run `which django-admin.py` test --settings=safedelete.tests.settings
+        python -W error::DeprecationWarning -W error::PendingDeprecationWarning \
+          -m coverage run `which django-admin` test --settings=safedelete.tests.settings
     - name: Coverage
       if: ${{ success() }}
       run: |
