@@ -238,9 +238,9 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         }
 
         return TemplateResponse(
-                request,
-                self.hard_delete_confirmation_template,
-                context,
-            )
+            request,
+            self.hard_delete_confirmation_template,
+            context,
+        )
 
     hard_delete.short_description = "Hard delete selected %(verbose_name_plural)s."
