@@ -153,7 +153,8 @@ class SafeDeleteQueryset(query.QuerySet):
         # Filter visibility for operations like union, difference and intersection
         self._filter_visibility()
         for qs in other_qs:
-            qs._filter_visibility()
+            if hasattr(qs, "_filter_visibility"):
+                qs._filter_visibility()
         return super(SafeDeleteQueryset, self)._combinator_query(
             combinator, *other_qs, **kwargs
         )
