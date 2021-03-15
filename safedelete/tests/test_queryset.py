@@ -210,6 +210,28 @@ class QuerySetTestCase(SafeDeleteTestCase):
             QuerySetModel.objects.filter(id=instance.id).values_list('pk', flat=True)[0]
         )
 
+    def test_union_with_different_models(self):
+        # Test the safe deleted model can union with other models."""
+        queryset = QuerySetModel.objects.values_list("pk")
+        other_queryset = OtherModel.objects.values_list("pk")
+        self.assertEqual(
+            queryset.union(other_queryset).count(),
+            1
+        )
+        self.assertEqual(
+            other_queryset.union(queryset).count(),
+            1
+        )
+        queryset = QuerySetModel.all_objects.values_list("pk")
+        self.assertEqual(
+            queryset.union(other_queryset, all=True).count(),
+            2
+        )
+        self.assertEqual(
+            other_queryset.union(queryset, all=True).count(),
+            2
+        )
+
     def test_union(self):
         # Test whether the soft deleted model can be found by union."""
         queryset = QuerySetModel.objects.all()
