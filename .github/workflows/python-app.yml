@@ -57,4 +57,4 @@ jobs:
     - name: Coverage
       if: ${{ success() }}
       run: |
-        coveralls --service=github
+        coveralls
