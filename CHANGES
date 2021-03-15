@@ -5,7 +5,7 @@ CHANGELOG
 1.0.1 (unreleased)
 ==================
 
--
+- Fix attribute error when union queryset of safe delete model with others #152 
 
 
 1.0.0 (2021-02-15)
