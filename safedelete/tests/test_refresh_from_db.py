@@ -1,6 +1,6 @@
 from ..config import DELETED_VISIBLE_BY_FIELD
 from ..managers import SafeDeleteManager
-from ..models import SafeDeleteMixin
+from ..models import SafeDeleteModel
 from .testcase import SafeDeleteTestCase
 
 
@@ -8,7 +8,7 @@ class FieldManager(SafeDeleteManager):
     _safedelete_visibility = DELETED_VISIBLE_BY_FIELD
 
 
-class RefreshModel(SafeDeleteMixin):
+class RefreshModel(SafeDeleteModel):
     objects = FieldManager()
 
 

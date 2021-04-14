@@ -4,7 +4,7 @@ from django.db import models
 
 from ..config import DELETED_VISIBLE_BY_FIELD
 from ..managers import SafeDeleteManager
-from ..models import SafeDeleteMixin
+from ..models import SafeDeleteModel
 from .testcase import SafeDeleteTestCase
 
 
@@ -16,7 +16,7 @@ class FieldManager(SafeDeleteManager):
     _safedelete_visibility = DELETED_VISIBLE_BY_FIELD
 
 
-class QuerySetModel(SafeDeleteMixin):
+class QuerySetModel(SafeDeleteModel):
     other = models.ForeignKey(
         OtherModel,
         on_delete=models.CASCADE
@@ -208,4 +208,98 @@ class QuerySetTestCase(SafeDeleteTestCase):
         self.assertEqual(
             instance.id,
             QuerySetModel.objects.filter(id=instance.id).values_list('pk', flat=True)[0]
+        )
+
+    def test_union_with_different_models(self):
+        # Test the safe deleted model can union with other models."""
+        queryset = QuerySetModel.objects.values_list("pk")
+        other_queryset = OtherModel.objects.values_list("pk")
+        self.assertEqual(
+            queryset.union(other_queryset).count(),
+            1
+        )
+        self.assertEqual(
+            other_queryset.union(queryset).count(),
+            1
+        )
+        queryset = QuerySetModel.all_objects.values_list("pk")
+        self.assertEqual(
+            queryset.union(other_queryset, all=True).count(),
+            2
+        )
+        self.assertEqual(
+            other_queryset.union(queryset, all=True).count(),
+            2
+        )
+
+    def test_union(self):
+        # Test whether the soft deleted model can be found by union."""
+        queryset = QuerySetModel.objects.all()
+        self.assertEqual(
+            queryset.union(queryset).count(),
+            0
+        )
+
+        queryset = QuerySetModel.all_objects.all()
+        self.assertEqual(
+            queryset.union(queryset, all=False).count(),
+            1
+        )
+        self.assertEqual(
+            queryset.union(queryset, all=True).count(),
+            2
+        )
+
+    def test_difference(self):
+        # Test whether the soft deleted model can be found by difference."""
+        instance = QuerySetModel.objects.create(
+            other=self.other
+        )
+        queryset = QuerySetModel.objects.filter(id=instance.id)
+        self.assertEqual(
+            queryset.difference(
+                QuerySetModel.objects.all()
+            ).count(),
+            0
+        )
+
+        queryset = QuerySetModel.all_objects.all()
+        self.assertEqual(
+            queryset.difference(
+                QuerySetModel.objects.all()
+            ).count(),
+            1
+        )
+        self.assertEqual(
+            queryset.difference(
+                QuerySetModel.all_objects.all()
+            ).count(),
+            0
+        )
+
+    def test_intersection(self):
+        # Test whether the soft deleted model can be found by intersection."""
+        instance = QuerySetModel.objects.create(
+            other=self.other
+        )
+        queryset = QuerySetModel.objects.filter(id=instance.id)
+        self.assertEqual(
+            queryset.intersection(
+                QuerySetModel.objects.all()
+            ).count(),
+            1
+        )
+
+        queryset = QuerySetModel.all_objects.all()
+        self.assertEqual(
+            queryset.intersection(
+                QuerySetModel.objects.all()
+            ).count(),
+            1
+        )
+        self.assertEqual(
+            queryset.intersection(
+                QuerySetModel.all_objects.all()
+            ).count(),
+            2
         )

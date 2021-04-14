@@ -1,5 +1,6 @@
 import warnings
 
+from django.contrib.admin.utils import NestedObjects
 from django.db import models, router
 from django.utils import timezone
 
@@ -140,7 +141,7 @@ class SafeDeleteModel(models.Model):
             using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
             # send pre_softdelete signal
             pre_softdelete.send(sender=self.__class__, instance=self, using=using)
-            super(SafeDeleteModel, self).save(**kwargs)
+            self.save(keep_deleted=True, **kwargs)
             # send softdelete signal
             post_softdelete.send(sender=self.__class__, instance=self, using=using)
 
@@ -163,16 +164,34 @@ class SafeDeleteModel(models.Model):
             for related in related_objects(self):
                 if is_safedelete_cls(related.__class__) and not getattr(related, FIELD_NAME):
                     related.delete(force_policy=SOFT_DELETE, **kwargs)
+
+            collector = NestedObjects(using=router.db_for_write(self))
+            collector.collect([self])
+            # update fields (SET, SET_DEFAULT or SET_NULL)
+            for model, instances_for_fieldvalues in collector.field_updates.items():
+                for (field, value), instances in instances_for_fieldvalues.items():
+                    query = models.sql.UpdateQuery(model)
+                    query.update_batch(
+                        [obj.pk for obj in instances],
+                        {field.name: value},
+                        collector.using,
+                    )
+
             # soft-delete the object
             self.delete(force_policy=SOFT_DELETE, **kwargs)
 
     @classmethod
     def has_unique_fields(cls):
-        """Checks if one of the fields of this model has a unique constraint set (unique=True)
+        """Checks if one of the fields of this model has a unique constraint set (unique=True).
+
+        It also checks if the model has sets of field names that, taken together, must be unique.
 
         Args:
             model: Model instance to check
         """
+        if cls._meta.unique_together:
+            return True
+
         for field in cls._meta.fields:
             if field._unique:
                 return True

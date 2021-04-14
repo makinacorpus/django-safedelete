@@ -1,8 +1,8 @@
 Django safedelete
 =================
 
-.. image:: https://travis-ci.org/makinacorpus/django-safedelete.png
-    :target: https://travis-ci.org/makinacorpus/django-safedelete
+.. image:: https://github.com/makinacorpus/django-safedelete/workflows/Python%20application/badge.svg
+    :target: https://github.com/makinacorpus/django-safedelete/actions?query=workflow%3A%22Python+application%22
 
 .. image:: https://coveralls.io/repos/makinacorpus/django-safedelete/badge.png
     :target: https://coveralls.io/r/makinacorpus/django-safedelete
@@ -74,14 +74,13 @@ Compatibilities
 * Branch 0.3.x is compatible with django >= 1.4
 * Branch 0.4.x is compatible with django >= 1.8
 * Branch 0.5.x is compatible with django >= 1.11
+* Branch 1.0.x is compatible with django >= 2.2
 
-Current branch (0.5.x) has been tested with :
+Current branch (1.0.x) is tested with :
 
-*  Django 1.11 using python 2.7 and python 3.4 to 3.6.
-*  Django 2.0 using python 3.4 to 3.6.
-*  Django 2.1 using python 3.5 to 3.7.
-*  Django 2.2 using python 3.5 to 3.7.
-*  Django 3.0 using python 3.6 to 3.8.
+*  Django 2.2 using python 3.5 to 3.9.
+*  Django 3.0 using python 3.6 to 3.9.
+*  Django 3.1 using python 3.6 to 3.9.
 
 
 Installation

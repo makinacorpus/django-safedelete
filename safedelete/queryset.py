@@ -119,6 +119,10 @@ class SafeDeleteQueryset(query.QuerySet):
 
             self._safedelete_filter_applied = True
 
+    def resolve_expression(self, *args, **kwargs):
+        self._filter_visibility()
+        return super(SafeDeleteQueryset, self).resolve_expression(*args, **kwargs)
+
     def __getitem__(self, key):
         """
         Override __getitem__ just before it hits the original queryset
@@ -143,6 +147,16 @@ class SafeDeleteQueryset(query.QuerySet):
             self._filter_visibility()
 
         return attr
+
+    def _combinator_query(self, combinator, *other_qs, **kwargs):
+        # Filter visibility for operations like union, difference and intersection
+        self._filter_visibility()
+        for qs in other_qs:
+            if hasattr(qs, "_filter_visibility"):
+                qs._filter_visibility()
+        return super(SafeDeleteQueryset, self)._combinator_query(
+            combinator, *other_qs, **kwargs
+        )
 
     def _clone(self, klass=None, **kwargs):
         """Called by django when cloning a QuerySet."""

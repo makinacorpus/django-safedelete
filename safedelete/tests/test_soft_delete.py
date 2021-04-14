@@ -7,7 +7,6 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.test import override_settings
 
-from ..models import SafeDeleteMixin
 from ..models import SafeDeleteModel
 from ..config import SOFT_DELETE_CASCADE
 from .testcase import SafeDeleteForceTestCase
@@ -22,8 +21,8 @@ class SoftDeleteRelatedModel(SafeDeleteModel):
     related = models.ForeignKey(SoftDeleteModel, on_delete=models.CASCADE)
 
 
-class SoftDeleteMixinModel(SafeDeleteMixin):
-    # Legacy compatibility with the older SafeDeleteMixin name.
+class SoftDeleteMixinModel(SafeDeleteModel):
+    # Legacy compatibility with the older SafeDeleteModel name.
     pass
 
 
@@ -33,6 +32,15 @@ class UniqueSoftDeleteModel(SafeDeleteModel):
         max_length=100,
         unique=True
     )
+
+
+class UniqueTogetherSoftDeleteModel(SoftDeleteModel):
+
+    name = models.CharField(max_length=100)
+    team = models.CharField(max_length=100)
+
+    class Meta:
+        unique_together = ("name", "team")
 
 
 class SoftDeleteTestCase(SafeDeleteForceTestCase):
@@ -45,7 +53,7 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         self.assertSoftDelete(self.instance)
 
     def test_softdelete_mixin(self):
-        """Deprecated: Deleting a SafeDeleteMixin model with the soft delete policy should only mask it, not delete it."""
+        """Deprecated: Deleting a SafeDeleteModel model with the soft delete policy should only mask it, not delete it."""
         self.assertSoftDelete(SoftDeleteMixinModel.objects.create())
 
     @mock.patch('safedelete.models.post_undelete.send')
@@ -143,6 +151,16 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         # Update it and see if it fails
         obj, created = UniqueSoftDeleteModel.objects.update_or_create(name='unique-test')
         self.assertEqual(obj.name, 'unique-test')
+        self.assertEqual(created, False)
+
+    def test_update_or_create_with_unique_together_constraint(self):
+        # Create and soft-delete object
+        obj, created = UniqueTogetherSoftDeleteModel.objects.update_or_create(name='thor', team='avengers')
+        obj.delete()
+        # Update it and see if it fails
+        obj, created = UniqueTogetherSoftDeleteModel.objects.update_or_create(name='thor', team='avengers')
+        self.assertEqual(obj.name, 'thor')
+        self.assertEqual(obj.team, 'avengers')
         self.assertEqual(created, False)
 
     @override_settings(SAFE_DELETE_INTERPRET_UNDELETED_OBJECTS_AS_CREATED=True)

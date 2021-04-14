@@ -9,9 +9,9 @@ from django.contrib.admin.utils import model_ngettext
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.template.response import TemplateResponse
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.html import conditional_escape, format_html
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from .config import FIELD_NAME
 from .utils import related_objects
@@ -70,7 +70,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         try:
             queryset = self.model.all_objects.all()
-        except:
+        except Exception:
             queryset = self.model._default_manager.all()
 
         ordering = self.get_ordering(request)
@@ -94,6 +94,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
 
     def undelete_selected(self, request, queryset):
         """ Admin action to undelete objects in bulk with confirmation. """
+        original_queryset = queryset.all()
         if not self.has_delete_permission(request):
             raise PermissionDenied
         assert hasattr(queryset, 'undelete')
@@ -102,24 +103,30 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         queryset = queryset.filter(**{FIELD_NAME + '__isnull': False})
         # Undeletion confirmed
         if request.POST.get('post'):
-            n = queryset.count()
-            if n:
+            requested = queryset.count()
+            if requested:
                 for obj in queryset:
-                    obj_display = force_text(obj)
+                    obj_display = force_str(obj)
                     self.log_undeletion(request, obj, obj_display)
                 queryset.undelete()
-                if django.VERSION[1] <= 4:
+                changed = original_queryset.filter(deleted__isnull=True).count()
+                if changed < requested:
                     self.message_user(
                         request,
-                        _("Successfully undeleted %(count)d %(items)s.") % {
-                            "count": n, "items": model_ngettext(self.opts, n)
+                        _("Successfully undeleted %(count_changed)d of the "
+                          "%(count_requested)d selected %(items)s.") % {
+                            "count_requested": requested,
+                            "count_changed": changed,
+                            "items": model_ngettext(self.opts, requested)
                         },
+                        messages.WARNING,
                     )
                 else:
                     self.message_user(
                         request,
                         _("Successfully undeleted %(count)d %(items)s.") % {
-                            "count": n, "items": model_ngettext(self.opts, n)
+                            "count": requested,
+                            "items": model_ngettext(self.opts, requested)
                         },
                         messages.SUCCESS,
                     )
@@ -128,9 +135,9 @@ class SafeDeleteAdmin(admin.ModelAdmin):
 
         opts = self.model._meta
         if len(queryset) == 1:
-            objects_name = force_text(opts.verbose_name)
+            objects_name = force_str(opts.verbose_name)
         else:
-            objects_name = force_text(opts.verbose_name_plural)
+            objects_name = force_str(opts.verbose_name_plural)
         title = _("Are you sure?")
 
         related_list = [list(related_objects(obj)) for obj in queryset]

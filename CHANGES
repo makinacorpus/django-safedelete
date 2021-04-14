@@ -2,10 +2,36 @@
 CHANGELOG
 =========
 
-0.5.5 (unreleased)
+1.0.1 (unreleased)
 ==================
 
--
+- Fix attribute error when union queryset of safe delete model with others #152 
+
+
+1.0.0 (2021-02-15)
+==================
+
+- Drop support for Django < 2.2
+- Fix deprecation warnings for Django 4.0
+
+0.5.7 (2021-01-28)
+==================
+
+- Add visibility filter for union operations #145
+- Set related fields when soft deleted #144
+- has_unique_fields() now takes into account unique_together option #147
+- Fix filtering in subqueries #148
+
+0.5.6 (2020-07-20)
+==================
+
+- call self.save() instead of super in delete()
+
+0.5.5 (2020-05-14)
+==================
+
+- Admin action now warns if some objects weren't undeleted
+- Remove some pre-Django 1.11 support
 
 0.5.4 (2019-12-02)
 ==================
