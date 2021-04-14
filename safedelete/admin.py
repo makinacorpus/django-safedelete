@@ -109,7 +109,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
                     obj_display = force_str(obj)
                     self.log_undeletion(request, obj, obj_display)
                 queryset.undelete()
-                changed = original_queryset.filter(**{FIELD_NAME + '__isnull':True}).count()
+                changed = original_queryset.filter(**{FIELD_NAME + '__isnull': True}).count()
                 if changed < requested:
                     self.message_user(
                         request,
