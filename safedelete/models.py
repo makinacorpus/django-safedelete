@@ -167,6 +167,9 @@ class SafeDeleteModel(models.Model):
                 if is_safedelete_cls(related.__class__) and not related.deleted:
                     related.delete(force_policy=SOFT_DELETE, **kwargs)
 
+            # soft-delete the object
+            self.delete(force_policy=SOFT_DELETE, **kwargs)
+
             collector = NestedObjects(using=router.db_for_write(self))
             collector.collect([self])
             # update fields (SET, SET_DEFAULT or SET_NULL)
@@ -178,9 +181,6 @@ class SafeDeleteModel(models.Model):
                         {field.name: value},
                         collector.using,
                     )
-
-            # soft-delete the object
-            self.delete(force_policy=SOFT_DELETE, **kwargs)
 
     @classmethod
     def has_unique_fields(cls):
