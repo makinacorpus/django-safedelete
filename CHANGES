@@ -6,6 +6,7 @@ CHANGELOG
 ==================
 
 - Fix attribute error when union queryset of safe delete model with others #152 
+- SET related objects after deleting #156
 
 
 1.0.0 (2021-02-15)
