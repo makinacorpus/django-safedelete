@@ -53,3 +53,6 @@ TEMPLATES = [
         },
     },
 ]
+
+# This is for Django 3.2, harmless for previous versions.
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
