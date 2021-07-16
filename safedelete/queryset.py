@@ -13,8 +13,8 @@ class SafeDeleteQueryset(query.QuerySet):
     """
 
     def __init__(self, model=None, query=None, using=None, hints=None):
-        super().__init__(model=model, query=query, using=using, hints=hints)
-        self._query = query or SafeDeleteQuery(self.model)
+        super(SafeDeleteQueryset, self).__init__(model=model, query=query, using=using, hints=hints)
+        self.query = query or SafeDeleteQuery(self.model)
 
     def delete(self, force_policy=None):
         """Overrides bulk delete behaviour.
