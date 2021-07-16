@@ -142,7 +142,7 @@ class SafeDeleteManager(models.Manager):
 
     @staticmethod
     def get_soft_delete_policies():
-        """Returns all stati which stand for some kind of soft-delete"""
+        """Returns all states which stand for some kind of soft-delete"""
         return [SOFT_DELETE, SOFT_DELETE_CASCADE]
 
 

@@ -12,7 +12,7 @@ class SafeDeleteQuery(sql.Query):
     _safedelete_filter_applied = False
 
     def check_field_filter(self, **kwargs):
-        """Check if the visibility for DELETED_VISIBLE_BY_FIELD needs t be put into effect.
+        """Check if the visibility for DELETED_VISIBLE_BY_FIELD needs to be put into effect.
 
         DELETED_VISIBLE_BY_FIELD is a temporary visibility flag that changes
         to DELETED_VISIBLE once asked for the named parameter defined in
@@ -29,8 +29,6 @@ class SafeDeleteQuery(sql.Query):
         Unlike QuerySet.filter, this does not return a clone.
         This is because QuerySet._fetch_all cannot work with a clone.
         """
-        # import traceback
-        # traceback.print_stack(limit=6)
         if not self.can_filter() or self._safedelete_filter_applied:
             return
         force_visibility = getattr(self, '_safedelete_force_visibility', None)
