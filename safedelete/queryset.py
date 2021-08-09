@@ -1,11 +1,6 @@
-from distutils.version import LooseVersion
-
-import django
 from django.db.models import query
-from django.db.models.query_utils import Q
 
-from .config import (DELETED_INVISIBLE, DELETED_ONLY_VISIBLE, DELETED_VISIBLE,
-                     DELETED_VISIBLE_BY_FIELD)
+from .query import SafeDeleteQuery
 
 
 class SafeDeleteQueryset(query.QuerySet):
@@ -16,7 +11,10 @@ class SafeDeleteQueryset(query.QuerySet):
     The deleted policy is evaluated at the very end of the chain when the
     QuerySet itself is evaluated.
     """
-    _safedelete_filter_applied = False
+
+    def __init__(self, model=None, query=None, using=None, hints=None):
+        super(SafeDeleteQueryset, self).__init__(model=model, query=query, using=using, hints=hints)
+        self.query = query or SafeDeleteQuery(self.model)
 
     def delete(self, force_policy=None):
         """Overrides bulk delete behaviour.
@@ -64,110 +62,11 @@ class SafeDeleteQueryset(query.QuerySet):
             force_visibility: Force a deletion visibility. (default: {None})
         """
         if force_visibility is not None:
-            self._safedelete_force_visibility = force_visibility
+            self.query._safedelete_force_visibility = force_visibility
         return super(SafeDeleteQueryset, self).all()
-
-    def _check_field_filter(self, **kwargs):
-        """Check if the visibility for DELETED_VISIBLE_BY_FIELD needs t be put into effect.
-
-        DELETED_VISIBLE_BY_FIELD is a temporary visibility flag that changes
-        to DELETED_VISIBLE once asked for the named parameter defined in
-        `_safedelete_force_visibility`. When evaluating the queryset, it will
-        then filter on all models.
-        """
-        if self._safedelete_visibility == DELETED_VISIBLE_BY_FIELD \
-                and self._safedelete_visibility_field in kwargs:
-            self._safedelete_force_visibility = DELETED_VISIBLE
 
     def filter(self, *args, **kwargs):
         # Return a copy, see #131
         queryset = self._clone()
-        queryset._check_field_filter(**kwargs)
+        queryset.query.check_field_filter(**kwargs)
         return super(SafeDeleteQueryset, queryset).filter(*args, **kwargs)
-
-    def get(self, *args, **kwargs):
-        # Return a copy, see #131
-        queryset = self._clone()
-        queryset._check_field_filter(**kwargs)
-        # Filter visibility here because Django 3.0 adds a limit in get and we cannot filter afterward
-        queryset._filter_visibility()
-        return super(SafeDeleteQueryset, queryset).get(*args, **kwargs)
-
-    def _filter_visibility(self):
-        """Add deleted filters to the current QuerySet.
-
-        Unlike QuerySet.filter, this does not return a clone.
-        This is because QuerySet._fetch_all cannot work with a clone.
-        """
-        force_visibility = getattr(self, '_safedelete_force_visibility', None)
-        visibility = force_visibility \
-            if force_visibility is not None \
-            else self._safedelete_visibility
-        if not self._safedelete_filter_applied and \
-           visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD, DELETED_ONLY_VISIBLE):
-            assert self.query.can_filter(), \
-                "Cannot filter a query once a slice has been taken."
-
-            # Add a query manually, QuerySet.filter returns a clone.
-            # QuerySet._fetch_all cannot work with clones.
-            self.query.add_q(
-                Q(
-                    deleted__isnull=visibility in (
-                        DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD
-                    )
-                )
-            )
-
-            self._safedelete_filter_applied = True
-
-    def resolve_expression(self, *args, **kwargs):
-        self._filter_visibility()
-        return super(SafeDeleteQueryset, self).resolve_expression(*args, **kwargs)
-
-    def __getitem__(self, key):
-        """
-        Override __getitem__ just before it hits the original queryset
-        to apply the filter visibility method.
-        """
-        # get method add a limit in Django 3.0 and thus we can't filter here anymore in this case
-        if self.query.can_filter:
-            self._filter_visibility()
-
-        return super(SafeDeleteQueryset, self).__getitem__(key)
-
-    def __getattribute__(self, name):
-        """Methods that do not return a QuerySet should call ``_filter_visibility`` first."""
-        attr = object.__getattribute__(self, name)
-        # These methods evaluate the queryset and therefore need to filter the
-        # visiblity set.
-        evaluation_methods = (
-            '_fetch_all', 'count', 'exists', 'aggregate', 'update', '_update',
-            'delete', 'undelete', 'iterator', 'first', 'last', 'latest', 'earliest'
-        )
-        if hasattr(attr, '__call__') and name in evaluation_methods:
-            self._filter_visibility()
-
-        return attr
-
-    def _combinator_query(self, combinator, *other_qs, **kwargs):
-        # Filter visibility for operations like union, difference and intersection
-        self._filter_visibility()
-        for qs in other_qs:
-            if hasattr(qs, "_filter_visibility"):
-                qs._filter_visibility()
-        return super(SafeDeleteQueryset, self)._combinator_query(
-            combinator, *other_qs, **kwargs
-        )
-
-    def _clone(self, klass=None, **kwargs):
-        """Called by django when cloning a QuerySet."""
-        if LooseVersion(django.get_version()) < LooseVersion('1.9'):
-            clone = super(SafeDeleteQueryset, self)._clone(klass, **kwargs)
-        else:
-            clone = super(SafeDeleteQueryset, self)._clone(**kwargs)
-        clone._safedelete_visibility = self._safedelete_visibility
-        clone._safedelete_visibility_field = self._safedelete_visibility_field
-        clone._safedelete_filter_applied = self._safedelete_filter_applied
-        if hasattr(self, '_safedelete_force_visibility'):
-            clone._safedelete_force_visibility = self._safedelete_force_visibility
-        return clone
