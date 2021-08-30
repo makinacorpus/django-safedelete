@@ -39,9 +39,11 @@ class SafeDeleteQuery(sql.Query):
             # Add a query manually, QuerySet.filter returns a clone.
             # QuerySet._fetch_all cannot work with clones.
             self.add_q(
-                Q(**{FIELD_NAME + '__isnull': visibility in (
-                        DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD
-                    )}
+                Q(
+                    **{
+                        FIELD_NAME + "__isnull": visibility
+                        in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD)
+                    }
                 )
             )
             self._safedelete_filter_applied = True
