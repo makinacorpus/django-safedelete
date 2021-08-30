@@ -5,42 +5,42 @@ from ..models import SafeDeleteModel
 from .testcase import SafeDeleteTestCase
 
 
-class Child(models.Model):
+class Parent(models.Model):
     pass
 
 
-class Parent(SafeDeleteModel):
+class Child(SafeDeleteModel):
     _safedelete_policy = SOFT_DELETE_CASCADE
 
-    child = models.ForeignKey(
-        Child,
+    parent = models.ForeignKey(
+        Parent,
         on_delete=models.CASCADE,
-        related_name='parents'
+        related_name='children'
     )
 
 
 class ForeignKeyTestCase(SafeDeleteTestCase):
 
-    def test_many_to_many(self):
+    def test_one_to_many(self):
         """Test whether related queries still works."""
-        child = Child.objects.create()
-        parent1 = Parent.objects.create(child=child)
-        Parent.objects.create(child=child)
+        parent = Parent.objects.create()
+        child1 = Child.objects.create(parent=parent)
+        Child.objects.create(parent=parent)
 
-        # The child should still have both parents
+        # The parent should still have both children
         self.assertEqual(
-            child.parents.all().count(),
+            parent.children.all().count(),
             2
         )
 
-        # Soft deleting one parent, should "hide" it from the related field
-        parent1.delete()
+        # Soft deleting one child, should "hide" it from the related field
+        child1.delete()
         self.assertEqual(
-            child.parents.all().count(),
+            parent.children.all().count(),
             1
         )
         # But explicitly saying you want to "show" them, shouldn't hide them
         self.assertEqual(
-            child.parents.all(force_visibility=DELETED_VISIBLE).count(),
+            parent.children.all(force_visibility=DELETED_VISIBLE).count(),
             2
         )

@@ -58,8 +58,8 @@ class SafeDeleteManager(models.Manager):
     def get_queryset(self):
         # Backwards compatibility, no need to move options to QuerySet.
         queryset = self._queryset_class(self.model, using=self._db)
-        queryset._safedelete_visibility = self._safedelete_visibility
-        queryset._safedelete_visibility_field = self._safedelete_visibility_field
+        queryset.query._safedelete_visibility = self._safedelete_visibility
+        queryset.query._safedelete_visibility_field = self._safedelete_visibility_field
         return queryset
 
     def all_with_deleted(self):
@@ -99,7 +99,7 @@ class SafeDeleteManager(models.Manager):
         # We don't call all() on the queryset, see https://github.com/makinacorpus/django-safedelete/issues/81
         qs = self.get_queryset()
         if force_visibility is not None:
-            qs._safedelete_force_visibility = force_visibility
+            qs.query._safedelete_force_visibility = force_visibility
         return qs
 
     def update_or_create(self, defaults=None, **kwargs):
@@ -143,7 +143,7 @@ class SafeDeleteManager(models.Manager):
 
     @staticmethod
     def get_soft_delete_policies():
-        """Returns all stati which stand for some kind of soft-delete"""
+        """Returns all states which stand for some kind of soft-delete"""
         return [SOFT_DELETE, SOFT_DELETE_CASCADE]
 
 

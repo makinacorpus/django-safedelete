@@ -32,3 +32,10 @@ class SubQueryTestCase(SafeDeleteTestCase):
         item_queryset = WidgetItem.objects.values_list('widget').filter(id=item.id)
         queryset = Widget.objects.filter(id__in=item_queryset)
         self.assertEqual(len(list(queryset)), 0)
+
+    def test_subquery_same_model(self):
+        widget = Widget.objects.create()
+        item = WidgetItem.objects.create(widget=widget)
+        item.delete()
+        queryset = WidgetItem.all_objects.filter(id__in=WidgetItem.objects.all())
+        self.assertEqual(len(list(queryset)), 0)

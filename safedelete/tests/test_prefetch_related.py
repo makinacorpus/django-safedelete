@@ -43,7 +43,8 @@ class PrefetchTestCase(SafeDeleteTestCase):
                     repr(s) for s in PrefetchBrother.objects.get(
                         pk=brother.pk
                     ).sisters.all().order_by('pk')
-                ]
+                ],
+                repr
             )
 
     def test_prefetch_related_is_evaluated_once(self):

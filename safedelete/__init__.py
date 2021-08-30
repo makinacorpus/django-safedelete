@@ -16,4 +16,3 @@ __all__ = [
 ]
 
 __version__ = "1.0.1dev"
-default_app_config = 'safedelete.apps.SafeDeleteConfig'

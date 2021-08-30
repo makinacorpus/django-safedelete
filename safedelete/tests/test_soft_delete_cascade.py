@@ -2,6 +2,7 @@ from django.db import models
 from django.test import TestCase
 from safedelete import SOFT_DELETE_CASCADE, SOFT_DELETE
 from safedelete.models import SafeDeleteModel
+from safedelete.signals import pre_softdelete
 from safedelete.tests.models import Article, Author, Category
 
 
@@ -33,8 +34,12 @@ class ArticleView(CustomAbstractModel):
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
 
 
-class SimpleTest(TestCase):
+def pre_softdelete_article(sender, instance, *args, **kwargs):
+    # Related objects should not be SET before instance was deleted
+    assert instance.pressnormalmodel_set.count() == 1
 
+
+class SimpleTest(TestCase):
     def setUp(self):
 
         self.authors = (
@@ -76,7 +81,9 @@ class SimpleTest(TestCase):
 
     def test_soft_delete_cascade_with_normal_model(self):
         PressNormalModel.objects.create(name='press 0', article=self.articles[2])
+        pre_softdelete.connect(pre_softdelete_article, Article)
         self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
+        pre_softdelete.disconnect(pre_softdelete_article, Article)
 
         self.assertEqual(Author.objects.count(), 2)
         self.assertEqual(Author.all_objects.count(), 3)
@@ -90,7 +97,9 @@ class SimpleTest(TestCase):
         PressNormalModel.article.field.null = True
         PressNormalModel.article.field.remote_field.on_delete = models.SET_NULL
         PressNormalModel.objects.create(name='press 0', article=self.articles[2])
+        pre_softdelete.connect(pre_softdelete_article, Article)
         self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
+        pre_softdelete.disconnect(pre_softdelete_article, Article)
 
         self.assertEqual(PressNormalModel.objects.first().article, None)
 
@@ -98,14 +107,18 @@ class SimpleTest(TestCase):
         PressNormalModel.article.field.default = self.articles[1]
         PressNormalModel.article.field.remote_field.on_delete = models.SET_DEFAULT
         PressNormalModel.objects.create(name='press 0', article=self.articles[2])
+        pre_softdelete.connect(pre_softdelete_article, Article)
         self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
+        pre_softdelete.disconnect(pre_softdelete_article, Article)
 
         self.assertEqual(PressNormalModel.objects.first().article, self.articles[1])
 
     def test_soft_delete_cascade_with_set(self):
         PressNormalModel.article.field.remote_field.on_delete = models.SET(self.articles[0])
         PressNormalModel.objects.create(name='press 0', article=self.articles[2])
+        pre_softdelete.connect(pre_softdelete_article, Article)
         self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
+        pre_softdelete.disconnect(pre_softdelete_article, Article)
 
         self.assertEqual(PressNormalModel.objects.first().article, self.articles[0])
 

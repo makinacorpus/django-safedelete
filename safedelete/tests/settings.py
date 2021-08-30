@@ -58,3 +58,6 @@ TEMPLATES = [
 ]
 
 SAFE_DELETE_FIELD_NAME = ''.join(random.choice(string.ascii_uppercase) for i in range(10))
+
+# This is for Django 3.2, harmless for previous versions.
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
