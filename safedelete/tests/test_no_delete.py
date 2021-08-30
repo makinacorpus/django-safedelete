@@ -1,4 +1,4 @@
-from ..config import NO_DELETE
+from ..config import NO_DELETE, FIELD_NAME
 from ..models import SafeDeleteModel
 from .testcase import SafeDeleteForceTestCase
 
@@ -20,10 +20,10 @@ class NoDeleteTestCase(SafeDeleteForceTestCase):
         """
         self.instance.delete()
         self.instance.refresh_from_db()
-        self.assertIsNone(self.instance.deleted)
+        self.assertIsNone(getattr(self.instance, FIELD_NAME))
 
     def test_no_delete_manager(self):
         """Test whether models with NO_DELETE are impossible to delete via the manager."""
         NoDeleteModel.objects.all().delete()
         self.instance.refresh_from_db()
-        self.assertIsNone(self.instance.deleted)
+        self.assertIsNone(getattr(self.instance, FIELD_NAME))
