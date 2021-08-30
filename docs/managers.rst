@@ -14,6 +14,7 @@ Visibility
 A custom manager is used to determine which objects should be included in the querysets.
 
 .. autoclass:: SafeDeleteManager
+    :noindex:
 
 If you want to change which objects are "masked", you can set the ``_safedelete_visibility``
 attribute of the manager to one of the following:

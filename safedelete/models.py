@@ -121,6 +121,10 @@ class SafeDeleteModel(models.Model):
                     related.undelete()
 
     def delete(self, force_policy=None, **kwargs):
+        # To know why we need to do that, see https://github.com/makinacorpus/django-safedelete/issues/117
+        self._delete(force_policy, **kwargs)
+
+    def _delete(self, force_policy=None, **kwargs):
         """Overrides Django's delete behaviour based on the model's delete policy.
 
         Args:
@@ -155,15 +159,18 @@ class SafeDeleteModel(models.Model):
             # Hard-delete the object only if nothing would be deleted with it
 
             if not can_hard_delete(self):
-                self.delete(force_policy=SOFT_DELETE, **kwargs)
+                self._delete(force_policy=SOFT_DELETE, **kwargs)
             else:
-                self.delete(force_policy=HARD_DELETE, **kwargs)
+                self._delete(force_policy=HARD_DELETE, **kwargs)
 
         elif current_policy == SOFT_DELETE_CASCADE:
             # Soft-delete on related objects before
             for related in related_objects(self):
                 if is_safedelete_cls(related.__class__) and not getattr(related, FIELD_NAME):
                     related.delete(force_policy=SOFT_DELETE, **kwargs)
+
+            # soft-delete the object
+            self._delete(force_policy=SOFT_DELETE, **kwargs)
 
             collector = NestedObjects(using=router.db_for_write(self))
             collector.collect([self])
@@ -176,9 +183,6 @@ class SafeDeleteModel(models.Model):
                         {field.name: value},
                         collector.using,
                     )
-
-            # soft-delete the object
-            self.delete(force_policy=SOFT_DELETE, **kwargs)
 
     @classmethod
     def has_unique_fields(cls):

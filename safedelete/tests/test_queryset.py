@@ -1,6 +1,7 @@
 import random
 
 from django.db import models
+from django.db.models.expressions import Exists, OuterRef
 
 from ..config import DELETED_VISIBLE_BY_FIELD
 from ..managers import SafeDeleteManager
@@ -211,7 +212,7 @@ class QuerySetTestCase(SafeDeleteTestCase):
         )
 
     def test_union_with_different_models(self):
-        # Test the safe deleted model can union with other models."""
+        """Test the safe deleted model can union with other models."""
         queryset = QuerySetModel.objects.values_list("pk")
         other_queryset = OtherModel.objects.values_list("pk")
         self.assertEqual(
@@ -233,7 +234,7 @@ class QuerySetTestCase(SafeDeleteTestCase):
         )
 
     def test_union(self):
-        # Test whether the soft deleted model can be found by union."""
+        """Test whether the soft deleted model can be found by union."""
         queryset = QuerySetModel.objects.all()
         self.assertEqual(
             queryset.union(queryset).count(),
@@ -251,7 +252,7 @@ class QuerySetTestCase(SafeDeleteTestCase):
         )
 
     def test_difference(self):
-        # Test whether the soft deleted model can be found by difference."""
+        """Test whether the soft deleted model can be found by difference."""
         instance = QuerySetModel.objects.create(
             other=self.other
         )
@@ -278,7 +279,7 @@ class QuerySetTestCase(SafeDeleteTestCase):
         )
 
     def test_intersection(self):
-        # Test whether the soft deleted model can be found by intersection."""
+        """Test whether the soft deleted model can be found by intersection."""
         instance = QuerySetModel.objects.create(
             other=self.other
         )
@@ -303,3 +304,11 @@ class QuerySetTestCase(SafeDeleteTestCase):
             ).count(),
             2
         )
+
+    def test_annotation(self):
+        """Test whether the soft deleted model can be found in annotation subqueries."""
+        queryset = OtherModel.objects.annotate(
+            has_related=Exists(QuerySetModel.objects.filter(other_id=OuterRef('pk')))
+        )
+        self.assertEqual(queryset.count(), 1)
+        self.assertFalse(queryset[0].has_related)

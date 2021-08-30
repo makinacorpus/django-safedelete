@@ -81,6 +81,7 @@ Current branch (1.0.x) is tested with :
 *  Django 2.2 using python 3.5 to 3.9.
 *  Django 3.0 using python 3.6 to 3.9.
 *  Django 3.1 using python 3.6 to 3.9.
+*  Django 3.2 using python 3.6 to 3.9.
 
 
 Installation
