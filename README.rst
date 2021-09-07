@@ -117,7 +117,7 @@ If you do this the ``update_or_create()`` function from django's standard manage
 the ``created`` variable if the object was soft-deleted and is now "revived".
 
 By default, the field that indicates a database entry is soft-deleted is ``deleted``, however, you can override the field name
-using the ``SAFE_DELETE_FIELD_NAME`` variable.
+using the ``SAFE_DELETE_FIELD_NAME`` setting.
 
 Documentation
 -------------
