@@ -37,7 +37,7 @@ def is_safedelete_cls(cls):
 
 def is_safedelete(related):
     warnings.warn(
-        'is_safedelete is deprecated in favor of is_safedelete_cls', 
+        'is_safedelete is deprecated in favor of is_safedelete_cls',
         DeprecationWarning)
     return is_safedelete_cls(related.__class__)
 
@@ -272,7 +272,6 @@ class SafeDeleteMixin(SafeDeleteModel):
         abstract = True
 
     def __init__(self, *args, **kwargs):
-        warnings.warn(
-            'The SafeDeleteMixin class was renamed SafeDeleteModel', 
-            DeprecationWarning)
+        warnings.warn('The SafeDeleteMixin class was renamed SafeDeleteModel', 
+                      DeprecationWarning)
         SafeDeleteModel.__init__(self, *args, **kwargs)
