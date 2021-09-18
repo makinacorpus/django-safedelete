@@ -3,7 +3,9 @@ from django.db import models
 
 from .config import DELETED_INVISIBLE, DELETED_ONLY_VISIBLE, DELETED_VISIBLE, SOFT_DELETE, SOFT_DELETE_CASCADE, \
     FIELD_NAME
+
 from .queryset import SafeDeleteQueryset
+from .utils import mark_object_as_undeleted
 
 
 class SafeDeleteManager(models.Manager):
@@ -69,9 +71,7 @@ class SafeDeleteManager(models.Manager):
             This is useful for related managers as those don't have access to
             ``all_objects``.
         """
-        return self.all(
-            force_visibility=DELETED_VISIBLE
-        )
+        return self.all(force_visibility=DELETED_VISIBLE)
 
     def deleted_only(self):
         """Only show the soft deleted models.
@@ -80,9 +80,7 @@ class SafeDeleteManager(models.Manager):
             This is useful for related managers as those don't have access to
             ``deleted_objects``.
         """
-        return self.all(
-            force_visibility=DELETED_ONLY_VISIBLE
-        )
+        return self.all(force_visibility=DELETED_ONLY_VISIBLE)
 
     def all(self, **kwargs):
         """Pass kwargs to ``SafeDeleteQuerySet.all()``.
@@ -127,7 +125,7 @@ class SafeDeleteManager(models.Manager):
 
             # If object is soft-deleted, reset delete-state...
             if deleted_object and deleted_object._safedelete_policy in self.get_soft_delete_policies():
-                setattr(deleted_object, FIELD_NAME, None)
+                mark_object_as_undeleted(deleted_object)
                 deleted_object.save()
                 revived_soft_deleted_object = True
 
@@ -135,8 +133,9 @@ class SafeDeleteManager(models.Manager):
         obj, created = super(SafeDeleteManager, self).update_or_create(defaults, **kwargs)
 
         # If object was soft-deleted and is "revived" and settings flag is True, show object as created
-        if revived_soft_deleted_object and \
-                getattr(settings, 'SAFE_DELETE_INTERPRET_UNDELETED_OBJECTS_AS_CREATED', False):
+        if revived_soft_deleted_object and getattr(
+            settings, "SAFE_DELETE_INTERPRET_UNDELETED_OBJECTS_AS_CREATED", False
+        ):
             created = True
 
         return obj, created

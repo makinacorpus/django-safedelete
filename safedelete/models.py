@@ -2,14 +2,25 @@ import warnings
 
 from django.contrib.admin.utils import NestedObjects
 from django.db import models, router
-from django.utils import timezone
 
-from .config import (HARD_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE,
-                     SOFT_DELETE, SOFT_DELETE_CASCADE, FIELD_NAME)
-from .managers import (SafeDeleteAllManager, SafeDeleteDeletedManager,
-                       SafeDeleteManager)
+from .config import (
+    HARD_DELETE,
+    HARD_DELETE_NOCASCADE,
+    NO_DELETE,
+    SOFT_DELETE,
+    SOFT_DELETE_CASCADE,
+    FIELD_NAME,
+    HAS_BOOLEAN_FIELD,
+    BOOLEAN_FIELD_NAME,
+)
+from .managers import SafeDeleteAllManager, SafeDeleteDeletedManager, SafeDeleteManager
 from .signals import post_softdelete, post_undelete, pre_softdelete
-from .utils import can_hard_delete, related_objects
+from .utils import (
+    can_hard_delete,
+    related_objects,
+    mark_object_as_undeleted,
+    mark_object_as_deleted,
+)
 
 
 def is_safedelete_cls(cls):
@@ -26,8 +37,8 @@ def is_safedelete_cls(cls):
 
 def is_safedelete(related):
     warnings.warn(
-        'is_safedelete is deprecated in favor of is_safedelete_cls',
-        DeprecationWarning)
+        "is_safedelete is deprecated in favor of is_safedelete_cls", DeprecationWarning
+    )
     return is_safedelete_cls(related.__class__)
 
 
@@ -91,7 +102,7 @@ class SafeDeleteModel(models.Model):
         if not keep_deleted:
             if getattr(self, FIELD_NAME) and self.pk:
                 was_undeleted = True
-            setattr(self, FIELD_NAME, None)
+            mark_object_as_undeleted(self)
 
         super(SafeDeleteModel, self).save(**kwargs)
 
@@ -141,7 +152,7 @@ class SafeDeleteModel(models.Model):
         elif current_policy == SOFT_DELETE:
 
             # Only soft-delete the object, marking it as deleted.
-            setattr(self, FIELD_NAME, timezone.now())
+            mark_object_as_deleted(self)
             using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
             # send pre_softdelete signal
             pre_softdelete.send(sender=self.__class__, instance=self, using=using)
@@ -221,7 +232,7 @@ class SafeDeleteModel(models.Model):
                 continue
 
             # This is the changed line
-            if hasattr(model_class, 'all_objects'):
+            if hasattr(model_class, "all_objects"):
                 qs = model_class.all_objects.filter(**lookup_kwargs)
             else:
                 qs = model_class._default_manager.filter(**lookup_kwargs)
@@ -240,7 +251,14 @@ class SafeDeleteModel(models.Model):
         return errors
 
 
-SafeDeleteModel.add_to_class(FIELD_NAME, models.DateTimeField(editable=False, null=True))
+SafeDeleteModel.add_to_class(
+    FIELD_NAME, models.DateTimeField(editable=False, null=True)
+)
+
+if HAS_BOOLEAN_FIELD:
+    SafeDeleteModel.add_to_class(
+        BOOLEAN_FIELD_NAME, models.BooleanField(editable=False, null=True, blank=True)
+    )
 
 
 class SafeDeleteMixin(SafeDeleteModel):
@@ -254,6 +272,7 @@ class SafeDeleteMixin(SafeDeleteModel):
         abstract = True
 
     def __init__(self, *args, **kwargs):
-        warnings.warn('The SafeDeleteMixin class was renamed SafeDeleteModel',
-                      DeprecationWarning)
+        warnings.warn(
+            "The SafeDeleteMixin class was renamed SafeDeleteModel", DeprecationWarning
+        )
         SafeDeleteModel.__init__(self, *args, **kwargs)
