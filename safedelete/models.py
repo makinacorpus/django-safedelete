@@ -37,8 +37,8 @@ def is_safedelete_cls(cls):
 
 def is_safedelete(related):
     warnings.warn(
-        "is_safedelete is deprecated in favor of is_safedelete_cls", DeprecationWarning
-    )
+        'is_safedelete is deprecated in favor of is_safedelete_cls', 
+        DeprecationWarning)
     return is_safedelete_cls(related.__class__)
 
 
@@ -232,7 +232,7 @@ class SafeDeleteModel(models.Model):
                 continue
 
             # This is the changed line
-            if hasattr(model_class, "all_objects"):
+            if hasattr(model_class, 'all_objects'):
                 qs = model_class.all_objects.filter(**lookup_kwargs)
             else:
                 qs = model_class._default_manager.filter(**lookup_kwargs)
@@ -273,6 +273,6 @@ class SafeDeleteMixin(SafeDeleteModel):
 
     def __init__(self, *args, **kwargs):
         warnings.warn(
-            "The SafeDeleteMixin class was renamed SafeDeleteModel", DeprecationWarning
-        )
+            'The SafeDeleteMixin class was renamed SafeDeleteModel', 
+            DeprecationWarning)
         SafeDeleteModel.__init__(self, *args, **kwargs)

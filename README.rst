@@ -119,6 +119,12 @@ the ``created`` variable if the object was soft-deleted and is now "revived".
 By default, the field that indicates a database entry is soft-deleted is ``deleted``, however, you can override the field name
 using the ``SAFE_DELETE_FIELD_NAME`` setting.
 
+Some databases also uses a boolean field. There is an option to use this as well. If you would like to use this field, set
+to `True` the flag `HAS_BOOLEAN_FIELD` in the `config.py` file. And set the value for the field in your settings if required. 
+
+NOTE: Internally the package will only use the datetime field. Boolean field would work for cases 
+where you have a legacy DB and need to have both fields.
+
 Documentation
 -------------
 
