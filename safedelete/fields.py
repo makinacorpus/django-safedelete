@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models.fields.related_descriptors import ManyToManyDescriptor
+from django.db.models.query_utils import Q
 from django.utils.functional import cached_property
 
 from .config import DEFAULT_DELETED, FIELD_NAME
@@ -95,11 +96,8 @@ class SafeDeleteManyToManyDescriptor(ManyToManyDescriptor):
                     return {}
 
             def get_prefetch_queryset(self, instances, queryset=None):
-                if queryset is None:
-                    queryset = super(cls, self).get_queryset()
-
-                queryset = queryset.filter(**self._get_safedelete_filter()).distinct()
-
-                return super(SafeDeleteRelatedManager, self).get_prefetch_queryset(instances, queryset)
+                queryset, *ret = super(SafeDeleteRelatedManager, self).get_prefetch_queryset(instances, queryset)
+                queryset.query.add_q(Q(**self._get_safedelete_filter()))
+                return queryset, *ret
 
         return SafeDeleteRelatedManager
