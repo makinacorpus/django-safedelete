@@ -9,6 +9,7 @@ CHANGELOG
 - SET related objects after deleting #156
 - Avoiding recursive call for delete function. #121
 - Add SAFE_DELETE_FIELD_NAME setting #164
+- Add functions to customize the policies delete behavior #167
 
 1.0.0 (2021-02-15)
 ==================
