@@ -140,21 +140,21 @@ class SafeDeleteModel(models.Model):
 
         elif current_policy == SOFT_DELETE:
 
-            self._soft_delete_policy_action(**kwargs)
+            self.soft_delete_policy_action(**kwargs)
 
         elif current_policy == HARD_DELETE:
 
-           self._hard_delete_policy_action(**kwargs)
+           self.hard_delete_policy_action(**kwargs)
 
         elif current_policy == HARD_DELETE_NOCASCADE:
 
-            self._hard_delete_cascade_policy_action(**kwargs)
+            self.hard_delete_cascade_policy_action(**kwargs)
 
         elif current_policy == SOFT_DELETE_CASCADE:
 
-            self._soft_delete_cascade_policy_action(**kwargs)
+            self.soft_delete_cascade_policy_action(**kwargs)
 
-    def _soft_delete_policy_action(self, **kwargs):
+    def soft_delete_policy_action(self, **kwargs):
          # Only soft-delete the object, marking it as deleted.
         setattr(self, FIELD_NAME, timezone.now())
         using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
@@ -164,18 +164,18 @@ class SafeDeleteModel(models.Model):
         # send softdelete signal
         post_softdelete.send(sender=self.__class__, instance=self, using=using)
 
-    def _hard_delete_policy_action(self, **kwargs):
+    def hard_delete_policy_action(self, **kwargs):
         # Normally hard-delete the object.
         super(SafeDeleteModel, self).delete()
 
-    def _hard_delete_cascade_policy_action(self, **kwargs):
+    def hard_delete_cascade_policy_action(self, **kwargs):
         # Hard-delete the object only if nothing would be deleted with it
         if not can_hard_delete(self):
             self._delete(force_policy=SOFT_DELETE, **kwargs)
         else:
             self._delete(force_policy=HARD_DELETE, **kwargs)
 
-    def _soft_delete_cascade_policy_action(self, **kwargs):
+    def soft_delete_cascade_policy_action(self, **kwargs):
         # Soft-delete on related objects before
         for related in related_objects(self):
             if is_safedelete_cls(related.__class__) and not getattr(related, FIELD_NAME):
