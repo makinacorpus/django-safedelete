@@ -134,28 +134,19 @@ class SafeDeleteModel(models.Model):
         current_policy = self._safedelete_policy if (force_policy is None) else force_policy
 
         if current_policy == NO_DELETE:
-
             # Don't do anything.
             return
-
         elif current_policy == SOFT_DELETE:
-
             self.soft_delete_policy_action(**kwargs)
-
         elif current_policy == HARD_DELETE:
-
-           self.hard_delete_policy_action(**kwargs)
-
+            self.hard_delete_policy_action(**kwargs)
         elif current_policy == HARD_DELETE_NOCASCADE:
-
             self.hard_delete_cascade_policy_action(**kwargs)
-
         elif current_policy == SOFT_DELETE_CASCADE:
-
             self.soft_delete_cascade_policy_action(**kwargs)
 
     def soft_delete_policy_action(self, **kwargs):
-         # Only soft-delete the object, marking it as deleted.
+        # Only soft-delete the object, marking it as deleted.
         setattr(self, FIELD_NAME, timezone.now())
         using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
         # send pre_softdelete signal
