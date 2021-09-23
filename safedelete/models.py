@@ -140,49 +140,61 @@ class SafeDeleteModel(models.Model):
 
         elif current_policy == SOFT_DELETE:
 
-            # Only soft-delete the object, marking it as deleted.
-            setattr(self, FIELD_NAME, timezone.now())
-            using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
-            # send pre_softdelete signal
-            pre_softdelete.send(sender=self.__class__, instance=self, using=using)
-            self.save(keep_deleted=True, **kwargs)
-            # send softdelete signal
-            post_softdelete.send(sender=self.__class__, instance=self, using=using)
+            self.soft_delete_policy_action(**kwargs)
 
         elif current_policy == HARD_DELETE:
 
-            # Normally hard-delete the object.
-            super(SafeDeleteModel, self).delete()
+           self.hard_delete_policy_action(**kwargs)
 
         elif current_policy == HARD_DELETE_NOCASCADE:
 
-            # Hard-delete the object only if nothing would be deleted with it
-
-            if not can_hard_delete(self):
-                self._delete(force_policy=SOFT_DELETE, **kwargs)
-            else:
-                self._delete(force_policy=HARD_DELETE, **kwargs)
+            self.hard_delete_cascade_policy_action(**kwargs)
 
         elif current_policy == SOFT_DELETE_CASCADE:
-            # Soft-delete on related objects before
-            for related in related_objects(self):
-                if is_safedelete_cls(related.__class__) and not getattr(related, FIELD_NAME):
-                    related.delete(force_policy=SOFT_DELETE, **kwargs)
 
-            # soft-delete the object
+            self.soft_delete_cascade_policy_action(**kwargs)
+
+    def soft_delete_policy_action(self, **kwargs):
+         # Only soft-delete the object, marking it as deleted.
+        setattr(self, FIELD_NAME, timezone.now())
+        using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
+        # send pre_softdelete signal
+        pre_softdelete.send(sender=self.__class__, instance=self, using=using)
+        self.save(keep_deleted=True, **kwargs)
+        # send softdelete signal
+        post_softdelete.send(sender=self.__class__, instance=self, using=using)
+
+    def hard_delete_policy_action(self, **kwargs):
+        # Normally hard-delete the object.
+        super(SafeDeleteModel, self).delete()
+
+    def hard_delete_cascade_policy_action(self, **kwargs):
+        # Hard-delete the object only if nothing would be deleted with it
+        if not can_hard_delete(self):
             self._delete(force_policy=SOFT_DELETE, **kwargs)
+        else:
+            self._delete(force_policy=HARD_DELETE, **kwargs)
 
-            collector = NestedObjects(using=router.db_for_write(self))
-            collector.collect([self])
-            # update fields (SET, SET_DEFAULT or SET_NULL)
-            for model, instances_for_fieldvalues in collector.field_updates.items():
-                for (field, value), instances in instances_for_fieldvalues.items():
-                    query = models.sql.UpdateQuery(model)
-                    query.update_batch(
-                        [obj.pk for obj in instances],
-                        {field.name: value},
-                        collector.using,
-                    )
+    def soft_delete_cascade_policy_action(self, **kwargs):
+        # Soft-delete on related objects before
+        for related in related_objects(self):
+            if is_safedelete_cls(related.__class__) and not getattr(related, FIELD_NAME):
+                related.delete(force_policy=SOFT_DELETE, **kwargs)
+
+        # soft-delete the object
+        self._delete(force_policy=SOFT_DELETE, **kwargs)
+
+        collector = NestedObjects(using=router.db_for_write(self))
+        collector.collect([self])
+        # update fields (SET, SET_DEFAULT or SET_NULL)
+        for model, instances_for_fieldvalues in collector.field_updates.items():
+            for (field, value), instances in instances_for_fieldvalues.items():
+                query = models.sql.UpdateQuery(model)
+                query.update_batch(
+                    [obj.pk for obj in instances],
+                    {field.name: value},
+                    collector.using,
+                )
 
     @classmethod
     def has_unique_fields(cls):
