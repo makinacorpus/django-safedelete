@@ -7,6 +7,17 @@ Django safedelete
 .. image:: https://coveralls.io/repos/makinacorpus/django-safedelete/badge.png
     :target: https://coveralls.io/r/makinacorpus/django-safedelete
 
+Why this fork?
+------------
+
+This fork is modified son it can be used in a database where safe delete models may be represented with two fields:
+a boolean field and a datetime field.
+
+The scenario where there is a boolean field can be because you have created indexes on this field at the database
+and would like to continue using them.
+
+So, if this is the case, you can configure this repo to do so. Check comments on `config.py` file.
+
 
 What is it ?
 ------------
@@ -120,10 +131,26 @@ By default, the field that indicates a database entry is soft-deleted is ``delet
 using the ``SAFE_DELETE_FIELD_NAME`` setting.
 
 Some databases also uses a boolean field. There is an option to use this as well. If you would like to use this field, set
-to `True` the flag `HAS_BOOLEAN_FIELD` in the `config.py` file. And set the value for the field in your settings if required. 
+to `True` the flag `HAS_BOOLEAN_FIELD` in the `config.py` file.
+And set the name for the field in your settings if required with the variable `BOOLEAN_FIELD_NAME`. Default is `is_deleted`
 
-NOTE: Internally the package will only use the datetime field. Boolean field would work for cases 
+NOTE:
+The original package internally only used the datetime field. Boolean field would work for cases
 where you have a legacy DB and need to have both fields.
+In this fork, we have changed the filters and lookups to use the boolean field if it is defined. Why? Because you may prefer
+indexes on a boolean field rather than on a datetime field.
+
+By default, if you do not configure anything in the settings of the project where you install this repo, a datetime field
+called `deleted` will be used.
+
+If you would like to use a boolean field and would like also to use it to filter deleted items, you can configure this
+in the settings of the project where you install this repo:
+
+.. code-block:: python
+    SAFE_DELETE_HAS_BOOLEAN_FIELD = True
+    SAFE_DELETE_BOOLEAN_FIELD_NAME = 'is_deleted'
+    SAFE_DELETE_USE_BOOLEAN_FIELD_TO_DO_LOGIC = True
+
 
 Documentation
 -------------

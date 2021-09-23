@@ -14,7 +14,7 @@ from django.utils.html import conditional_escape, format_html
 from django.utils.translation import gettext_lazy as _
 
 from .config import FIELD_NAME
-from .utils import related_objects
+from .utils import related_objects, get_deleted_or_not_deleted_filters_dictionary
 
 # Django 3.0 compatibility
 try:
@@ -100,7 +100,10 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         assert hasattr(queryset, 'undelete')
 
         # Remove not deleted item from queryset
-        queryset = queryset.filter(**{FIELD_NAME + '__isnull': False})
+
+        # Filter depending on if we datetime of boolean field.
+        filters = get_deleted_or_not_deleted_filters_dictionary(get_deleted=True)
+        queryset = queryset.filter(**filters)
         # Undeletion confirmed
         if request.POST.get('post'):
             requested = queryset.count()
@@ -109,7 +112,9 @@ class SafeDeleteAdmin(admin.ModelAdmin):
                     obj_display = force_str(obj)
                     self.log_undeletion(request, obj, obj_display)
                 queryset.undelete()
-                changed = original_queryset.filter(**{FIELD_NAME + '__isnull': True}).count()
+                # Filter depending on if we datetime of boolean field.
+                filters = get_deleted_or_not_deleted_filters_dictionary(get_deleted=False)
+                changed = original_queryset.filter(**filters).count()
                 if changed < requested:
                     self.message_user(
                         request,

@@ -20,6 +20,7 @@ from .utils import (
     related_objects,
     mark_object_as_undeleted,
     mark_object_as_deleted,
+    assert_is_deleted,
 )
 
 
@@ -123,7 +124,7 @@ class SafeDeleteModel(models.Model):
         """
         current_policy = force_policy or self._safedelete_policy
 
-        assert getattr(self, FIELD_NAME)
+        assert_is_deleted(self)
         self.save(keep_deleted=False, **kwargs)
 
         if current_policy == SOFT_DELETE_CASCADE:

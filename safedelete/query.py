@@ -3,6 +3,7 @@ from django.db.models.query_utils import Q
 
 from .config import (DELETED_INVISIBLE, DELETED_ONLY_VISIBLE, DELETED_VISIBLE,
                      DELETED_VISIBLE_BY_FIELD, FIELD_NAME)
+from .utils import get_deleted_or_not_deleted_filters_dictionary
 
 
 class SafeDeleteQuery(sql.Query):
@@ -38,14 +39,10 @@ class SafeDeleteQuery(sql.Query):
         if visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD, DELETED_ONLY_VISIBLE):
             # Add a query manually, QuerySet.filter returns a clone.
             # QuerySet._fetch_all cannot work with clones.
-            self.add_q(
-                Q(
-                    **{
-                        FIELD_NAME + "__isnull": visibility
-                        in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD)
-                    }
-                )
-            )
+            # If visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD) we should filter not-deleted elements
+            should_get_not_deleted_elements = visibility in (DELETED_INVISIBLE, DELETED_VISIBLE_BY_FIELD)
+            filters = get_deleted_or_not_deleted_filters_dictionary(get_deleted=not should_get_not_deleted_elements)
+            self.add_q(Q(**filters))
             self._safedelete_filter_applied = True
 
     def clone(self):

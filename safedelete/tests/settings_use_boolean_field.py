@@ -58,9 +58,9 @@ TEMPLATES = [
 ]
 
 SAFE_DELETE_FIELD_NAME = ''.join(random.choice(string.ascii_uppercase) for i in range(10))
-SAFE_DELETE_HAS_BOOLEAN_FIELD = False
+SAFE_DELETE_HAS_BOOLEAN_FIELD = True
 SAFE_DELETE_BOOLEAN_FIELD_NAME = 'is_deleted'
-SAFE_DELETE_USE_BOOLEAN_FIELD_TO_DO_LOGIC = False
+SAFE_DELETE_USE_BOOLEAN_FIELD_TO_DO_LOGIC = True
 
 # This is for Django 3.2, harmless for previous versions.
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
