@@ -52,13 +52,13 @@ class SafeDeleteModel(models.Model):
         >>> # Now you have your model (with its ``deleted`` field, and custom manager and delete method)
 
     :attribute objects:
-        The :class:`safedelete.managers.SafeDeleteManager` that returns the non-deleted models.
+        The :class:`safedelete.managers.SafeDeleteManager` returns the non-deleted models.
 
     :attribute all_objects:
-        The :class:`safedelete.managers.SafeDeleteAllManager` that returns the all models (non-deleted and soft-deleted).
+        The :class:`safedelete.managers.SafeDeleteAllManager` returns all the models (non-deleted and soft-deleted).
 
     :attribute deleted_objects:
-        The :class:`safedelete.managers.SafeDeleteDeletedManager` that returns the soft-deleted models.
+        The :class:`safedelete.managers.SafeDeleteDeletedManager` returns the soft-deleted models.
     """
 
     _safedelete_policy = SOFT_DELETE
