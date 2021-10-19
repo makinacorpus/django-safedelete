@@ -87,7 +87,7 @@ class AdminTestCase(TestCase):
         self.assertEqual(changelist.queryset.count(), 3)
         self.assertEqual(changelist_default.queryset.count(), 2)
 
-    def test_admin_listing(self):
+    def test_highlight_deleted(self):
         """Test deleted objects are in red in admin listing."""
         resp = self.client.get('/admin/safedelete/category/')
         line = '<span class="deleted">{0}</span>'.format(self.categories[1])
