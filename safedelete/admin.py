@@ -37,16 +37,39 @@ def highlight_deleted(obj):
 highlight_deleted.short_description = _("Name")
 
 
+class SoftDeleteAdminFilter(admin.SimpleListFilter):
+    """
+        Filters objects by whether or not they have been deleted
+    """
+    title = FIELD_NAME
+    parameter_name = FIELD_NAME
+
+    def lookups(self, request, model_admin):
+        lookups = (
+            (self.parameter_name, 'All (Including ' + self.parameter_name + ')'),
+            (self.parameter_name + "_only", self.parameter_name + ' Only'),
+        )
+        return lookups
+
+    def queryset(self, request, queryset):
+        parameter = True
+        if self.value() == self.parameter_name:
+            return queryset
+        elif self.value() == self.parameter_name + "_only":
+            parameter = False
+        return queryset.filter(**{self.parameter_name + '__isnull': parameter})
+
+
 class SafeDeleteAdmin(admin.ModelAdmin):
     """
     An abstract ModelAdmin which will include deleted objects in its listing.
 
     :Example:
 
-        >>> from safedelete.admin import SafeDeleteAdmin, highlight_deleted
+        >>> from safedelete.admin import SafeDeleteAdmin, SoftDeleteAdminFilter, highlight_deleted
         >>> class ContactAdmin(SafeDeleteAdmin):
         ...    list_display = (highlight_deleted, "first_name", "last_name", "email") + SafeDeleteAdmin.list_display
-        ...    list_filter = ("last_name",) + SafeDeleteAdmin.list_filter
+        ...    list_filter = ("last_name", SoftDeleteAdminFilter,) + SafeDeleteAdmin.list_filter
     """
     undelete_selected_confirmation_template = "safedelete/undelete_selected_confirmation.html"
 

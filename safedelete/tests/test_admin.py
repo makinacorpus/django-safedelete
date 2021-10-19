@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.test import RequestFactory, TestCase
 
-from ..admin import SafeDeleteAdmin, highlight_deleted
+from ..admin import SafeDeleteAdmin, highlight_deleted, SoftDeleteAdminFilter
 from ..config import FIELD_NAME
 from ..models import SafeDeleteModel
 from .models import Article, Author, Category
@@ -92,6 +92,22 @@ class AdminTestCase(TestCase):
         resp = self.client.get('/admin/safedelete/category/')
         line = '<span class="deleted">{0}</span>'.format(self.categories[1])
         self.assertContains(resp, line)
+
+    def test_soft_delete_admin_filter(self):
+        self.modeladmin.list_filter += (SoftDeleteAdminFilter,)
+        changelist = self.get_changelist(self.request, Category, self.modeladmin)
+        self.assertEqual(changelist.get_filters(self.request)[0][1].title, FIELD_NAME.replace('_', ' '))
+
+        self.assertTrue(Category.objects.get(pk=self.categories[0].pk))
+        with self.assertRaises(Category.DoesNotExist):
+            Category.objects.get(pk=self.categories[1].pk)
+        # TODO: change filter value to FIELD_NAME
+        self.assertTrue(Category.objects.get(pk=self.categories[0].pk))
+        self.assertTrue(Category.objects.get(pk=self.categories[1].pk))
+        # TODO: change filter value to FIELD_NAME + "_only"
+        with self.assertRaises(Category.DoesNotExist):
+            Category.objects.get(pk=self.categories[0].pk)
+        self.assertTrue(Category.objects.get(pk=self.categories[1].pk))
 
     def test_admin_xss(self):
         """Test whether admin XSS is blocked."""
