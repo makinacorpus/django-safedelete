@@ -52,7 +52,6 @@ class SafeDeleteAdmin(admin.ModelAdmin):
 
     list_display = (FIELD_NAME,)
     list_filter = (FIELD_NAME,)
-    exclude = (FIELD_NAME,)
     actions = ('undelete_selected',)
 
     class Meta:
