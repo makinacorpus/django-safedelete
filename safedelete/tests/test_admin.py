@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.test import RequestFactory, TestCase
 
-from ..admin import SafeDeleteAdmin, highlight_deleted, SoftDeleteAdminFilter
+from ..admin import SafeDeleteAdmin, highlight_deleted, SafeDeleteAdminFilter
 from ..config import FIELD_NAME
 from ..models import SafeDeleteModel
 from .models import Article, Author, Category
@@ -94,7 +94,7 @@ class AdminTestCase(TestCase):
         self.assertContains(resp, line)
 
     def test_soft_delete_admin_filter(self):
-        self.modeladmin.list_filter += (SoftDeleteAdminFilter,)
+        self.modeladmin.list_filter += (SafeDeleteAdminFilter,)
         changelist = self.get_changelist(self.request, Category, self.modeladmin)
         self.assertEqual(changelist.get_filters(self.request)[0][1].title, FIELD_NAME.replace('_', ' '))
 
