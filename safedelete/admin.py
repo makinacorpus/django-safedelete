@@ -39,7 +39,7 @@ def highlight_deleted(obj):
 highlight_deleted.short_description = _("Name")
 
 
-class SoftDeleteAdminFilter(admin.SimpleListFilter):
+class SafeDeleteAdminFilter(admin.SimpleListFilter):
     """
         Filters objects by whether or not they have been deleted
     """
@@ -68,7 +68,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
 
     :Example:
 
-        >>> from safedelete.admin import SafeDeleteAdmin, SoftDeleteAdminFilter, highlight_deleted
+        >>> from safedelete.admin import SafeDeleteAdmin, SafeDeleteAdminFilter, highlight_deleted
         >>> class ContactAdmin(SafeDeleteAdmin):
         ...    list_display = (highlight_deleted, "highlight_deleted_field", "first_name", "last_name", "email") + SafeDeleteAdmin.list_display
         ...    list_filter = ("last_name", SoftDeleteAdminFilter,) + SafeDeleteAdmin.list_filter
