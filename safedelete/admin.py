@@ -54,12 +54,12 @@ class SafeDeleteAdminFilter(admin.SimpleListFilter):
         return lookups
 
     def queryset(self, request, queryset):
-        parameter = True
+        parameter_is_null = True
         if self.value() == self.parameter_name:
             return queryset
         elif self.value() == self.parameter_name + "_only":
-            parameter = False
-        return queryset.filter(**{self.parameter_name + '__isnull': parameter})
+            parameter_is_null = False
+        return queryset.filter(**{self.parameter_name + '__isnull': parameter_is_null})
 
 
 class SafeDeleteAdmin(admin.ModelAdmin):
