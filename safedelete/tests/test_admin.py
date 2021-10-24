@@ -94,20 +94,31 @@ class AdminTestCase(TestCase):
         self.assertContains(resp, line)
 
     def test_soft_delete_admin_filter(self):
+        # Check filter is added properly to list_filter
         self.modeladmin.list_filter += (SafeDeleteAdminFilter,)
         changelist = self.get_changelist(self.request, Category, self.modeladmin)
         self.assertEqual(changelist.get_filters(self.request)[0][1].title, FIELD_NAME.replace('_', ' '))
 
-        self.assertTrue(Category.objects.get(pk=self.categories[0].pk))
-        with self.assertRaises(Category.DoesNotExist):
-            Category.objects.get(pk=self.categories[1].pk)
-        # TODO: change filter value to FIELD_NAME
-        self.assertTrue(Category.objects.get(pk=self.categories[0].pk))
-        self.assertTrue(Category.objects.get(pk=self.categories[1].pk))
-        # TODO: change filter value to FIELD_NAME + "_only"
-        with self.assertRaises(Category.DoesNotExist):
-            Category.objects.get(pk=self.categories[0].pk)
-        self.assertTrue(Category.objects.get(pk=self.categories[1].pk))
+        # Check default filter
+        queryset = changelist.get_queryset(self.request)
+        self.assertIn(Category.all_objects.get(pk=self.categories[0].pk), queryset)
+        self.assertNotIn(Category.all_objects.get(pk=self.categories[1].pk), queryset)
+
+        # Change filter value to FIELD_NAME
+        request = self.request_factory.get('/', {FIELD_NAME: FIELD_NAME})
+        request.user = self.request.user
+        changelist = self.modeladmin.get_changelist_instance(request)
+        queryset = changelist.get_queryset(request)
+        self.assertIn(Category.all_objects.get(pk=self.categories[0].pk), queryset)
+        self.assertIn(Category.all_objects.get(pk=self.categories[1].pk), queryset)
+
+        # Change filter value to FIELD_NAME + '_only'
+        request = self.request_factory.get('/', {FIELD_NAME: FIELD_NAME + '_only'})
+        request.user = self.request.user
+        changelist = self.modeladmin.get_changelist_instance(request)
+        queryset = changelist.get_queryset(request)
+        self.assertNotIn(Category.all_objects.get(pk=self.categories[0].pk), queryset)
+        self.assertIn(Category.all_objects.get(pk=self.categories[1].pk), queryset)
 
     def test_admin_xss(self):
         """Test whether admin XSS is blocked."""
