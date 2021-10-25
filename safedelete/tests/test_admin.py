@@ -93,6 +93,13 @@ class AdminTestCase(TestCase):
         line = '<span class="deleted">{0}</span>'.format(self.categories[1])
         self.assertContains(resp, line)
 
+    def test_highlight_deleted_field(self):
+        self.modeladmin.field_to_highlight = "name"
+        self.modeladmin.list_display = ("highlight_deleted_field",)
+        resp = self.client.get('/admin/safedelete/category/')
+        line = '<span class="deleted">{0}</span>'.format(self.categories[1])
+        self.assertContains(resp, line)
+
     def test_admin_xss(self):
         """Test whether admin XSS is blocked."""
         Category.objects.create(name='<script>alert(42)</script>'),
