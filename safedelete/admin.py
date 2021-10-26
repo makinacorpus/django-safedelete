@@ -43,7 +43,7 @@ class SafeDeleteAdminFilter(admin.SimpleListFilter):
     """
         Filters objects by whether or not they have been deleted
     """
-    title = FIELD_NAME
+    title = "Deleted"
     parameter_name = FIELD_NAME
 
     def lookups(self, request, model_admin):
