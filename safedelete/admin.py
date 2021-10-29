@@ -176,9 +176,10 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         else:
             return format_html('<span class="deleted">{0}</span>', field_str)
 
-    # Meant to be overwritten; defaults to FIELD_NAME, because we know it must exist
+    # field_to_highlight is meant to be overwritten
+    # defaults to FIELD_NAME, because we know it must exist
     field_to_highlight = FIELD_NAME
-    highlight_deleted_field.short_description = _("Name")
+    highlight_deleted_field.short_description = _(field_to_highlight)
     highlight_deleted_field.admin_order_field = "_highlighted_field"
 
     undelete_selected.short_description = _("Undelete selected %(verbose_name_plural)s.")
