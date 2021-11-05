@@ -168,16 +168,15 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         self.assertEqual(created, False)
 
     def test_update_or_create_with_unique_constraint(self):
-        self.assertFalse(UniqueConstraintSoftDeleteModel.has_unique_fields())
         # Create and soft-delete object
         obj, created = UniqueConstraintSoftDeleteModel.objects.update_or_create(name='thor', team='avengers')
         obj.delete()
         # Update it and see if it fails
-        self.assertFalse(UniqueTogetherSoftDeleteModel.objects.all())  # empty
-        obj, created = UniqueTogetherSoftDeleteModel.objects.update_or_create(name='thor', team='avengers')
+        obj, created = UniqueConstraintSoftDeleteModel.objects.update_or_create(name='thor', team='avengers', defaults={})
         self.assertEqual(obj.name, 'thor')
         self.assertEqual(obj.team, 'avengers')
         self.assertFalse(created)
+        self.assertTrue(UniqueConstraintSoftDeleteModel.has_unique_fields())
 
     def test_update_or_create_with_unique_together_constraint(self):
         # Create and soft-delete object
