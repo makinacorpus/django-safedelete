@@ -199,6 +199,11 @@ class SafeDeleteModel(models.Model):
         if cls._meta.unique_together:
             return True
 
+        """
+        if cls._meta.total_unique_constraints:
+            return True
+        """
+
         for field in cls._meta.fields:
             if field._unique:
                 return True
