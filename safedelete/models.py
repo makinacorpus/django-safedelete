@@ -197,6 +197,10 @@ class SafeDeleteModel(models.Model):
             model: Model instance to check
         """
         if cls._meta.unique_together:
+            warnings.warn(
+                'models.UniqueConstraint is recommended over unique_together',
+                 PendingDeprecationWarning
+            )
             return True
 
         for field in cls._meta.fields:
