@@ -199,7 +199,7 @@ class SafeDeleteModel(models.Model):
         if cls._meta.unique_together:
             warnings.warn(
                 'models.UniqueConstraint is recommended over unique_together',
-                 PendingDeprecationWarning
+                PendingDeprecationWarning
             )
             return True
 
