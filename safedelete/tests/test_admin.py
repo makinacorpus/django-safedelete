@@ -103,15 +103,13 @@ class AdminTestCase(TestCase):
     def test_soft_delete_admin_filter(self):
         self.modeladmin.list_filter += (SafeDeleteAdminFilter,)
 
-        # Check default filter
-        with self.subTest():
+        with self.subTest("test_filter_unfiltered"):
             changelist = self.get_changelist(self.request, Category, self.modeladmin)
             queryset = changelist.get_queryset(self.request)
             self.assertIn(Category.all_objects.get(pk=self.categories[0].pk), queryset)
             self.assertNotIn(Category.all_objects.get(pk=self.categories[1].pk), queryset)
 
-        # Change filter value to FIELD_NAME
-        with self.subTest():
+        with self.subTest("test_filter_FIELD_NAME"):
             request = self.request_factory.get('/', {FIELD_NAME: FIELD_NAME})
             request.user = self.request.user
             changelist = self.modeladmin.get_changelist_instance(request)
@@ -119,8 +117,7 @@ class AdminTestCase(TestCase):
             self.assertIn(Category.all_objects.get(pk=self.categories[0].pk), queryset)
             self.assertIn(Category.all_objects.get(pk=self.categories[1].pk), queryset)
 
-        # Change filter value to FIELD_NAME + '_only'
-        with self.subTest():
+        with self.subTest("test_filter_FIELD_NAME_only"):
             request = self.request_factory.get('/', {FIELD_NAME: FIELD_NAME + '_only'})
             request.user = self.request.user
             changelist = self.modeladmin.get_changelist_instance(request)
