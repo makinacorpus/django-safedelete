@@ -109,7 +109,7 @@ class AdminTestCase(TestCase):
             self.assertIn(Category.all_objects.get(pk=self.categories[0].pk), queryset)
             self.assertNotIn(Category.all_objects.get(pk=self.categories[1].pk), queryset)
 
-        with self.subTest("test_filter_FIELD_NAME"):
+        with self.subTest("test_filter_equals_FIELD_NAME"):
             request = self.request_factory.get('/', {FIELD_NAME: FIELD_NAME})
             request.user = self.request.user
             changelist = self.modeladmin.get_changelist_instance(request)
@@ -117,7 +117,7 @@ class AdminTestCase(TestCase):
             self.assertIn(Category.all_objects.get(pk=self.categories[0].pk), queryset)
             self.assertIn(Category.all_objects.get(pk=self.categories[1].pk), queryset)
 
-        with self.subTest("test_filter_FIELD_NAME_only"):
+        with self.subTest("test_filter_equals_FIELD_NAME_only"):
             request = self.request_factory.get('/', {FIELD_NAME: FIELD_NAME + '_only'})
             request.user = self.request.user
             changelist = self.modeladmin.get_changelist_instance(request)
