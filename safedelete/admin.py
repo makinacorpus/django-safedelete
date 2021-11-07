@@ -73,7 +73,8 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         except Exception:
             queryset = self.model._default_manager.all()
 
-        queryset = queryset.annotate(_highlighted_field=F(self.field_to_highlight))
+        if self.field_to_highlight:
+            queryset = queryset.annotate(_highlighted_field=F(self.field_to_highlight))
 
         ordering = self.get_ordering(request)
         if ordering:
@@ -169,17 +170,19 @@ class SafeDeleteAdmin(admin.ModelAdmin):
             )
 
     def highlight_deleted_field(self, obj):
-        field_name = getattr(obj, self.field_to_highlight)
-        field_str = conditional_escape(text_type(field_name))
+        try:
+            field_str = getattr(obj, self.field_to_highlight)
+        except TypeError:
+            raise ValueError("Must set field_to_highlight to your field's name (as a string)")
+
+        field_str = conditional_escape(text_type(field_str))
         if not getattr(obj, FIELD_NAME, False):
             return field_str
         else:
             return format_html('<span class="deleted">{0}</span>', field_str)
 
-    # field_to_highlight is meant to be overwritten
-    # defaults to FIELD_NAME, because we know it must exist
-    field_to_highlight = FIELD_NAME
-    highlight_deleted_field.short_description = _(field_to_highlight)
+    field_to_highlight = None
+    highlight_deleted_field.short_description = field_to_highlight
     highlight_deleted_field.admin_order_field = "_highlighted_field"
 
     undelete_selected.short_description = _("Undelete selected %(verbose_name_plural)s.")
