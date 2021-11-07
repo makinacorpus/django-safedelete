@@ -1,5 +1,5 @@
-import string
 import random
+import string
 
 SECRET_KEY = 'secret'
 

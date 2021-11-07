@@ -7,8 +7,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.test import override_settings
 
-from ..models import SafeDeleteModel
 from ..config import SOFT_DELETE_CASCADE
+from ..models import SafeDeleteModel
 from .testcase import SafeDeleteForceTestCase
 
 

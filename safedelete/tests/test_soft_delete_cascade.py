@@ -1,10 +1,10 @@
 from django.db import models
 from django.test import TestCase
-from safedelete import SOFT_DELETE_CASCADE, SOFT_DELETE
+
+from safedelete import SOFT_DELETE, SOFT_DELETE_CASCADE
 from safedelete.models import SafeDeleteModel
 from safedelete.signals import pre_softdelete
 from safedelete.tests.models import Article, Author, Category
-
 
 try:
     from unittest.mock import patch

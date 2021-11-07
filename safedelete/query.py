@@ -1,8 +1,13 @@
 from django.db.models import sql
 from django.db.models.query_utils import Q
 
-from .config import (DELETED_INVISIBLE, DELETED_ONLY_VISIBLE, DELETED_VISIBLE,
-                     DELETED_VISIBLE_BY_FIELD, FIELD_NAME)
+from .config import (
+    DELETED_INVISIBLE,
+    DELETED_ONLY_VISIBLE,
+    DELETED_VISIBLE,
+    DELETED_VISIBLE_BY_FIELD,
+    FIELD_NAME,
+)
 
 
 class SafeDeleteQuery(sql.Query):

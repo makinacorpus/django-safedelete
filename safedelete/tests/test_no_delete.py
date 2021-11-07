@@ -1,4 +1,4 @@
-from ..config import NO_DELETE, FIELD_NAME
+from ..config import FIELD_NAME, NO_DELETE
 from ..models import SafeDeleteModel
 from .testcase import SafeDeleteForceTestCase
 

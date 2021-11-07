@@ -1,6 +1,11 @@
 from django.db import models
-from safedelete import (DELETED_VISIBLE_BY_PK, HARD_DELETE,
-                        HARD_DELETE_NOCASCADE, SOFT_DELETE)
+
+from safedelete import (
+    DELETED_VISIBLE_BY_PK,
+    HARD_DELETE,
+    HARD_DELETE_NOCASCADE,
+    SOFT_DELETE,
+)
 from safedelete.managers import SafeDeleteManager
 from safedelete.models import SafeDeleteModel
 

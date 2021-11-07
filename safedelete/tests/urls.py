@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 try:
-    from django.conf.urls import patterns, include
+    from django.conf.urls import include, patterns
 
     urlpatterns = patterns(
         '',
@@ -17,7 +17,7 @@ except ImportError:
         ]
     except ImportError:
         # Django >= 1.10
-        from django.conf.urls import url, include
+        from django.conf.urls import include, url
 
         urlpatterns = [
             url(r'^admin/', include(admin.site.urls)),
