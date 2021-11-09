@@ -187,7 +187,7 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         self.assertEqual(obj.team, 'avengers')
         self.assertFalse(created)
 
-    def test_model_has_unique_fields():
+    def test_model_has_unique_fields(self):
         self.assertTrue(UniqueSoftDeleteModel.has_unique_fields())
         self.assertTrue(UniqueTogetherSoftDeleteModel.has_unique_fields())
         self.assertTrue(UniqueConstraintSoftDeleteModel.has_unique_fields())
