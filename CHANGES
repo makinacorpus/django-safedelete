@@ -6,6 +6,7 @@ CHANGELOG
 ==================
 
 - Add highlight_deleted_field #177
+- Add new safedelete admin filter #175 
 
 1.1.0 (2021-09-23)
 ==================
