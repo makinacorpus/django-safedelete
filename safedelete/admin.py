@@ -8,6 +8,7 @@ from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.admin.utils import model_ngettext
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
+from django.db.models import F
 from django.template.response import TemplateResponse
 from django.utils.encoding import force_str
 from django.utils.html import conditional_escape, format_html
@@ -45,8 +46,10 @@ class SafeDeleteAdmin(admin.ModelAdmin):
 
         >>> from safedelete.admin import SafeDeleteAdmin, highlight_deleted
         >>> class ContactAdmin(SafeDeleteAdmin):
-        ...    list_display = (highlight_deleted, "first_name", "last_name", "email") + SafeDeleteAdmin.list_display
+        ...    list_display = (highlight_deleted, "highlight_deleted_field", "first_name", "last_name", "email") + SafeDeleteAdmin.list_display
         ...    list_filter = ("last_name",) + SafeDeleteAdmin.list_filter
+        ...
+        ...    self.field_to_highlight = "id"
     """
     undelete_selected_confirmation_template = "safedelete/undelete_selected_confirmation.html"
 
@@ -71,6 +74,9 @@ class SafeDeleteAdmin(admin.ModelAdmin):
             queryset = self.model.all_objects.all()
         except Exception:
             queryset = self.model._default_manager.all()
+
+        if self.field_to_highlight:
+            queryset = queryset.annotate(_highlighted_field=F(self.field_to_highlight))
 
         ordering = self.get_ordering(request)
         if ordering:
@@ -164,4 +170,21 @@ class SafeDeleteAdmin(admin.ModelAdmin):
                 self.undelete_selected_confirmation_template,
                 context,
             )
+
+    def highlight_deleted_field(self, obj):
+        try:
+            field_str = getattr(obj, self.field_to_highlight)
+        except TypeError:
+            raise ValueError("Must set field_to_highlight to your field's name (as a string)")
+
+        field_str = conditional_escape(text_type(field_str))
+        if not getattr(obj, FIELD_NAME, False):
+            return field_str
+        else:
+            return format_html('<span class="deleted">{0}</span>', field_str)
+
+    field_to_highlight = None
+    highlight_deleted_field.short_description = field_to_highlight
+    highlight_deleted_field.admin_order_field = "_highlighted_field"
+
     undelete_selected.short_description = _("Undelete selected %(verbose_name_plural)s.")
