@@ -1,7 +1,8 @@
 from __future__ import unicode_literals
 
-import django
 from distutils.version import LooseVersion
+
+import django
 from django.contrib import admin, messages
 from django.contrib.admin import helpers
 from django.contrib.admin.models import CHANGE, LogEntry

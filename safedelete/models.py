@@ -4,10 +4,19 @@ from django.contrib.admin.utils import NestedObjects
 from django.db import models, router
 from django.utils import timezone
 
-from .config import (HARD_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE,
-                     SOFT_DELETE, SOFT_DELETE_CASCADE, FIELD_NAME)
-from .managers import (SafeDeleteAllManager, SafeDeleteDeletedManager,
-                       SafeDeleteManager)
+from .config import (
+    FIELD_NAME,
+    HARD_DELETE,
+    HARD_DELETE_NOCASCADE,
+    NO_DELETE,
+    SOFT_DELETE,
+    SOFT_DELETE_CASCADE,
+)
+from .managers import (
+    SafeDeleteAllManager,
+    SafeDeleteDeletedManager,
+    SafeDeleteManager,
+)
 from .signals import post_softdelete, post_undelete, pre_softdelete
 from .utils import can_hard_delete, related_objects
 
