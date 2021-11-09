@@ -176,7 +176,6 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         self.assertEqual(obj.name, 'thor')
         self.assertEqual(obj.team, 'avengers')
         self.assertFalse(created)
-        self.assertTrue(UniqueConstraintSoftDeleteModel.has_unique_fields())
 
     def test_update_or_create_with_unique_together_constraint(self):
         # Create and soft-delete object
@@ -187,7 +186,11 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         self.assertEqual(obj.name, 'thor')
         self.assertEqual(obj.team, 'avengers')
         self.assertFalse(created)
+
+    def test_model_has_unique_fields():
+        self.assertTrue(UniqueSoftDeleteModel.has_unique_fields())
         self.assertTrue(UniqueTogetherSoftDeleteModel.has_unique_fields())
+        self.assertTrue(UniqueConstraintSoftDeleteModel.has_unique_fields())
 
     @override_settings(SAFE_DELETE_INTERPRET_UNDELETED_OBJECTS_AS_CREATED=True)
     def test_update_or_create_flag_with_settings_flag_active(self):
