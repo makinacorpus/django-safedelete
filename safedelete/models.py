@@ -1,7 +1,9 @@
 import warnings
 
+import django
 from django.contrib.admin.utils import NestedObjects
 from django.db import models, router
+from django.db.models import UniqueConstraint
 from django.utils import timezone
 
 from .config import (
@@ -207,6 +209,14 @@ class SafeDeleteModel(models.Model):
         """
         if cls._meta.unique_together:
             return True
+
+        if django.VERSION[0] > 3 or (django.VERSION[0] == 3 and django.VERSION[1] >= 1):
+            if cls._meta.total_unique_constraints:
+                return True
+        else:  # derived from total_unique_constraints in django >= 3.1
+            for constraint in cls._meta.constraints:
+                if isinstance(constraint, UniqueConstraint) and constraint.condition is None:
+                    return True
 
         for field in cls._meta.fields:
             if field._unique:

@@ -34,6 +34,20 @@ class UniqueSoftDeleteModel(SafeDeleteModel):
     )
 
 
+class UniqueConstraintSoftDeleteModel(SafeDeleteModel):
+
+    name = models.CharField(max_length=100)
+    team = models.CharField(max_length=100)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name", "team"],
+                name="unique_constraint",
+            )
+        ]
+
+
 class UniqueTogetherSoftDeleteModel(SoftDeleteModel):
 
     name = models.CharField(max_length=100)
@@ -153,6 +167,16 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         self.assertEqual(obj.name, 'unique-test')
         self.assertEqual(created, False)
 
+    def test_update_or_create_with_unique_constraint(self):
+        # Create and soft-delete object
+        obj, created = UniqueConstraintSoftDeleteModel.objects.update_or_create(name='thor', team='avengers')
+        obj.delete()
+        # Update it and see if it fails
+        obj, created = UniqueConstraintSoftDeleteModel.objects.update_or_create(name='thor', team='avengers', defaults={})
+        self.assertEqual(obj.name, 'thor')
+        self.assertEqual(obj.team, 'avengers')
+        self.assertFalse(created)
+
     def test_update_or_create_with_unique_together_constraint(self):
         # Create and soft-delete object
         obj, created = UniqueTogetherSoftDeleteModel.objects.update_or_create(name='thor', team='avengers')
@@ -161,7 +185,12 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         obj, created = UniqueTogetherSoftDeleteModel.objects.update_or_create(name='thor', team='avengers')
         self.assertEqual(obj.name, 'thor')
         self.assertEqual(obj.team, 'avengers')
-        self.assertEqual(created, False)
+        self.assertFalse(created)
+
+    def test_model_has_unique_fields(self):
+        self.assertTrue(UniqueSoftDeleteModel.has_unique_fields())
+        self.assertTrue(UniqueTogetherSoftDeleteModel.has_unique_fields())
+        self.assertTrue(UniqueConstraintSoftDeleteModel.has_unique_fields())
 
     @override_settings(SAFE_DELETE_INTERPRET_UNDELETED_OBJECTS_AS_CREATED=True)
     def test_update_or_create_flag_with_settings_flag_active(self):
