@@ -6,7 +6,8 @@ CHANGELOG
 ==================
 
 - Add highlight_deleted_field #177
-- Add new safedelete admin filter #175 
+- Add new safedelete admin filter #175
+- Bug: has_unique_fields() returns false for models.UniqueConstraint #179
 
 1.1.0 (2021-09-23)
 ==================
