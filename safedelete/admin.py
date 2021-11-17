@@ -48,8 +48,8 @@ class SafeDeleteAdminFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         lookups = (
-            (self.parameter_name, 'All (Including ' + self.parameter_name + ')'),
-            (self.parameter_name + "_only", self.parameter_name + ' Only'),
+            (self.parameter_name, _('All (Including Deleted)')),
+            (self.parameter_name + "_only", _('Deleted Only')),
         )
         return lookups
 
