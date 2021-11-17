@@ -74,6 +74,8 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         ...    list_filter = ("last_name", SoftDeleteAdminFilter,) + SafeDeleteAdmin.list_filter
         ...
         ...    field_to_highlight = "id"
+        ...
+        ... ContactAdmin.field_to_highlight.short_description = ContactAdmin.field_to_highlight
     """
     undelete_selected_confirmation_template = "safedelete/undelete_selected_confirmation.html"
 
@@ -208,7 +210,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
             return format_html('<span class="deleted">{0}</span>', field_str)
 
     field_to_highlight = None
-    highlight_deleted_field.short_description = field_to_highlight
+    highlight_deleted_field.short_description = _("Override this name (see docs)")
     highlight_deleted_field.admin_order_field = "_highlighted_field"
 
     undelete_selected.short_description = _("Undelete selected %(verbose_name_plural)s.")
