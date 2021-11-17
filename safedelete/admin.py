@@ -71,7 +71,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         >>> from safedelete.admin import SafeDeleteAdmin, SafeDeleteAdminFilter, highlight_deleted
         >>> class ContactAdmin(SafeDeleteAdmin):
         ...    list_display = (highlight_deleted, "highlight_deleted_field", "first_name", "last_name", "email") + SafeDeleteAdmin.list_display
-        ...    list_filter = ("last_name", SoftDeleteAdminFilter,) + SafeDeleteAdmin.list_filter
+        ...    list_filter = ("last_name", SafeDeleteAdminFilter,) + SafeDeleteAdmin.list_filter
         ...
         ...    field_to_highlight = "id"
         ...
