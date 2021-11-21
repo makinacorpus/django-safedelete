@@ -75,7 +75,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         ...
         ...    field_to_highlight = "id"
         ...
-        ... ContactAdmin.field_to_highlight.short_description = ContactAdmin.field_to_highlight
+        ... ContactAdmin.highlight_deleted_field.short_description = ContactAdmin.field_to_highlight
     """
     undelete_selected_confirmation_template = "safedelete/undelete_selected_confirmation.html"
 
