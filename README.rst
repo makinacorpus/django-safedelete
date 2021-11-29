@@ -74,7 +74,7 @@ Compatibilities
 * Branch 0.3.x is compatible with django >= 1.4
 * Branch 0.4.x is compatible with django >= 1.8
 * Branch 0.5.x is compatible with django >= 1.11
-* Branch 1.0.x is compatible with django >= 2.2
+* Branch 1.x.x is compatible with django >= 2.2
 
 Current branch (1.0.x) is tested with :
 
