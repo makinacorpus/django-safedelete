@@ -145,8 +145,7 @@ class SafeDeleteModel(models.Model):
         current_policy = self._safedelete_policy if (force_policy is None) else force_policy
 
         if current_policy == NO_DELETE:
-            # Don't do anything.
-            return
+            pass
         elif current_policy == SOFT_DELETE:
             self.soft_delete_policy_action(**kwargs)
         elif current_policy == HARD_DELETE:
