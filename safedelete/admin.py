@@ -48,8 +48,8 @@ class SafeDeleteAdminFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         lookups = (
-            (self.parameter_name, 'All (Including ' + self.parameter_name + ')'),
-            (self.parameter_name + "_only", self.parameter_name + ' Only'),
+            (self.parameter_name, _('All (Including Deleted)')),
+            (self.parameter_name + "_only", _('Deleted Only')),
         )
         return lookups
 
@@ -71,9 +71,11 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         >>> from safedelete.admin import SafeDeleteAdmin, SafeDeleteAdminFilter, highlight_deleted
         >>> class ContactAdmin(SafeDeleteAdmin):
         ...    list_display = (highlight_deleted, "highlight_deleted_field", "first_name", "last_name", "email") + SafeDeleteAdmin.list_display
-        ...    list_filter = ("last_name", SoftDeleteAdminFilter,) + SafeDeleteAdmin.list_filter
+        ...    list_filter = ("last_name", SafeDeleteAdminFilter,) + SafeDeleteAdmin.list_filter
         ...
         ...    field_to_highlight = "id"
+        ...
+        ... ContactAdmin.highlight_deleted_field.short_description = ContactAdmin.field_to_highlight
     """
     undelete_selected_confirmation_template = "safedelete/undelete_selected_confirmation.html"
 
@@ -208,7 +210,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
             return format_html('<span class="deleted">{0}</span>', field_str)
 
     field_to_highlight = None
-    highlight_deleted_field.short_description = field_to_highlight
+    highlight_deleted_field.short_description = _("Override this name (see docs)")
     highlight_deleted_field.admin_order_field = "_highlighted_field"
 
     undelete_selected.short_description = _("Undelete selected %(verbose_name_plural)s.")
