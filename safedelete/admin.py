@@ -213,4 +213,4 @@ class SafeDeleteAdmin(admin.ModelAdmin):
     highlight_deleted_field.short_description = _("Override this name (see docs)")
     highlight_deleted_field.admin_order_field = "_highlighted_field"
 
-    undelete_selected.short_description = _("Undelete selected %(verbose_name_plural)s.")
+    undelete_selected.short_description = _("Undelete selected %(verbose_name_plural)s")
