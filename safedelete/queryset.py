@@ -1,6 +1,10 @@
 from django.db.models import query
 
+import safedelete.utils as safedelete_utils
+from safedelete.config import FIELD_NAME, SOFT_DELETE_CASCADE
 from .query import SafeDeleteQuery
+from .signals import post_undelete
+from .utils import related_objects
 
 
 class SafeDeleteQueryset(query.QuerySet):
@@ -31,6 +35,7 @@ class SafeDeleteQueryset(query.QuerySet):
         for obj in self.all():
             obj.delete(force_policy=force_policy)
         self._result_cache = None
+
     delete.alters_data = True
 
     def undelete(self, force_policy=None):
@@ -44,10 +49,29 @@ class SafeDeleteQueryset(query.QuerySet):
             :py:func:`safedelete.models.SafeDeleteModel.undelete`
         """
         assert self.query.can_filter(), "Cannot use 'limit' or 'offset' with undelete."
-        # TODO: Replace this by bulk update if we can (need to call pre/post-save signal)
-        for obj in self.all():
-            obj.undelete(force_policy=force_policy)
+
+        all_objs = self.all()
+        all_objs_id_list = list(all_objs.values_list('pk', flat=True))
+        policy = force_policy or all_objs.model._safedelete_policy
+
+        if policy == SOFT_DELETE_CASCADE:
+            for obj in all_objs:
+                related_objs = related_objects(obj, return_as_dict=True)
+
+                if safedelete_utils.is_safedelete_cls(obj.__class__) and hasattr(obj, FIELD_NAME):
+                    for model, id_list in related_objs.items():
+                        if safedelete_utils.is_safedelete_cls(model):
+                            model.deleted_objects.filter(
+                                id__in=id_list).exclude(
+                                {f"{FIELD_NAME}__gte": getattr(obj, FIELD_NAME)}).undelete()
+
+        all_objs.update(**{FIELD_NAME: None})
+
+        for obj in self.model.all_objects.filter(id__in=all_objs_id_list):
+            post_undelete.send(sender=obj.__class__, instance=obj)
+
         self._result_cache = None
+
     undelete.alters_data = True
 
     def all(self, force_visibility=None):
