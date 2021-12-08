@@ -114,11 +114,15 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
 
         SoftDeleteModel.objects.all().undelete()  # Nonsense
         self.assertEqual(SoftDeleteModel.objects.count(), 0,
-                         f"expected 0 count, got {SoftDeleteModel.objects.count()} instead")
+                         f"When did 'SoftDeleteModel.objects.all().undelete()', "
+                         f"expected 0 SoftDeleteModel.objects.count, got {SoftDeleteModel.objects.count()} instead.\n"
+                         f"SoftDeleteModel.objects.all(): {SoftDeleteModel.objects.all()}\n"
+                         )
 
         SoftDeleteModel.deleted_objects.all().undelete()
         self.assertEqual(SoftDeleteModel.objects.count(), 1,
-                         f"expected 1 count, got {SoftDeleteModel.objects.count()} instead")
+                         f"When did 'SoftDeleteModel.deleted_objects.all().undelete()', "
+                         f"expected 1 SoftDeleteModel.objects.count, got {SoftDeleteModel.objects.count()} instead")
 
     def test_undelete_with_soft_delete_policy_and_forced_soft_delete_cascade_policy(self):
         self.assertEqual(SoftDeleteModel.objects.count(), 1)
@@ -135,7 +139,7 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         self.assertEqual(SoftDeleteModel.objects.count(), 1,
                          f"expected 1 restored objs count, got {SoftDeleteModel.objects.count()} instead")
         self.assertEqual(SoftDeleteRelatedModel.objects.count(), 1,
-                         f"expected 1 related objs count, got {SoftDeleteModel.objects.count()} instead")
+                         f"expected 1 related objs count, got {SoftDeleteRelatedModel.objects.count()} instead")
 
     def test_validate_unique(self):
         """Check that uniqueness is also checked against deleted objects """

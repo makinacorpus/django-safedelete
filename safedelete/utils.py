@@ -16,12 +16,14 @@ def related_objects(obj, return_as_dict=False):
     if return_as_dict:
         def to_dict(elem, result_dict):
             if isinstance(elem, list) or isinstance(elem, QuerySet):
-                return itertools.chain.from_iterable(map(lambda elem: to_dict(elem, result_dict), elem))
+                return list(map(lambda elem: to_dict(elem, result_dict), elem))
             elif obj != elem:
                 result_dict[elem._meta.model].append(elem.id)
 
         result_dict = defaultdict(list)
-        return to_dict(collector.nested(), result_dict)
+        to_dict(collector.nested(), result_dict)
+
+        return result_dict
 
     def flatten(elem):
         if isinstance(elem, list) or isinstance(elem, QuerySet):
