@@ -1,7 +1,5 @@
 from __future__ import unicode_literals
 
-from distutils.version import LooseVersion
-
 import django
 from django.contrib import admin, messages
 from django.contrib.admin import helpers
@@ -14,6 +12,7 @@ from django.template.response import TemplateResponse
 from django.utils.encoding import force_str
 from django.utils.html import conditional_escape, format_html
 from django.utils.translation import gettext_lazy as _
+from setuptools.version import Version
 
 from .config import FIELD_NAME
 from .utils import related_objects
@@ -183,7 +182,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
             'related_list': related_list
         }
 
-        if LooseVersion(django.get_version()) < LooseVersion('1.10'):
+        if Version(django.get_version()) < Version('1.10'):
             return TemplateResponse(
                 request,
                 self.undelete_selected_confirmation_template,
