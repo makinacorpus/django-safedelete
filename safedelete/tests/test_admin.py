@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.test import RequestFactory, TestCase
 
-from ..admin import SafeDeleteAdmin, highlight_deleted, SafeDeleteAdminFilter
+from ..admin import SafeDeleteAdmin, SafeDeleteAdminFilter, highlight_deleted
 from ..config import FIELD_NAME
 from ..models import SafeDeleteModel
 from .models import Article, Author, Category
@@ -78,6 +78,9 @@ class AdminTestCase(TestCase):
         # New parameter in Django 2.1
         if hasattr(modeladmin, 'sortable_by'):
             args.append(modeladmin.sortable_by)
+        # New parameter in Django 4.0
+        if hasattr(modeladmin, 'search_help_text'):
+            args.append(modeladmin.search_help_text)
         return ChangeList(*args)
 
     def test_admin_model(self):
