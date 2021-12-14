@@ -12,7 +12,7 @@ from django.template.response import TemplateResponse
 from django.utils.encoding import force_str
 from django.utils.html import conditional_escape, format_html
 from django.utils.translation import gettext_lazy as _
-from setuptools.version import Version
+from pkg_resources import parse_version
 
 from .config import FIELD_NAME
 from .utils import related_objects
@@ -182,7 +182,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
             'related_list': related_list
         }
 
-        if Version(django.get_version()) < Version('1.10'):
+        if parse_version(django.get_version()) < parse_version('1.10'):
             return TemplateResponse(
                 request,
                 self.undelete_selected_confirmation_template,
