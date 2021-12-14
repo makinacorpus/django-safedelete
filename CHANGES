@@ -5,6 +5,7 @@ CHANGELOG
 1.1.2 (unreleased)
 ==================
 
+- Add django 4.0 and python 3.10 compatibility and tests #191
 - Fix highlight_deleted_field translations #183 
 
 1.1.1 (2021-11-15)
