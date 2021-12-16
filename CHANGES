@@ -2,7 +2,7 @@
 CHANGELOG
 =========
 
-1.1.2 (unreleased)
+1.1.2 (2021-12-16)
 ==================
 
 - Add django 4.0 and python 3.10 compatibility and tests #191
