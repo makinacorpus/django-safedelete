@@ -4,7 +4,7 @@ from django.db import models, router
 from django.db.models import UniqueConstraint
 from django.utils import timezone
 
-import safedelete.utils as safedelete_utils
+from safedelete import utils
 from .config import (
     FIELD_NAME,
     HARD_DELETE,
@@ -106,8 +106,8 @@ class SafeDeleteModel(models.Model):
         self.save(keep_deleted=False, **kwargs)
 
         if current_policy == SOFT_DELETE_CASCADE:
-            for related in safedelete_utils.related_objects(self):
-                if safedelete_utils.is_safedelete_cls(related.__class__) and getattr(related, FIELD_NAME):
+            for related in utils.related_objects(self):
+                if utils.is_safedelete_cls(related.__class__) and getattr(related, FIELD_NAME):
                     related.undelete()
 
     def delete(self, force_policy=None, **kwargs):
@@ -150,15 +150,15 @@ class SafeDeleteModel(models.Model):
 
     def hard_delete_cascade_policy_action(self, **kwargs):
         # Hard-delete the object only if nothing would be deleted with it
-        if not safedelete_utils.can_hard_delete(self):
+        if not utils.can_hard_delete(self):
             self._delete(force_policy=SOFT_DELETE, **kwargs)
         else:
             self._delete(force_policy=HARD_DELETE, **kwargs)
 
     def soft_delete_cascade_policy_action(self, **kwargs):
         # Soft-delete on related objects before
-        for related in safedelete_utils.related_objects(self):
-            if safedelete_utils.is_safedelete_cls(related.__class__) and not getattr(related, FIELD_NAME):
+        for related in utils.related_objects(self):
+            if utils.is_safedelete_cls(related.__class__) and not getattr(related, FIELD_NAME):
                 related.delete(force_policy=SOFT_DELETE, **kwargs)
 
         # soft-delete the object
@@ -254,6 +254,5 @@ class SafeDeleteMixin(SafeDeleteModel):
         abstract = True
 
     def __init__(self, *args, **kwargs):
-        safedelete_utils.warnings.warn('The SafeDeleteMixin class was renamed SafeDeleteModel',
-                                       DeprecationWarning)
+        utils.warnings.warn('The SafeDeleteMixin class was renamed SafeDeleteModel', DeprecationWarning)
         SafeDeleteModel.__init__(self, *args, **kwargs)
