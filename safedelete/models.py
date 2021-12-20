@@ -254,7 +254,7 @@ class SafeDeleteModel(models.Model):
             if len(unique_check) != len(lookup_kwargs):
                 continue
 
-            # This is the changed line
+            # This is the first changed line
             if hasattr(model_class, 'all_objects'):
                 qs = model_class.all_objects.filter(**lookup_kwargs)
             else:
@@ -271,6 +271,12 @@ class SafeDeleteModel(models.Model):
             if not self._state.adding and model_class_pk is not None:
                 qs = qs.exclude(pk=model_class_pk)
             if qs.exists():
+                # This conditional clause has also been added
+                if FIELD_NAME not in lookup_kwargs:
+                    qs.filter(**{FIELD_NAME: None})
+                    if not qs.exists():
+                        # raise exception that existing deleted model has unique check conflict
+                        continue
                 if len(unique_check) == 1:
                     key = unique_check[0]
                 else:
