@@ -222,43 +222,41 @@ class SafeDeleteModel(models.Model):
                 return True
         return False
 
-    # We need to overwrite this check to ensure uniqueness is also checked
-    # against "deleted" (but still in db) objects.
-    # FIXME: Better/cleaner way ?
     def _perform_unique_checks(self, unique_checks):
-        errors = {}
+        if hasattr(self.__class__, 'all_objects'):
+            previous_default_manager = self.__class__._meta.default_manager
+            self.__class__._meta.default_manager = self.__class__.all_objects
 
-        for model_class, unique_check in unique_checks:
-            lookup_kwargs = {}
-            for field_name in unique_check:
-                f = self._meta.get_field(field_name)
-                lookup_value = getattr(self, f.attname)
-                if lookup_value is None:
-                    continue
-                if f.primary_key and not self._state.adding:
-                    continue
-                lookup_kwargs[str(field_name)] = lookup_value
-            if len(unique_check) != len(lookup_kwargs):
-                continue
+        errors = super()._perform_unique_checks(unique_checks)
 
-            # This is the changed line
-            if hasattr(model_class, 'all_objects'):
-                qs = model_class.all_objects.filter(**lookup_kwargs)
-            else:
-                qs = model_class._default_manager.filter(**lookup_kwargs)
+        if hasattr(self.__class__, 'all_objects'):
+            self.__class__._meta.default_manager = previous_default_manager
 
-            model_class_pk = self._get_pk_val(model_class._meta)
-            if not self._state.adding and model_class_pk is not None:
-                qs = qs.exclude(pk=model_class_pk)
-            if qs.exists():
-                if len(unique_check) == 1:
-                    key = unique_check[0]
-                else:
-                    key = models.base.NON_FIELD_ERRORS
-                errors.setdefault(key, []).append(
-                    self.unique_error_message(model_class, unique_check)
-                )
         return errors
+
+    """
+        flag = False
+        if hasattr(self.__class__, 'all_objects'):
+            flag = True
+            previous_default_manager = self.__class__._meta.default_manager
+            self.__class__._meta.default_manager = self.__class__.all_objects
+
+        errors = super()._perform_unique_checks(unique_checks)
+
+        if flag:
+            self.__class__._meta.default_manager = previous_default_manager
+
+        return errors
+    """
+    """
+        if hasattr(self.__class__, 'all_objects'):
+            previous_default_manager = self.__class__._meta.default_manager
+            self.__class__._meta.default_manager = self.__class__.all_objects
+            errors = super()._perform_unique_checks(unique_checks)
+            self.__class__._meta.default_manager = previous_default_manager
+            return errors
+        return super()._perform_unique_checks(unique_checks)
+    """
 
 
 SafeDeleteModel.add_to_class(FIELD_NAME, models.DateTimeField(editable=False, null=True))
