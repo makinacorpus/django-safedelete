@@ -1,17 +1,18 @@
 from __future__ import unicode_literals
 
 import django
-from distutils.version import LooseVersion
 from django.contrib import admin, messages
 from django.contrib.admin import helpers
 from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.admin.utils import model_ngettext
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
+from django.db.models import F
 from django.template.response import TemplateResponse
 from django.utils.encoding import force_str
 from django.utils.html import conditional_escape, format_html
 from django.utils.translation import gettext_lazy as _
+from pkg_resources import parse_version
 
 from .config import FIELD_NAME
 from .utils import related_objects
@@ -37,22 +38,48 @@ def highlight_deleted(obj):
 highlight_deleted.short_description = _("Name")
 
 
+class SafeDeleteAdminFilter(admin.SimpleListFilter):
+    """
+        Filters objects by whether or not they have been deleted
+    """
+    title = _("Deleted")
+    parameter_name = FIELD_NAME
+
+    def lookups(self, request, model_admin):
+        lookups = (
+            (self.parameter_name, _('All (Including Deleted)')),
+            (self.parameter_name + "_only", _('Deleted Only')),
+        )
+        return lookups
+
+    def queryset(self, request, queryset):
+        parameter_is_null = True
+        if self.value() == self.parameter_name:
+            return queryset
+        elif self.value() == self.parameter_name + "_only":
+            parameter_is_null = False
+        return queryset.filter(**{self.parameter_name + '__isnull': parameter_is_null})
+
+
 class SafeDeleteAdmin(admin.ModelAdmin):
     """
     An abstract ModelAdmin which will include deleted objects in its listing.
 
     :Example:
 
-        >>> from safedelete.admin import SafeDeleteAdmin, highlight_deleted
+        >>> from safedelete.admin import SafeDeleteAdmin, SafeDeleteAdminFilter, highlight_deleted
         >>> class ContactAdmin(SafeDeleteAdmin):
-        ...    list_display = (highlight_deleted, "first_name", "last_name", "email") + SafeDeleteAdmin.list_display
-        ...    list_filter = ("last_name",) + SafeDeleteAdmin.list_filter
+        ...    list_display = (highlight_deleted, "highlight_deleted_field", "first_name", "last_name", "email") + SafeDeleteAdmin.list_display
+        ...    list_filter = ("last_name", SafeDeleteAdminFilter,) + SafeDeleteAdmin.list_filter
+        ...
+        ...    field_to_highlight = "id"
+        ...
+        ... ContactAdmin.highlight_deleted_field.short_description = ContactAdmin.field_to_highlight
     """
     undelete_selected_confirmation_template = "safedelete/undelete_selected_confirmation.html"
 
     list_display = (FIELD_NAME,)
     list_filter = (FIELD_NAME,)
-    exclude = (FIELD_NAME,)
     actions = ('undelete_selected',)
 
     class Meta:
@@ -72,6 +99,9 @@ class SafeDeleteAdmin(admin.ModelAdmin):
             queryset = self.model.all_objects.all()
         except Exception:
             queryset = self.model._default_manager.all()
+
+        if self.field_to_highlight:
+            queryset = queryset.annotate(_highlighted_field=F(self.field_to_highlight))
 
         ordering = self.get_ordering(request)
         if ordering:
@@ -152,7 +182,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
             'related_list': related_list
         }
 
-        if LooseVersion(django.get_version()) < LooseVersion('1.10'):
+        if parse_version(django.get_version()) < parse_version('1.10'):
             return TemplateResponse(
                 request,
                 self.undelete_selected_confirmation_template,
@@ -165,4 +195,21 @@ class SafeDeleteAdmin(admin.ModelAdmin):
                 self.undelete_selected_confirmation_template,
                 context,
             )
-    undelete_selected.short_description = _("Undelete selected %(verbose_name_plural)s.")
+
+    def highlight_deleted_field(self, obj):
+        try:
+            field_str = getattr(obj, self.field_to_highlight)
+        except TypeError:
+            raise ValueError("Must set field_to_highlight to your field's name (as a string)")
+
+        field_str = conditional_escape(text_type(field_str))
+        if not getattr(obj, FIELD_NAME, False):
+            return field_str
+        else:
+            return format_html('<span class="deleted">{0}</span>', field_str)
+
+    field_to_highlight = None
+    highlight_deleted_field.short_description = _("Override this name (see docs)")
+    highlight_deleted_field.admin_order_field = "_highlighted_field"
+
+    undelete_selected.short_description = _("Undelete selected %(verbose_name_plural)s")

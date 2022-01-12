@@ -1,6 +1,6 @@
-from .testcase import SafeDeleteForceTestCase
 from ..config import HARD_DELETE
 from ..models import SafeDeleteModel
+from .testcase import SafeDeleteForceTestCase
 
 
 class HardDeleteModel(SafeDeleteModel):

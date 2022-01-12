@@ -1,8 +1,13 @@
 from django.db.models import sql
 from django.db.models.query_utils import Q
 
-from .config import (DELETED_INVISIBLE, DELETED_ONLY_VISIBLE, DELETED_VISIBLE,
-                     DELETED_VISIBLE_BY_FIELD, FIELD_NAME)
+from .config import (
+    DELETED_INVISIBLE,
+    DELETED_ONLY_VISIBLE,
+    DELETED_VISIBLE,
+    DELETED_VISIBLE_BY_FIELD,
+    FIELD_NAME,
+)
 
 
 class SafeDeleteQuery(sql.Query):
@@ -57,10 +62,10 @@ class SafeDeleteQuery(sql.Query):
             clone._safedelete_force_visibility = self._safedelete_force_visibility
         return clone
 
-    def get_compiler(self, using=None, connection=None):
+    def get_compiler(self, *args, **kwargs):
         # Try to filter visibility at very end of the step
         self._filter_visibility()
-        return super(SafeDeleteQuery, self).get_compiler(using, connection)
+        return super(SafeDeleteQuery, self).get_compiler(*args, **kwargs)
 
     def set_limits(self, low=None, high=None):
         # Filter visibility before query was sliced

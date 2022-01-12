@@ -1,8 +1,14 @@
 from django.conf import settings
 from django.db import models
 
-from .config import DELETED_INVISIBLE, DELETED_ONLY_VISIBLE, DELETED_VISIBLE, SOFT_DELETE, SOFT_DELETE_CASCADE, \
-    FIELD_NAME
+from .config import (
+    DELETED_INVISIBLE,
+    DELETED_ONLY_VISIBLE,
+    DELETED_VISIBLE,
+    FIELD_NAME,
+    SOFT_DELETE,
+    SOFT_DELETE_CASCADE,
+)
 from .queryset import SafeDeleteQueryset
 
 

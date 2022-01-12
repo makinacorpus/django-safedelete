@@ -1,6 +1,13 @@
-from ..config import (HARD_DELETE, SOFT_DELETE, SOFT_DELETE_CASCADE, HARD_DELETE_NOCASCADE, NO_DELETE)
-from ..models import SafeDeleteModel
 from django.test import TestCase
+
+from ..config import (
+    HARD_DELETE,
+    HARD_DELETE_NOCASCADE,
+    NO_DELETE,
+    SOFT_DELETE,
+    SOFT_DELETE_CASCADE,
+)
+from ..models import SafeDeleteModel
 
 
 class TestDeleteModel(SafeDeleteModel):

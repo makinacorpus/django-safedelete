@@ -1,13 +1,24 @@
 import warnings
 
+import django
 from django.contrib.admin.utils import NestedObjects
 from django.db import models, router
+from django.db.models import UniqueConstraint
 from django.utils import timezone
 
-from .config import (HARD_DELETE, HARD_DELETE_NOCASCADE, NO_DELETE,
-                     SOFT_DELETE, SOFT_DELETE_CASCADE, FIELD_NAME)
-from .managers import (SafeDeleteAllManager, SafeDeleteDeletedManager,
-                       SafeDeleteManager)
+from .config import (
+    FIELD_NAME,
+    HARD_DELETE,
+    HARD_DELETE_NOCASCADE,
+    NO_DELETE,
+    SOFT_DELETE,
+    SOFT_DELETE_CASCADE,
+)
+from .managers import (
+    SafeDeleteAllManager,
+    SafeDeleteDeletedManager,
+    SafeDeleteManager,
+)
 from .signals import post_softdelete, post_undelete, pre_softdelete
 from .utils import can_hard_delete, related_objects
 
@@ -52,13 +63,13 @@ class SafeDeleteModel(models.Model):
         >>> # Now you have your model (with its ``deleted`` field, and custom manager and delete method)
 
     :attribute objects:
-        The :class:`safedelete.managers.SafeDeleteManager` that returns the non-deleted models.
+        The :class:`safedelete.managers.SafeDeleteManager` returns the non-deleted models.
 
     :attribute all_objects:
-        The :class:`safedelete.managers.SafeDeleteAllManager` that returns the all models (non-deleted and soft-deleted).
+        The :class:`safedelete.managers.SafeDeleteAllManager` returns all the models (non-deleted and soft-deleted).
 
     :attribute deleted_objects:
-        The :class:`safedelete.managers.SafeDeleteDeletedManager` that returns the soft-deleted models.
+        The :class:`safedelete.managers.SafeDeleteDeletedManager` returns the soft-deleted models.
     """
 
     _safedelete_policy = SOFT_DELETE
@@ -134,55 +145,57 @@ class SafeDeleteModel(models.Model):
         current_policy = self._safedelete_policy if (force_policy is None) else force_policy
 
         if current_policy == NO_DELETE:
-
-            # Don't do anything.
-            return
-
+            pass
         elif current_policy == SOFT_DELETE:
-
-            # Only soft-delete the object, marking it as deleted.
-            setattr(self, FIELD_NAME, timezone.now())
-            using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
-            # send pre_softdelete signal
-            pre_softdelete.send(sender=self.__class__, instance=self, using=using)
-            self.save(keep_deleted=True, **kwargs)
-            # send softdelete signal
-            post_softdelete.send(sender=self.__class__, instance=self, using=using)
-
+            self.soft_delete_policy_action(**kwargs)
         elif current_policy == HARD_DELETE:
-
-            # Normally hard-delete the object.
-            super(SafeDeleteModel, self).delete()
-
+            self.hard_delete_policy_action(**kwargs)
         elif current_policy == HARD_DELETE_NOCASCADE:
-
-            # Hard-delete the object only if nothing would be deleted with it
-
-            if not can_hard_delete(self):
-                self._delete(force_policy=SOFT_DELETE, **kwargs)
-            else:
-                self._delete(force_policy=HARD_DELETE, **kwargs)
-
+            self.hard_delete_cascade_policy_action(**kwargs)
         elif current_policy == SOFT_DELETE_CASCADE:
-            # Soft-delete on related objects before
-            for related in related_objects(self):
-                if is_safedelete_cls(related.__class__) and not getattr(related, FIELD_NAME):
-                    related.delete(force_policy=SOFT_DELETE, **kwargs)
+            self.soft_delete_cascade_policy_action(**kwargs)
 
-            # soft-delete the object
+    def soft_delete_policy_action(self, **kwargs):
+        # Only soft-delete the object, marking it as deleted.
+        setattr(self, FIELD_NAME, timezone.now())
+        using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
+        # send pre_softdelete signal
+        pre_softdelete.send(sender=self.__class__, instance=self, using=using)
+        self.save(keep_deleted=True, **kwargs)
+        # send softdelete signal
+        post_softdelete.send(sender=self.__class__, instance=self, using=using)
+
+    def hard_delete_policy_action(self, **kwargs):
+        # Normally hard-delete the object.
+        super(SafeDeleteModel, self).delete()
+
+    def hard_delete_cascade_policy_action(self, **kwargs):
+        # Hard-delete the object only if nothing would be deleted with it
+        if not can_hard_delete(self):
             self._delete(force_policy=SOFT_DELETE, **kwargs)
+        else:
+            self._delete(force_policy=HARD_DELETE, **kwargs)
 
-            collector = NestedObjects(using=router.db_for_write(self))
-            collector.collect([self])
-            # update fields (SET, SET_DEFAULT or SET_NULL)
-            for model, instances_for_fieldvalues in collector.field_updates.items():
-                for (field, value), instances in instances_for_fieldvalues.items():
-                    query = models.sql.UpdateQuery(model)
-                    query.update_batch(
-                        [obj.pk for obj in instances],
-                        {field.name: value},
-                        collector.using,
-                    )
+    def soft_delete_cascade_policy_action(self, **kwargs):
+        # Soft-delete on related objects before
+        for related in related_objects(self):
+            if is_safedelete_cls(related.__class__) and not getattr(related, FIELD_NAME):
+                related.delete(force_policy=SOFT_DELETE, **kwargs)
+
+        # soft-delete the object
+        self._delete(force_policy=SOFT_DELETE, **kwargs)
+
+        collector = NestedObjects(using=router.db_for_write(self))
+        collector.collect([self])
+        # update fields (SET, SET_DEFAULT or SET_NULL)
+        for model, instances_for_fieldvalues in collector.field_updates.items():
+            for (field, value), instances in instances_for_fieldvalues.items():
+                query = models.sql.UpdateQuery(model)
+                query.update_batch(
+                    [obj.pk for obj in instances],
+                    {field.name: value},
+                    collector.using,
+                )
 
     @classmethod
     def has_unique_fields(cls):
@@ -195,6 +208,14 @@ class SafeDeleteModel(models.Model):
         """
         if cls._meta.unique_together:
             return True
+
+        if django.VERSION[0] > 3 or (django.VERSION[0] == 3 and django.VERSION[1] >= 1):
+            if cls._meta.total_unique_constraints:
+                return True
+        else:  # derived from total_unique_constraints in django >= 3.1
+            for constraint in cls._meta.constraints:
+                if isinstance(constraint, UniqueConstraint) and constraint.condition is None:
+                    return True
 
         for field in cls._meta.fields:
             if field._unique:

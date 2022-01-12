@@ -1,9 +1,9 @@
 from django.db import models
 from django.db.models.deletion import ProtectedError
 
-from .testcase import SafeDeleteTestCase
 from ..config import HARD_DELETE_NOCASCADE
 from ..models import SafeDeleteModel
+from .testcase import SafeDeleteTestCase
 
 
 class NoCascadeModel(SafeDeleteModel):

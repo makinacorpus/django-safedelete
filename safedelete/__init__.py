@@ -1,8 +1,15 @@
 # flake8: noqa
 
-from .config import (DELETED_INVISIBLE, DELETED_VISIBLE_BY_PK, DELETED_VISIBLE_BY_FIELD,
-                     HARD_DELETE, HARD_DELETE_NOCASCADE, SOFT_DELETE, SOFT_DELETE_CASCADE,
-                     NO_DELETE)
+from .config import (
+    DELETED_INVISIBLE,
+    DELETED_VISIBLE_BY_FIELD,
+    DELETED_VISIBLE_BY_PK,
+    HARD_DELETE,
+    HARD_DELETE_NOCASCADE,
+    NO_DELETE,
+    SOFT_DELETE,
+    SOFT_DELETE_CASCADE,
+)
 
 __all__ = [
     'HARD_DELETE',
@@ -15,4 +22,4 @@ __all__ = [
     'DELETED_VISIBLE_BY_FIELD',
 ]
 
-__version__ = "1.0.1dev"
+__version__ = "1.1.3dev"
