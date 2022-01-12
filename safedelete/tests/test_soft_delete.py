@@ -4,7 +4,7 @@ except ImportError:
     import mock
 
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, IntegrityError, transaction
 from django.test import override_settings
 
 from ..config import SOFT_DELETE_CASCADE
@@ -198,3 +198,21 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         self.assertEqual(obj.name, 'unique-test')
         # Settings flag is active so the revived object should be interpreted as created
         self.assertEqual(created, True)
+
+    def test_which_methods_hit_perform_unique_check(self):
+        obj = UniqueConstraintSoftDeleteModel.objects.create(name="name", team="team")
+        obj.delete()
+        obj = UniqueConstraintSoftDeleteModel(name="name", team="team")
+        with transaction.atomic():
+            with self.assertRaises(NotImplementedError):
+                # Hits _perform_unique_checks
+                # This would otherwise be ValidationError
+                obj.full_clean()
+        with transaction.atomic():
+            with self.assertRaises(IntegrityError):
+                # Doesn't hit _perform_unique_checks
+                obj.save()
+        with transaction.atomic():
+            with self.assertRaises(IntegrityError):
+                # Also doesn't hit _perform_unique_checks
+                UniqueConstraintSoftDeleteModel.objects.create(name="name", team="team")

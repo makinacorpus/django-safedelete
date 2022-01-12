@@ -227,6 +227,7 @@ class SafeDeleteModel(models.Model):
     # against "deleted" (but still in db) objects.
     # FIXME: Better/cleaner way ?
     def _perform_unique_checks(self, unique_checks):
+        raise NotImplementedError()
         errors = {}
 
         for model_class, unique_check in unique_checks:
