@@ -10,6 +10,7 @@ from .config import (
     FIELD_NAME,
     HARD_DELETE,
     HARD_DELETE_NOCASCADE,
+    HAS_CASCADED_FIELD_NAME,
     NO_DELETE,
     SOFT_DELETE,
     SOFT_DELETE_CASCADE,
@@ -127,9 +128,9 @@ class SafeDeleteModel(models.Model):
         self.save(keep_deleted=False, **kwargs)
 
         if current_policy == SOFT_DELETE_CASCADE:
-            for related in related_objects(self):
+            for related in related_objects(self, undelete_control=True):
                 if is_safedelete_cls(related.__class__) and getattr(related, FIELD_NAME):
-                    related.undelete()
+                    related.undelete(**kwargs)
 
     def delete(self, force_policy=None, **kwargs):
         # To know why we need to do that, see https://github.com/makinacorpus/django-safedelete/issues/117
@@ -158,6 +159,10 @@ class SafeDeleteModel(models.Model):
     def soft_delete_policy_action(self, **kwargs):
         # Only soft-delete the object, marking it as deleted.
         setattr(self, FIELD_NAME, timezone.now())
+
+        # is_cascade shouldn't be in kwargs when calling save method.
+        kwargs.pop('is_cascade', None)
+
         using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
         # send pre_softdelete signal
         pre_softdelete.send(sender=self.__class__, instance=self, using=using)
@@ -180,7 +185,7 @@ class SafeDeleteModel(models.Model):
         # Soft-delete on related objects before
         for related in related_objects(self):
             if is_safedelete_cls(related.__class__) and not getattr(related, FIELD_NAME):
-                related.delete(force_policy=SOFT_DELETE, **kwargs)
+                related.delete(force_policy=SOFT_DELETE, is_cascade=True, **kwargs)
 
         # soft-delete the object
         self._delete(force_policy=SOFT_DELETE, **kwargs)
@@ -196,7 +201,7 @@ class SafeDeleteModel(models.Model):
                     {field.name: value},
                     collector.using,
                 )
-
+                
     @classmethod
     def has_unique_fields(cls):
         """Checks if one of the fields of this model has a unique constraint set (unique=True).
@@ -278,3 +283,37 @@ class SafeDeleteMixin(SafeDeleteModel):
         warnings.warn('The SafeDeleteMixin class was renamed SafeDeleteModel',
                       DeprecationWarning)
         SafeDeleteModel.__init__(self, *args, **kwargs)
+
+
+class SafeDeleteCascadeControlModel(SafeDeleteModel):
+    """ Abstract safedelete-ready model with additional option to control cascade undelete.
+
+    .. note::
+        This abstract class inherits from SafeDeleteModel, so it has the same usability. However
+        this class implements an additional attribute called by default as `has_cascaded` that
+        allows undelete cascading to restore only child classes that were also deleted by a
+        cascading operation, i.e. all objects that were deleted before their parent object deletion,
+        should keep deleted if the same parent object is restored by undelete method.
+
+    :attribute has_cascaded:
+        BooleanField set True whenever the object is deleted due cascade operation called by delete
+        method of any parent Model. Default value is False. Later if its parent model calls for
+        undelete, cascading undelete will consider only the ones that were set to True before.
+    """
+
+    def soft_delete_policy_action(self, **kwargs):
+        if kwargs.get('is_cascade'):
+            setattr(self, HAS_CASCADED_FIELD_NAME, True)
+        super(SafeDeleteCascadeControlModel, self).soft_delete_policy_action(**kwargs)
+
+    def save(self, keep_deleted=False, **kwargs):
+        if not keep_deleted:
+            if getattr(self, HAS_CASCADED_FIELD_NAME, False):
+                setattr(self, HAS_CASCADED_FIELD_NAME, False)
+        super(SafeDeleteCascadeControlModel, self).save(keep_deleted, **kwargs)
+
+    class Meta:
+        abstract = True
+
+
+SafeDeleteCascadeControlModel.add_to_class(HAS_CASCADED_FIELD_NAME, models.BooleanField(editable=False, default=False))
