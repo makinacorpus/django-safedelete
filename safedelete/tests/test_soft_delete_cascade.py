@@ -2,7 +2,7 @@ from django.db import models
 from django.test import TestCase
 
 from safedelete import SOFT_DELETE, SOFT_DELETE_CASCADE
-from safedelete.config import HAS_CASCADED_FIELD_NAME
+from safedelete.config import DELETED_BY_CASCADE_FIELD_NAME
 from safedelete.models import SafeDeleteModel, SafeDeleteCascadeControlModel
 from safedelete.signals import pre_softdelete
 from safedelete.tests.models import Article, Author, Category
@@ -186,16 +186,16 @@ class SimpleTest(TestCase):
         self.assertEqual(Article.objects.count(), 2)
         self.assertEqual(Press.objects.count(), 0)
         self.assertEqual(Section.objects.count(), 0)
-        self.assertEqual(Section.deleted_objects.filter(**{HAS_CASCADED_FIELD_NAME: True}).count(), 2)
+        self.assertEqual(Section.deleted_objects.filter(**{DELETED_BY_CASCADE_FIELD_NAME: True}).count(), 2)
 
         self.authors[2].undelete(force_policy=SOFT_DELETE_CASCADE)
 
         self.assertEqual(Article.objects.count(), 3)
         self.assertEqual(Press.objects.count(), 1)
-        self.assertEqual(Section.objects.filter(**{HAS_CASCADED_FIELD_NAME: False}).count(), 2)
+        self.assertEqual(Section.objects.filter(**{DELETED_BY_CASCADE_FIELD_NAME: False}).count(), 2)
         self.assertEqual(Table.objects.count(), 2)
         self.assertEqual(self.sections[1], Section.deleted_objects.first())
 
     def test_safe_delete_cascade_control_attribute(self):
-        self.assertEqual(hasattr(Section, HAS_CASCADED_FIELD_NAME), True)
-        self.assertEqual(hasattr(Table, HAS_CASCADED_FIELD_NAME), False)
+        self.assertEqual(hasattr(Section, DELETED_BY_CASCADE_FIELD_NAME), True)
+        self.assertEqual(hasattr(Table, DELETED_BY_CASCADE_FIELD_NAME), False)

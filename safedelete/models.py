@@ -10,7 +10,7 @@ from .config import (
     FIELD_NAME,
     HARD_DELETE,
     HARD_DELETE_NOCASCADE,
-    HAS_CASCADED_FIELD_NAME,
+    DELETED_BY_CASCADE_FIELD_NAME,
     NO_DELETE,
     SOFT_DELETE,
     SOFT_DELETE_CASCADE,
@@ -128,7 +128,7 @@ class SafeDeleteModel(models.Model):
         self.save(keep_deleted=False, **kwargs)
 
         if current_policy == SOFT_DELETE_CASCADE:
-            for related in related_objects(self, undelete_control=True):
+            for related in related_objects(self, only_deleted_by_cascade=True):
                 if is_safedelete_cls(related.__class__) and getattr(related, FIELD_NAME):
                     related.undelete(**kwargs)
 
@@ -201,7 +201,7 @@ class SafeDeleteModel(models.Model):
                     {field.name: value},
                     collector.using,
                 )
-                
+
     @classmethod
     def has_unique_fields(cls):
         """Checks if one of the fields of this model has a unique constraint set (unique=True).
@@ -290,12 +290,12 @@ class SafeDeleteCascadeControlModel(SafeDeleteModel):
 
     .. note::
         This abstract class inherits from SafeDeleteModel, so it has the same usability. However
-        this class implements an additional attribute called by default as `has_cascaded` that
-        allows undelete cascading to restore only child classes that were also deleted by a
+        this class implements an additional attribute called by default as `deleted_by_cascade`
+        that allows undelete cascading to restore only child classes that were also deleted by a
         cascading operation, i.e. all objects that were deleted before their parent object deletion,
         should keep deleted if the same parent object is restored by undelete method.
 
-    :attribute has_cascaded:
+    :attribute deleted_by_cascade:
         BooleanField set True whenever the object is deleted due cascade operation called by delete
         method of any parent Model. Default value is False. Later if its parent model calls for
         undelete, cascading undelete will consider only the ones that were set to True before.
@@ -303,17 +303,17 @@ class SafeDeleteCascadeControlModel(SafeDeleteModel):
 
     def soft_delete_policy_action(self, **kwargs):
         if kwargs.get('is_cascade'):
-            setattr(self, HAS_CASCADED_FIELD_NAME, True)
+            setattr(self, DELETED_BY_CASCADE_FIELD_NAME, True)
         super(SafeDeleteCascadeControlModel, self).soft_delete_policy_action(**kwargs)
 
     def save(self, keep_deleted=False, **kwargs):
         if not keep_deleted:
-            if getattr(self, HAS_CASCADED_FIELD_NAME, False):
-                setattr(self, HAS_CASCADED_FIELD_NAME, False)
+            if getattr(self, DELETED_BY_CASCADE_FIELD_NAME, False):
+                setattr(self, DELETED_BY_CASCADE_FIELD_NAME, False)
         super(SafeDeleteCascadeControlModel, self).save(keep_deleted, **kwargs)
 
     class Meta:
         abstract = True
 
 
-SafeDeleteCascadeControlModel.add_to_class(HAS_CASCADED_FIELD_NAME, models.BooleanField(editable=False, default=False))
+SafeDeleteCascadeControlModel.add_to_class(DELETED_BY_CASCADE_FIELD_NAME, models.BooleanField(editable=False, default=False))

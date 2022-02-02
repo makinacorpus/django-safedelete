@@ -3,14 +3,14 @@ from itertools import chain, filterfalse
 from django.contrib.admin.utils import NestedObjects
 from django.db import router
 
-from .config import HAS_CASCADED_FIELD_NAME
+from .config import DELETED_BY_CASCADE_FIELD_NAME
 
 
-def related_objects(obj, undelete_control=False):
+def related_objects(obj, only_deleted_by_cascade=False):
     """ Return a generator to the objects that would be deleted if we delete "obj" (excluding obj)
 
     Args:
-        undelete_control: Include filter in flatten method to bypass elements controling undelete cascading.
+        only_deleted_by_cascade: Include filter in flatten method to bypass elements controling undelete cascading.
     """
 
     collector = NestedObjects(using=router.db_for_write(obj))
@@ -21,8 +21,8 @@ def related_objects(obj, undelete_control=False):
 
         return (
             elem != obj
-            and hasattr(elem, HAS_CASCADED_FIELD_NAME)
-            and not getattr(elem, HAS_CASCADED_FIELD_NAME)
+            and hasattr(elem, DELETED_BY_CASCADE_FIELD_NAME)
+            and not getattr(elem, DELETED_BY_CASCADE_FIELD_NAME)
         )
 
     def replace_if_cascade_child(elem):
@@ -35,7 +35,7 @@ def related_objects(obj, undelete_control=False):
 
     def flatten(elem):
         if isinstance(elem, list):
-            if undelete_control:
+            if only_deleted_by_cascade:
                 elem = filterfalse(cascade_undelete_bypass, elem)
             expanded_elem = chain.from_iterable(map(replace_if_cascade_child, elem))
             return chain.from_iterable(map(flatten, expanded_elem))
