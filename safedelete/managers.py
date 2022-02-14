@@ -127,7 +127,7 @@ class SafeDeleteManager(models.Manager):
 
         # Check if one of the model fields contains a unique constraint
         revived_soft_deleted_object = False
-        if self.model.has_unique_fields():
+        if self.model.has_unique_fields() or self.model._meta.pk.name in kwargs:
             # Check if object is already soft-deleted
             deleted_object = self.all_with_deleted().filter(**kwargs).exclude(**{FIELD_NAME: None}).first()
 
