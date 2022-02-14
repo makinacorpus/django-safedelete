@@ -31,23 +31,25 @@ class TestSingleDeleteCallOnInheritance(TestCase):
         # test NO_DELETE
         self.assertEqual(instance.delete_call_counter, 1)
 
-    def test_single_delete_call_for_hard_delete(self):
+    def test_single_delete_call_for_soft_delete(self):
         instance = TestDeleteModel.objects.create()
         instance.delete(force_policy=SOFT_DELETE)
         # test SOFT_DELETE
         self.assertEqual(instance.delete_call_counter, 1)
 
-    def test_single_delete_call_for_soft_delete(self):
+    def test_single_delete_call_for_soft_delete_cascade(self):
         instance = TestDeleteModel.objects.create()
         instance.delete(force_policy=SOFT_DELETE_CASCADE)
         # test SOFT_DELETE_CASCADE
         self.assertEqual(instance.delete_call_counter, 1)
 
-    def test_single_delete_call_for_soft_delete_cascade(self):
+    def test_single_delete_call_for_hard_delete(self):
         instance = TestDeleteModel.objects.create()
         instance.delete(force_policy=HARD_DELETE)
         # test HARD_DELETE
         self.assertEqual(instance.delete_call_counter, 1)
+        with self.assertRaises(TestDeleteModel.DoesNotExist):
+            TestDeleteModel.objects.get(pk=instance.pk)
 
     def test_single_delete_call_for_hard_delete_nocascade(self):
         instance = TestDeleteModel.objects.create()
