@@ -1,9 +1,10 @@
 from django.db import models
 from django.test import TestCase
+from django.core.exceptions import FieldError
 
 from safedelete import SOFT_DELETE, SOFT_DELETE_CASCADE
 from safedelete.config import DELETED_BY_CASCADE_FIELD_NAME
-from safedelete.models import SafeDeleteModel, SafeDeleteCascadeControlModel
+from safedelete.models import SafeDeleteModel
 from safedelete.signals import pre_softdelete
 from safedelete.tests.models import Article, Author, Category
 
@@ -18,7 +19,7 @@ class Press(SafeDeleteModel):
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
 
 
-class Section(SafeDeleteCascadeControlModel):
+class Section(SafeDeleteModel):
     title = models.CharField(max_length=200)
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
 
@@ -26,7 +27,7 @@ class Section(SafeDeleteCascadeControlModel):
 class Table(SafeDeleteModel):
     index = models.IntegerField()
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
-
+    vars()[DELETED_BY_CASCADE_FIELD_NAME] = None
 
 class PressNormalModel(models.Model):
     name = models.CharField(max_length=200)
@@ -196,6 +197,13 @@ class SimpleTest(TestCase):
         self.assertEqual(Table.objects.count(), 2)
         self.assertEqual(self.sections[1], Section.deleted_objects.first())
 
-    def test_safe_delete_cascade_control_attribute(self):
-        self.assertEqual(hasattr(Section, DELETED_BY_CASCADE_FIELD_NAME), True)
-        self.assertEqual(hasattr(Table, DELETED_BY_CASCADE_FIELD_NAME), False)
+    def test_safe_delete_cascade_control_attribute_overriding(self):
+
+        with self.assertRaises(FieldError):
+            filtered_tables = Table.objects.filter(**{DELETED_BY_CASCADE_FIELD_NAME: False}) 
+
+        self.tables[2].delete()
+        self.sections[2].delete(force_policy=SOFT_DELETE_CASCADE)
+        self.assertEqual(Table.objects.count(), 1)
+        self.sections[2].undelete(force_policy=SOFT_DELETE_CASCADE)
+        self.assertEqual(Table.objects.count(), 3)
