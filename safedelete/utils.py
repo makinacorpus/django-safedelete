@@ -19,11 +19,7 @@ def related_objects(obj, only_deleted_by_cascade=False):
     def cascade_undelete_bypass(elem):
         """ Test if elem should be bypassed by cascade undelete """
 
-        return (
-            elem != obj
-            and hasattr(elem, DELETED_BY_CASCADE_FIELD_NAME)
-            and not getattr(elem, DELETED_BY_CASCADE_FIELD_NAME)
-        )
+        return elem != obj and getattr(elem, DELETED_BY_CASCADE_FIELD_NAME) is False
 
     def replace_if_cascade_child(elem):
         """ Wraps each item in elem with tuples including their cascading child classes """

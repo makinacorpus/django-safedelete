@@ -53,6 +53,21 @@ class SafeDeleteModel(models.Model):
         DateTimeField set to the moment the object was deleted. Is set to
         ``None`` if the object has not been deleted.
 
+    :attribute deleted_by_cascade:
+        BooleanField set True whenever the object is deleted due cascade operation called by delete
+        method of any parent Model. Default value is False. Later if its parent model calls for
+        cascading undelete, it will restore only child classes that were also deleted by a cascading
+        operation (deleted_by_cascade equals to True), i.e. all objects that were deleted before their
+        parent deletion, should keep deleted if the same parent object is restored by undelete method.
+
+        If this behavior isn't desired, class that inherits from SafeDeleteModel can override this
+        attribute by setting it as None: overriding model class won't have its ``deleted_by_cascade``
+        field and will be restored by cascading undelete even if it wasn't deleted by a cascade operation.
+
+        >>> class MyModel(SafeDeleteModel):
+        ...     deleted_by_cascade = None
+        ...     my_field = models.TextField()
+
     :attribute _safedelete_policy: define what happens when you delete an object.
         It can be one of ``HARD_DELETE``, ``SOFT_DELETE``, ``SOFT_DELETE_CASCADE``, ``NO_DELETE`` and ``HARD_DELETE_NOCASCADE``.
         Defaults to ``SOFT_DELETE``.
@@ -104,6 +119,7 @@ class SafeDeleteModel(models.Model):
             if getattr(self, FIELD_NAME) and self.pk:
                 was_undeleted = True
             setattr(self, FIELD_NAME, None)
+            setattr(self, DELETED_BY_CASCADE_FIELD_NAME, False)
 
         super(SafeDeleteModel, self).save(**kwargs)
 
@@ -161,7 +177,8 @@ class SafeDeleteModel(models.Model):
         setattr(self, FIELD_NAME, timezone.now())
 
         # is_cascade shouldn't be in kwargs when calling save method.
-        kwargs.pop('is_cascade', None)
+        if kwargs.pop('is_cascade', None):
+            setattr(self, DELETED_BY_CASCADE_FIELD_NAME, True)
 
         using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
         # send pre_softdelete signal
@@ -267,6 +284,7 @@ class SafeDeleteModel(models.Model):
 
 
 SafeDeleteModel.add_to_class(FIELD_NAME, models.DateTimeField(editable=False, null=True))
+SafeDeleteModel.add_to_class(DELETED_BY_CASCADE_FIELD_NAME, models.BooleanField(editable=False, default=False))
 
 
 class SafeDeleteMixin(SafeDeleteModel):
@@ -283,37 +301,3 @@ class SafeDeleteMixin(SafeDeleteModel):
         warnings.warn('The SafeDeleteMixin class was renamed SafeDeleteModel',
                       DeprecationWarning)
         SafeDeleteModel.__init__(self, *args, **kwargs)
-
-
-class SafeDeleteCascadeControlModel(SafeDeleteModel):
-    """ Abstract safedelete-ready model with additional option to control cascade undelete.
-
-    .. note::
-        This abstract class inherits from SafeDeleteModel, so it has the same usability. However
-        this class implements an additional attribute called by default as `deleted_by_cascade`
-        that allows undelete cascading to restore only child classes that were also deleted by a
-        cascading operation, i.e. all objects that were deleted before their parent object deletion,
-        should keep deleted if the same parent object is restored by undelete method.
-
-    :attribute deleted_by_cascade:
-        BooleanField set True whenever the object is deleted due cascade operation called by delete
-        method of any parent Model. Default value is False. Later if its parent model calls for
-        undelete, cascading undelete will consider only the ones that were set to True before.
-    """
-
-    def soft_delete_policy_action(self, **kwargs):
-        if kwargs.get('is_cascade'):
-            setattr(self, DELETED_BY_CASCADE_FIELD_NAME, True)
-        super(SafeDeleteCascadeControlModel, self).soft_delete_policy_action(**kwargs)
-
-    def save(self, keep_deleted=False, **kwargs):
-        if not keep_deleted:
-            if getattr(self, DELETED_BY_CASCADE_FIELD_NAME, False):
-                setattr(self, DELETED_BY_CASCADE_FIELD_NAME, False)
-        super(SafeDeleteCascadeControlModel, self).save(keep_deleted, **kwargs)
-
-    class Meta:
-        abstract = True
-
-
-SafeDeleteCascadeControlModel.add_to_class(DELETED_BY_CASCADE_FIELD_NAME, models.BooleanField(editable=False, default=False))
