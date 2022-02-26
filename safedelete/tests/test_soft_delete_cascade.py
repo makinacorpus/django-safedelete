@@ -29,6 +29,7 @@ class Table(SafeDeleteModel):
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
     vars()[DELETED_BY_CASCADE_FIELD_NAME] = None
 
+
 class PressNormalModel(models.Model):
     name = models.CharField(max_length=200)
     article = models.ForeignKey(Article, on_delete=models.CASCADE, null=True)
@@ -200,7 +201,7 @@ class SimpleTest(TestCase):
     def test_safe_delete_cascade_control_attribute_overriding(self):
 
         with self.assertRaises(FieldError):
-            filtered_tables = Table.objects.filter(**{DELETED_BY_CASCADE_FIELD_NAME: False}) 
+            Table.objects.filter(**{DELETED_BY_CASCADE_FIELD_NAME: False})
 
         self.tables[2].delete()
         self.sections[2].delete(force_policy=SOFT_DELETE_CASCADE)
