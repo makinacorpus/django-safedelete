@@ -7,9 +7,9 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.test import override_settings
 
+from .testcase import SafeDeleteForceTestCase
 from ..config import SOFT_DELETE_CASCADE
 from ..models import SafeDeleteModel
-from .testcase import SafeDeleteForceTestCase
 
 
 class SoftDeleteModel(SafeDeleteModel):
@@ -27,7 +27,6 @@ class SoftDeleteMixinModel(SafeDeleteModel):
 
 
 class UniqueSoftDeleteModel(SafeDeleteModel):
-
     name = models.CharField(
         max_length=100,
         unique=True
@@ -35,7 +34,6 @@ class UniqueSoftDeleteModel(SafeDeleteModel):
 
 
 class UniqueConstraintSoftDeleteModel(SafeDeleteModel):
-
     name = models.CharField(max_length=100)
     team = models.CharField(max_length=100)
 
@@ -49,7 +47,6 @@ class UniqueConstraintSoftDeleteModel(SafeDeleteModel):
 
 
 class UniqueTogetherSoftDeleteModel(SoftDeleteModel):
-
     name = models.CharField(max_length=100)
     team = models.CharField(max_length=100)
 
@@ -116,10 +113,16 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         self.assertEqual(SoftDeleteModel.objects.count(), 0)
 
         SoftDeleteModel.objects.all().undelete()  # Nonsense
-        self.assertEqual(SoftDeleteModel.objects.count(), 0)
+        self.assertEqual(SoftDeleteModel.objects.count(), 0,
+                         f"When did 'SoftDeleteModel.objects.all().undelete()', "
+                         f"expected 0 SoftDeleteModel.objects.count, got {SoftDeleteModel.objects.count()} instead.\n"
+                         f"SoftDeleteModel.objects.all(): {SoftDeleteModel.objects.all()}\n"
+                         )
 
         SoftDeleteModel.deleted_objects.all().undelete()
-        self.assertEqual(SoftDeleteModel.objects.count(), 1)
+        self.assertEqual(SoftDeleteModel.objects.count(), 1,
+                         f"When did 'SoftDeleteModel.deleted_objects.all().undelete()', "
+                         f"expected 1 SoftDeleteModel.objects.count, got {SoftDeleteModel.objects.count()} instead")
 
     def test_undelete_with_soft_delete_policy_and_forced_soft_delete_cascade_policy(self):
         self.assertEqual(SoftDeleteModel.objects.count(), 1)
@@ -133,8 +136,10 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         self.assertEqual(SoftDeleteRelatedModel.objects.count(), 0)
 
         SoftDeleteModel.deleted_objects.all().undelete(force_policy=SOFT_DELETE_CASCADE)
-        self.assertEqual(SoftDeleteModel.objects.count(), 1)
-        self.assertEqual(SoftDeleteRelatedModel.objects.count(), 1)
+        self.assertEqual(SoftDeleteModel.objects.count(), 1,
+                         f"expected 1 restored objs count, got {SoftDeleteModel.objects.count()} instead")
+        self.assertEqual(SoftDeleteRelatedModel.objects.count(), 1,
+                         f"expected 1 related objs count, got {SoftDeleteRelatedModel.objects.count()} instead")
 
     def test_validate_unique(self):
         """Check that uniqueness is also checked against deleted objects """
@@ -167,7 +172,8 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
         obj, created = UniqueConstraintSoftDeleteModel.objects.update_or_create(name='thor', team='avengers')
         obj.delete()
         # Update it and see if it fails
-        obj, created = UniqueConstraintSoftDeleteModel.objects.update_or_create(name='thor', team='avengers', defaults={})
+        obj, created = UniqueConstraintSoftDeleteModel.objects.update_or_create(name='thor', team='avengers',
+                                                                                defaults={})
         self.assertEqual(obj.name, 'thor')
         self.assertEqual(obj.team, 'avengers')
         self.assertFalse(created)

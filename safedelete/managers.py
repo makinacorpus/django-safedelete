@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.db.models.manager import BaseManager
 
 from .config import (
     DELETED_INVISIBLE,
@@ -12,7 +13,7 @@ from .config import (
 from .queryset import SafeDeleteQueryset
 
 
-class SafeDeleteManager(models.Manager):
+class SafeDeleteManager(BaseManager.from_queryset(SafeDeleteQueryset)):
     """Default manager for the SafeDeleteModel.
 
     If _safedelete_visibility == DELETED_VISIBLE_BY_PK, the manager can returns deleted

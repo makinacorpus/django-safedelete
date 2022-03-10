@@ -1,11 +1,10 @@
-import warnings
-
 import django
 from django.contrib.admin.utils import NestedObjects
 from django.db import models, router
 from django.db.models import UniqueConstraint
 from django.utils import timezone
 
+from safedelete import utils
 from .config import (
     FIELD_NAME,
     HARD_DELETE,
@@ -20,26 +19,6 @@ from .managers import (
     SafeDeleteManager,
 )
 from .signals import post_softdelete, post_undelete, pre_softdelete
-from .utils import can_hard_delete, related_objects
-
-
-def is_safedelete_cls(cls):
-    for base in cls.__bases__:
-        # This used to check if it startswith 'safedelete', but that masks
-        # the issue inside of a test. Other clients create models that are
-        # outside of the safedelete package.
-        if base.__module__.startswith('safedelete.models'):
-            return True
-        if is_safedelete_cls(base):
-            return True
-    return False
-
-
-def is_safedelete(related):
-    warnings.warn(
-        'is_safedelete is deprecated in favor of is_safedelete_cls',
-        DeprecationWarning)
-    return is_safedelete_cls(related.__class__)
 
 
 class SafeDeleteModel(models.Model):
@@ -127,8 +106,8 @@ class SafeDeleteModel(models.Model):
         self.save(keep_deleted=False, **kwargs)
 
         if current_policy == SOFT_DELETE_CASCADE:
-            for related in related_objects(self):
-                if is_safedelete_cls(related.__class__) and getattr(related, FIELD_NAME):
+            for related in utils.related_objects(self):
+                if utils.is_safedelete_cls(related.__class__) and getattr(related, FIELD_NAME):
                     related.undelete()
 
     def delete(self, force_policy=None, **kwargs):
@@ -171,15 +150,15 @@ class SafeDeleteModel(models.Model):
 
     def hard_delete_cascade_policy_action(self, **kwargs):
         # Hard-delete the object only if nothing would be deleted with it
-        if not can_hard_delete(self):
+        if not utils.can_hard_delete(self):
             self._delete(force_policy=SOFT_DELETE, **kwargs)
         else:
             self._delete(force_policy=HARD_DELETE, **kwargs)
 
     def soft_delete_cascade_policy_action(self, **kwargs):
         # Soft-delete on related objects before
-        for related in related_objects(self):
-            if is_safedelete_cls(related.__class__) and not getattr(related, FIELD_NAME):
+        for related in utils.related_objects(self):
+            if utils.is_safedelete_cls(related.__class__) and not getattr(related, FIELD_NAME):
                 related.delete(force_policy=SOFT_DELETE, **kwargs)
 
         # soft-delete the object
@@ -275,6 +254,5 @@ class SafeDeleteMixin(SafeDeleteModel):
         abstract = True
 
     def __init__(self, *args, **kwargs):
-        warnings.warn('The SafeDeleteMixin class was renamed SafeDeleteModel',
-                      DeprecationWarning)
+        utils.warnings.warn('The SafeDeleteMixin class was renamed SafeDeleteModel', DeprecationWarning)
         SafeDeleteModel.__init__(self, *args, **kwargs)
