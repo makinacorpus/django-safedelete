@@ -62,7 +62,7 @@ class SafeDeleteModel(models.Model):
 
         If this behavior isn't desired, class that inherits from SafeDeleteModel can override this
         attribute by setting it as None: overriding model class won't have its ``deleted_by_cascade``
-        field and will be restored by cascading undelete even if it wasn't deleted by a cascade operation.
+        field and won't be restored by cascading undelete even if it was deleted by a cascade operation.
 
         >>> class MyModel(SafeDeleteModel):
         ...     deleted_by_cascade = None

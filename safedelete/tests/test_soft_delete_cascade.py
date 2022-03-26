@@ -30,6 +30,11 @@ class Table(SafeDeleteModel):
     vars()[DELETED_BY_CASCADE_FIELD_NAME] = None
 
 
+class Image(SafeDeleteModel):
+    index = models.IntegerField()
+    section = models.ForeignKey(Section, on_delete=models.CASCADE)
+
+
 class PressNormalModel(models.Model):
     name = models.CharField(max_length=200)
     article = models.ForeignKey(Article, on_delete=models.CASCADE, null=True)
@@ -87,6 +92,12 @@ class SimpleTest(TestCase):
             Table.objects.create(index=1, section=self.sections[1]),
             Table.objects.create(index=1, section=self.sections[2]),
             Table.objects.create(index=1, section=self.sections[2]),
+        )
+
+        self.images = (
+            Image.objects.create(index=1, section=self.sections[1]),
+            Image.objects.create(index=1, section=self.sections[2]),
+            Image.objects.create(index=1, section=self.sections[2]),
         )
 
     def test_soft_delete_cascade(self):
@@ -181,7 +192,7 @@ class SimpleTest(TestCase):
         self.sections[1].delete(force_policy=SOFT_DELETE_CASCADE)
 
         self.assertEqual(Section.objects.count(), 2)
-        self.assertEqual(Table.objects.count(), 2)
+        self.assertEqual(Image.objects.count(), 2)
 
         self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
 
@@ -195,7 +206,7 @@ class SimpleTest(TestCase):
         self.assertEqual(Article.objects.count(), 3)
         self.assertEqual(Press.objects.count(), 1)
         self.assertEqual(Section.objects.filter(**{DELETED_BY_CASCADE_FIELD_NAME: False}).count(), 2)
-        self.assertEqual(Table.objects.count(), 2)
+        self.assertEqual(Image.objects.count(), 2)
         self.assertEqual(self.sections[1], Section.deleted_objects.first())
 
     def test_safe_delete_cascade_control_attribute_overriding(self):
@@ -205,6 +216,7 @@ class SimpleTest(TestCase):
 
         self.tables[2].delete()
         self.sections[2].delete(force_policy=SOFT_DELETE_CASCADE)
-        self.assertEqual(Table.objects.count(), 1)
         self.sections[2].undelete(force_policy=SOFT_DELETE_CASCADE)
-        self.assertEqual(Table.objects.count(), 3)
+        self.assertEqual(Table.objects.count(), 1)
+        self.tables[2].undelete()
+        self.assertEqual(Table.objects.count(), 2)
