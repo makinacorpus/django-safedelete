@@ -14,7 +14,7 @@ def related_objects(obj, only_deleted_by_cascade=False):
     """
 
     collector = NestedObjects(using=router.db_for_write(obj))
-    collector.collect([obj])    
+    collector.collect([obj])
 
     def flatten(elem):
         if isinstance(elem, tuple):
