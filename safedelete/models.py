@@ -177,7 +177,7 @@ class SafeDeleteModel(models.Model):
         setattr(self, FIELD_NAME, timezone.now())
 
         # is_cascade shouldn't be in kwargs when calling save method.
-        if kwargs.pop('is_cascade', None):
+        if kwargs.pop('is_cascade', False):
             setattr(self, DELETED_BY_CASCADE_FIELD_NAME, True)
 
         using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
