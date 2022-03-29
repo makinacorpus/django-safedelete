@@ -134,7 +134,7 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
 
         SoftDeleteModel.deleted_objects.all().undelete(force_policy=SOFT_DELETE_CASCADE)
         self.assertEqual(SoftDeleteModel.objects.count(), 1)
-        self.assertEqual(SoftDeleteRelatedModel.objects.count(), 1)
+        self.assertEqual(SoftDeleteRelatedModel.objects.count(), 0)
 
     def test_validate_unique(self):
         """Check that uniqueness is also checked against deleted objects """

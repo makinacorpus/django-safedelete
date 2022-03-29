@@ -10,6 +10,7 @@ from .config import (
     FIELD_NAME,
     HARD_DELETE,
     HARD_DELETE_NOCASCADE,
+    DELETED_BY_CASCADE_FIELD_NAME,
     NO_DELETE,
     SOFT_DELETE,
     SOFT_DELETE_CASCADE,
@@ -51,6 +52,21 @@ class SafeDeleteModel(models.Model):
     :attribute deleted:
         DateTimeField set to the moment the object was deleted. Is set to
         ``None`` if the object has not been deleted.
+
+    :attribute deleted_by_cascade:
+        BooleanField set True whenever the object is deleted due cascade operation called by delete
+        method of any parent Model. Default value is False. Later if its parent model calls for
+        cascading undelete, it will restore only child classes that were also deleted by a cascading
+        operation (deleted_by_cascade equals to True), i.e. all objects that were deleted before their
+        parent deletion, should keep deleted if the same parent object is restored by undelete method.
+
+        If this behavior isn't desired, class that inherits from SafeDeleteModel can override this
+        attribute by setting it as None: overriding model class won't have its ``deleted_by_cascade``
+        field and won't be restored by cascading undelete even if it was deleted by a cascade operation.
+
+        >>> class MyModel(SafeDeleteModel):
+        ...     deleted_by_cascade = None
+        ...     my_field = models.TextField()
 
     :attribute _safedelete_policy: define what happens when you delete an object.
         It can be one of ``HARD_DELETE``, ``SOFT_DELETE``, ``SOFT_DELETE_CASCADE``, ``NO_DELETE`` and ``HARD_DELETE_NOCASCADE``.
@@ -103,6 +119,7 @@ class SafeDeleteModel(models.Model):
             if getattr(self, FIELD_NAME) and self.pk:
                 was_undeleted = True
             setattr(self, FIELD_NAME, None)
+            setattr(self, DELETED_BY_CASCADE_FIELD_NAME, False)
 
         super(SafeDeleteModel, self).save(**kwargs)
 
@@ -127,9 +144,9 @@ class SafeDeleteModel(models.Model):
         self.save(keep_deleted=False, **kwargs)
 
         if current_policy == SOFT_DELETE_CASCADE:
-            for related in related_objects(self):
+            for related in related_objects(self, only_deleted_by_cascade=True):
                 if is_safedelete_cls(related.__class__) and getattr(related, FIELD_NAME):
-                    related.undelete()
+                    related.undelete(**kwargs)
 
     def delete(self, force_policy=None, **kwargs):
         # To know why we need to do that, see https://github.com/makinacorpus/django-safedelete/issues/117
@@ -158,6 +175,11 @@ class SafeDeleteModel(models.Model):
     def soft_delete_policy_action(self, **kwargs):
         # Only soft-delete the object, marking it as deleted.
         setattr(self, FIELD_NAME, timezone.now())
+
+        # is_cascade shouldn't be in kwargs when calling save method.
+        if kwargs.pop('is_cascade', False):
+            setattr(self, DELETED_BY_CASCADE_FIELD_NAME, True)
+
         using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
         # send pre_softdelete signal
         pre_softdelete.send(sender=self.__class__, instance=self, using=using)
@@ -180,7 +202,7 @@ class SafeDeleteModel(models.Model):
         # Soft-delete on related objects before
         for related in related_objects(self):
             if is_safedelete_cls(related.__class__) and not getattr(related, FIELD_NAME):
-                related.delete(force_policy=SOFT_DELETE, **kwargs)
+                related.delete(force_policy=SOFT_DELETE, is_cascade=True, **kwargs)
 
         # soft-delete the object
         self._delete(force_policy=SOFT_DELETE, **kwargs)
@@ -262,6 +284,7 @@ class SafeDeleteModel(models.Model):
 
 
 SafeDeleteModel.add_to_class(FIELD_NAME, models.DateTimeField(editable=False, null=True))
+SafeDeleteModel.add_to_class(DELETED_BY_CASCADE_FIELD_NAME, models.BooleanField(editable=False, default=False))
 
 
 class SafeDeleteMixin(SafeDeleteModel):

@@ -1,7 +1,9 @@
 from django.db import models
 from django.test import TestCase
+from django.core.exceptions import FieldError
 
 from safedelete import SOFT_DELETE, SOFT_DELETE_CASCADE
+from safedelete.config import DELETED_BY_CASCADE_FIELD_NAME
 from safedelete.models import SafeDeleteModel
 from safedelete.signals import pre_softdelete
 from safedelete.tests.models import Article, Author, Category
@@ -15,6 +17,22 @@ except ImportError:
 class Press(SafeDeleteModel):
     name = models.CharField(max_length=200)
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
+
+
+class Section(SafeDeleteModel):
+    title = models.CharField(max_length=200)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+
+
+class Table(SafeDeleteModel):
+    index = models.IntegerField()
+    section = models.ForeignKey(Section, on_delete=models.CASCADE)
+    vars()[DELETED_BY_CASCADE_FIELD_NAME] = None
+
+
+class Image(SafeDeleteModel):
+    index = models.IntegerField()
+    section = models.ForeignKey(Section, on_delete=models.CASCADE)
 
 
 class PressNormalModel(models.Model):
@@ -62,6 +80,24 @@ class SimpleTest(TestCase):
 
         self.press = (
             Press.objects.create(name='press 0', article=self.articles[2])
+        )
+
+        self.sections = (
+            Section.objects.create(title='Abstract', article=self.articles[2]),
+            Section.objects.create(title='Methods', article=self.articles[2]),
+            Section.objects.create(title='Results', article=self.articles[2]),
+        )
+
+        self.tables = (
+            Table.objects.create(index=1, section=self.sections[1]),
+            Table.objects.create(index=1, section=self.sections[2]),
+            Table.objects.create(index=1, section=self.sections[2]),
+        )
+
+        self.images = (
+            Image.objects.create(index=1, section=self.sections[1]),
+            Image.objects.create(index=1, section=self.sections[2]),
+            Image.objects.create(index=1, section=self.sections[2]),
         )
 
     def test_soft_delete_cascade(self):
@@ -151,3 +187,36 @@ class SimpleTest(TestCase):
         self.assertEqual(Article.objects.count(), 3)
         self.assertEqual(Category.objects.count(), 3)
         self.assertEqual(Press.objects.count(), 1)
+
+    def test_undelete_with_cascade_control_class_included(self):
+        self.sections[1].delete(force_policy=SOFT_DELETE_CASCADE)
+
+        self.assertEqual(Section.objects.count(), 2)
+        self.assertEqual(Image.objects.count(), 2)
+
+        self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
+
+        self.assertEqual(Article.objects.count(), 2)
+        self.assertEqual(Press.objects.count(), 0)
+        self.assertEqual(Section.objects.count(), 0)
+        self.assertEqual(Section.deleted_objects.filter(**{DELETED_BY_CASCADE_FIELD_NAME: True}).count(), 2)
+
+        self.authors[2].undelete(force_policy=SOFT_DELETE_CASCADE)
+
+        self.assertEqual(Article.objects.count(), 3)
+        self.assertEqual(Press.objects.count(), 1)
+        self.assertEqual(Section.objects.filter(**{DELETED_BY_CASCADE_FIELD_NAME: False}).count(), 2)
+        self.assertEqual(Image.objects.count(), 2)
+        self.assertEqual(self.sections[1], Section.deleted_objects.first())
+
+    def test_safe_delete_cascade_control_attribute_overriding(self):
+
+        with self.assertRaises(FieldError):
+            Table.objects.filter(**{DELETED_BY_CASCADE_FIELD_NAME: False})
+
+        self.tables[2].delete()
+        self.sections[2].delete(force_policy=SOFT_DELETE_CASCADE)
+        self.sections[2].undelete(force_policy=SOFT_DELETE_CASCADE)
+        self.assertEqual(Table.objects.count(), 1)
+        self.tables[2].undelete()
+        self.assertEqual(Table.objects.count(), 2)

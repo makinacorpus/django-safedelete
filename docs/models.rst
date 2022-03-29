@@ -50,7 +50,7 @@ The different policies are:
 
 
 Policies Delete Logic Customization
---------
+-----------------------------------
 
 Each of the policies has an overwritable function in case you need to customize a particular policy delete logic. The function per policy are as follows:
 
@@ -70,7 +70,8 @@ Each of the policies has an overwritable function in case you need to customize 
     * - SOFT_DELETE_CASCADE
       - soft_delete_cascade_policy_action    
 
-    Example:
+Example:
+
 To add custom logic before or after the execution of the original delete logic of a model with the policy SOFT_DELETE you can overwrite the ``soft_delete_policy_action`` function as such:
 
 .. code-block:: python
