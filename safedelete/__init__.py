@@ -22,4 +22,4 @@ __all__ = [
     'DELETED_VISIBLE_BY_FIELD',
 ]
 
-__version__ = "1.1.3dev"
+__version__ = "1.2.1dev"
