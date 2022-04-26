@@ -2,10 +2,15 @@
 CHANGELOG
 =========
 
+1.2.1 (unreleased)
+==================
+
+-
+
 1.2.0 (2022-04-26)
 ==================
 
-- Adding SafeDeleteCascadeControlModel #197 
+- Adding SafeDeleteCascadeControlModel #197
 - Primary key uniqueness not considered in update_or_create #200
 
 1.1.2 (2021-12-16)
