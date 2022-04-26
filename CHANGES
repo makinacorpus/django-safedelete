@@ -2,7 +2,7 @@
 CHANGELOG
 =========
 
-1.2.0 (unreleased)
+1.2.0 (2022-04-26)
 ==================
 
 - Adding SafeDeleteCascadeControlModel #197 
