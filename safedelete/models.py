@@ -1,6 +1,7 @@
 import warnings
 
 import django
+from collections import Counter
 from django.contrib.admin.utils import NestedObjects
 from django.db import models, router
 from django.db.models import UniqueConstraint
@@ -142,15 +143,19 @@ class SafeDeleteModel(models.Model):
 
         assert getattr(self, FIELD_NAME)
         self.save(keep_deleted=False, **kwargs)
+        undeleted_counter = Counter({self._meta.label: 1})
 
         if current_policy == SOFT_DELETE_CASCADE:
             for related in related_objects(self, only_deleted_by_cascade=True):
                 if is_safedelete_cls(related.__class__) and getattr(related, FIELD_NAME):
-                    related.undelete(**kwargs)
+                    _, undelete_response = related.undelete(**kwargs)
+                    undeleted_counter.update(undelete_response)
+
+        return sum(undeleted_counter.values()), dict(undeleted_counter)
 
     def delete(self, force_policy=None, **kwargs):
         # To know why we need to do that, see https://github.com/makinacorpus/django-safedelete/issues/117
-        self._delete(force_policy, **kwargs)
+        return self._delete(force_policy, **kwargs)
 
     def _delete(self, force_policy=None, **kwargs):
         """Overrides Django's delete behaviour based on the model's delete policy.
@@ -162,15 +167,15 @@ class SafeDeleteModel(models.Model):
         current_policy = self._safedelete_policy if (force_policy is None) else force_policy
 
         if current_policy == NO_DELETE:
-            pass
+            return (0, {})
         elif current_policy == SOFT_DELETE:
-            self.soft_delete_policy_action(**kwargs)
+            return self.soft_delete_policy_action(**kwargs)
         elif current_policy == HARD_DELETE:
-            self.hard_delete_policy_action(**kwargs)
+            return self.hard_delete_policy_action(**kwargs)
         elif current_policy == HARD_DELETE_NOCASCADE:
-            self.hard_delete_cascade_policy_action(**kwargs)
+            return self.hard_delete_cascade_policy_action(**kwargs)
         elif current_policy == SOFT_DELETE_CASCADE:
-            self.soft_delete_cascade_policy_action(**kwargs)
+            return self.soft_delete_cascade_policy_action(**kwargs)
 
     def soft_delete_policy_action(self, **kwargs):
         # Only soft-delete the object, marking it as deleted.
@@ -187,25 +192,30 @@ class SafeDeleteModel(models.Model):
         # send softdelete signal
         post_softdelete.send(sender=self.__class__, instance=self, using=using)
 
+        return (1, {self._meta.label: 1})
+
     def hard_delete_policy_action(self, **kwargs):
         # Normally hard-delete the object.
-        super(SafeDeleteModel, self).delete()
+        return super(SafeDeleteModel, self).delete()
 
     def hard_delete_cascade_policy_action(self, **kwargs):
         # Hard-delete the object only if nothing would be deleted with it
         if not can_hard_delete(self):
-            self._delete(force_policy=SOFT_DELETE, **kwargs)
+            return self._delete(force_policy=SOFT_DELETE, **kwargs)
         else:
-            self._delete(force_policy=HARD_DELETE, **kwargs)
+            return self._delete(force_policy=HARD_DELETE, **kwargs)
 
     def soft_delete_cascade_policy_action(self, **kwargs):
         # Soft-delete on related objects before
+        deleted_counter = Counter()
         for related in related_objects(self):
             if is_safedelete_cls(related.__class__) and not getattr(related, FIELD_NAME):
-                related.delete(force_policy=SOFT_DELETE, is_cascade=True, **kwargs)
+                _, delete_response = related.delete(force_policy=SOFT_DELETE, is_cascade=True, **kwargs)
+                deleted_counter.update(delete_response)
 
         # soft-delete the object
-        self._delete(force_policy=SOFT_DELETE, **kwargs)
+        _, delete_response = self._delete(force_policy=SOFT_DELETE, **kwargs)
+        deleted_counter.update(delete_response)
 
         collector = NestedObjects(using=router.db_for_write(self))
         collector.collect([self])
@@ -218,6 +228,8 @@ class SafeDeleteModel(models.Model):
                     {field.name: value},
                     collector.using,
                 )
+
+        return sum(deleted_counter.values()), dict(deleted_counter)
 
     @classmethod
     def has_unique_fields(cls):

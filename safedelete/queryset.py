@@ -1,3 +1,4 @@
+from collections import Counter
 from django.db.models import query
 
 from .query import SafeDeleteQuery
@@ -27,10 +28,13 @@ class SafeDeleteQueryset(query.QuerySet):
             :py:func:`safedelete.models.SafeDeleteModel.delete`
         """
         assert self.query.can_filter(), "Cannot use 'limit' or 'offset' with delete."
+        deleted_counter = Counter()
         # TODO: Replace this by bulk update if we can
         for obj in self.all():
-            obj.delete(force_policy=force_policy)
+            _, delete_response = obj.delete(force_policy=force_policy)
+            deleted_counter.update(delete_response)
         self._result_cache = None
+        return sum(deleted_counter.values()), dict(deleted_counter)
     delete.alters_data = True
 
     def undelete(self, force_policy=None):
@@ -44,10 +48,13 @@ class SafeDeleteQueryset(query.QuerySet):
             :py:func:`safedelete.models.SafeDeleteModel.undelete`
         """
         assert self.query.can_filter(), "Cannot use 'limit' or 'offset' with undelete."
+        undeleted_counter = Counter()
         # TODO: Replace this by bulk update if we can (need to call pre/post-save signal)
         for obj in self.all():
-            obj.undelete(force_policy=force_policy)
+            _, undelete_response = obj.undelete(force_policy=force_policy)
+            undeleted_counter.update(undelete_response)
         self._result_cache = None
+        return sum(undeleted_counter.values()), dict(undeleted_counter)
     undelete.alters_data = True
 
     def all(self, force_visibility=None):
