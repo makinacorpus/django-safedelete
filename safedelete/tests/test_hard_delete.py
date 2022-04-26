@@ -24,7 +24,7 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
 
     def test_harddelete(self):
         """Deleting a model with the soft delete policy should only mask it, not delete it."""
-        self.assertHardDelete(self.instance)
+        self.assertHardDelete(self.instance, expected_output=(1, {self.instance._meta.label: 1}))
 
     def test_update_or_create_no_unique_field(self):
         HardDeleteModel.objects.update_or_create(id=1)
