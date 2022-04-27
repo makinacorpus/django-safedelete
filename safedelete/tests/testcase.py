@@ -39,7 +39,7 @@ class SafeDeleteTestCase(TestCase):
             self.assertEqual(output, expected_output)
         else:
             self.assertGreaterEqual(output[0], 1)
-            self.assertDictContainsSubset({instance._meta.label: 1}, output[1])
+            self.assertGreaterEqual(output[1].items(), {instance._meta.label: 1}.items())
 
         self.assertEqual(
             model.objects.count(),
