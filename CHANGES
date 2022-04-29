@@ -5,7 +5,7 @@ CHANGELOG
 1.2.1 (unreleased)
 ==================
 
--
+- Fix related_objects for non-safedelete models.
 
 1.2.0 (2022-04-26)
 ==================

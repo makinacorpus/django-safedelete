@@ -30,6 +30,11 @@ class Table(SafeDeleteModel):
     vars()[DELETED_BY_CASCADE_FIELD_NAME] = None
 
 
+class HardTable(models.Model):
+    index = models.IntegerField()
+    section = models.ForeignKey(Section, on_delete=models.CASCADE)
+
+
 class Image(SafeDeleteModel):
     index = models.IntegerField()
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
@@ -213,6 +218,8 @@ class SimpleTest(TestCase):
 
         with self.assertRaises(FieldError):
             Table.objects.filter(**{DELETED_BY_CASCADE_FIELD_NAME: False})
+
+        HardTable.objects.create(index=1, section=self.sections[2])
 
         self.tables[2].delete()
         self.sections[2].delete(force_policy=SOFT_DELETE_CASCADE)
