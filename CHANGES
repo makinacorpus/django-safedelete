@@ -2,7 +2,7 @@
 CHANGELOG
 =========
 
-1.2.1 (unreleased)
+1.2.1 (2022-04-29)
 ==================
 
 - Fix related_objects for non-safedelete models.
