@@ -24,7 +24,7 @@ def related_objects(obj, only_deleted_by_cascade=False):
             return chain.from_iterable(map(flatten, elem))
         return ()
 
-    return flatten(obj)
+    return chain.from_iterable(map(flatten, collector.edges[None]))
 
 
 def can_hard_delete(obj):

@@ -1,3 +1,9 @@
+from django.contrib.contenttypes.fields import (
+    GenericForeignKey,
+    GenericRelation,
+)
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import FieldError
 from django.db import models
 from django.test import TestCase
 from django.core.exceptions import FieldError
@@ -43,6 +49,18 @@ class Image(SafeDeleteModel):
 class PressNormalModel(models.Model):
     name = models.CharField(max_length=200)
     article = models.ForeignKey(Article, on_delete=models.CASCADE, null=True)
+
+
+class ParentGeneric(SafeDeleteModel):
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    child = GenericForeignKey()
+
+
+class ChildGeneric(SafeDeleteModel):
+    parent = GenericRelation(
+        ParentGeneric, related_name="childs"
+    )
 
 
 class CustomAbstractModel(SafeDeleteModel):
@@ -227,3 +245,14 @@ class SimpleTest(TestCase):
         self.assertEqual(Table.objects.count(), 1)
         self.tables[2].undelete()
         self.assertEqual(Table.objects.count(), 2)
+
+    def test_safe_delete_cascade_generic_foreign_key(self):
+        child = ChildGeneric.objects.create()
+        ParentGeneric.objects.create(child=child)
+
+        child.delete(force_policy=SOFT_DELETE_CASCADE)
+        self.assertEqual(ChildGeneric.objects.count(), 0)
+        self.assertEqual(ParentGeneric.objects.count(), 0)
+        child.undelete(force_policy=SOFT_DELETE_CASCADE)
+        self.assertEqual(ChildGeneric.objects.count(), 1)
+        self.assertEqual(ParentGeneric.objects.count(), 1)
