@@ -6,7 +6,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldError
 from django.db import models
 from django.test import TestCase
-from django.core.exceptions import FieldError
 
 from safedelete import SOFT_DELETE, SOFT_DELETE_CASCADE
 from safedelete.config import DELETED_BY_CASCADE_FIELD_NAME
