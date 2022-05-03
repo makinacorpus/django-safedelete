@@ -7,7 +7,7 @@ from ..config import HARD_DELETE, SOFT_DELETE
 
 class SafeDeleteTestCase(TestCase):
 
-    def assertDelete(self, instance, expected_results, force_policy=None, save=True):
+    def assertDelete(self, instance, expected_results, expected_output=None, force_policy=None, save=True):
         """Assert specific specific expected results before delete, after delete and after save.
 
         Example of expected_results, see SafeDeleteTestCase.assertSoftDelete.
@@ -15,6 +15,7 @@ class SafeDeleteTestCase(TestCase):
         Args:
             instance: Model instance.
             expected_results: Specific expected results before delete, after delete and after save.
+            expected_output: Specific expected output to delete call, None if verification should be more generic. (default: {None}).
             force_policy: Specific policy to force, None if no policy forced. (default: {None})
             save: Whether to test the Model.save() restoration. (default: {True})
         """
@@ -30,9 +31,15 @@ class SafeDeleteTestCase(TestCase):
         )
 
         if force_policy is not None:
-            instance.delete(force_policy=force_policy)
+            output = instance.delete(force_policy=force_policy)
         else:
-            instance.delete()
+            output = instance.delete()
+
+        if expected_output:
+            self.assertEqual(output, expected_output)
+        else:
+            self.assertGreaterEqual(output[0], 1)
+            self.assertGreaterEqual(output[1].items(), {instance._meta.label: 1}.items())
 
         self.assertEqual(
             model.objects.count(),

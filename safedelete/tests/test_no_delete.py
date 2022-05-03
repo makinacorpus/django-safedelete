@@ -18,7 +18,8 @@ class NoDeleteTestCase(SafeDeleteForceTestCase):
         Normally when deleting a model, it can no longer be refreshed from
         the database and will raise a DoesNotExist exception.
         """
-        self.instance.delete()
+        output = self.instance.delete()
+        self.assertEqual(output, (0, {}))
         self.instance.refresh_from_db()
         self.assertIsNone(getattr(self.instance, FIELD_NAME))
 

@@ -78,8 +78,9 @@ To add custom logic before or after the execution of the original delete logic o
 
     def soft_delete_policy_action(self, **kwargs):
         # Insert here custom pre delete logic
-        super().soft_delete_policy_action(**kwargs)
+        delete_response = super().soft_delete_policy_action(**kwargs)
         # Insert here custom post delete logic
+        return delete_response
 
 
 Fields uniqueness

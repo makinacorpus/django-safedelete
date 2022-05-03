@@ -312,3 +312,18 @@ class QuerySetTestCase(SafeDeleteTestCase):
         )
         self.assertEqual(queryset.count(), 1)
         self.assertFalse(queryset[0].has_related)
+
+    def test_delete_and_undelete_all_output(self):
+        amount = random.randint(1, 4)
+        for _ in range(amount):
+            QuerySetModel.objects.create(other=self.other)
+
+        delete_output = QuerySetModel.objects.all().delete()
+        self.assertEqual(delete_output, (amount, {QuerySetModel._meta.label: amount}))
+
+        delete_output = QuerySetModel.objects.all().delete()
+        self.assertEqual(delete_output, (0, {}))
+
+        undelete_output = QuerySetModel.deleted_objects.all().undelete()
+        # Count for the already created instance
+        self.assertEqual(undelete_output, (amount + 1, {QuerySetModel._meta.label: amount + 1}))

@@ -129,7 +129,7 @@ class SimpleTest(TestCase):
         self.assertEqual(Category.objects.count(), 3)
         self.assertEqual(Press.objects.count(), 1)
 
-        self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
+        output = self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
 
         self.assertEqual(Author.objects.count(), 2)
         self.assertEqual(Author.all_objects.count(), 3)
@@ -137,6 +137,16 @@ class SimpleTest(TestCase):
         self.assertEqual(Article.all_objects.count(), 3)
         self.assertEqual(Press.objects.count(), 0)
         self.assertEqual(Press.all_objects.count(), 1)
+
+        expected_output_dict = {
+            'safedelete.Article': 1,
+            'safedelete.Press': 1,
+            'safedelete.Section': 3,
+            'safedelete.Table': 3,
+            'safedelete.Image': 3,
+            'safedelete.Author': 1,
+        }
+        self.assertEqual(output, (12, expected_output_dict))
 
     def test_soft_delete_cascade_with_normal_model(self):
         PressNormalModel.objects.create(name='press 0', article=self.articles[2])
@@ -197,6 +207,7 @@ class SimpleTest(TestCase):
         self.assertEqual(self.authors[1].article_set.count(), 1)
 
         with patch('safedelete.tests.models.Article.delete') as delete_article_mock:
+            delete_article_mock.return_value = (1, {'safedelete.Article': 1})
             self.authors[1].delete(force_policy=SOFT_DELETE_CASCADE)
 
             # delete_article_mock.assert_called_once doesn't work on py35
@@ -204,12 +215,21 @@ class SimpleTest(TestCase):
 
     def test_undelete_with_soft_delete_cascade_policy(self):
         self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
-        self.authors[2].undelete(force_policy=SOFT_DELETE_CASCADE)
+        output = self.authors[2].undelete(force_policy=SOFT_DELETE_CASCADE)
 
         self.assertEqual(Author.objects.count(), 3)
         self.assertEqual(Article.objects.count(), 3)
         self.assertEqual(Category.objects.count(), 3)
         self.assertEqual(Press.objects.count(), 1)
+
+        expected_output_dict = {
+            'safedelete.Article': 1,
+            'safedelete.Press': 1,
+            'safedelete.Section': 3,
+            'safedelete.Image': 3,
+            'safedelete.Author': 1,
+        }
+        self.assertEqual(output, (9, expected_output_dict))
 
     def test_undelete_with_cascade_control_class_included(self):
         self.sections[1].delete(force_policy=SOFT_DELETE_CASCADE)

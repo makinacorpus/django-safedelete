@@ -64,7 +64,7 @@ class SoftDeleteTestCase(SafeDeleteForceTestCase):
 
     def test_softdelete(self):
         """Deleting a model with the soft delete policy should only mask it, not delete it."""
-        self.assertSoftDelete(self.instance)
+        self.assertSoftDelete(self.instance, expected_output=(1, {self.instance._meta.label: 1}))
 
     def test_softdelete_mixin(self):
         """Deprecated: Deleting a SafeDeleteModel model with the soft delete policy should only mask it, not delete it."""
