@@ -1,6 +1,7 @@
 from collections import Counter
 from django.db.models import query
 
+from .config import HARD_DELETE, NO_DELETE
 from .query import SafeDeleteQuery
 
 
@@ -28,14 +29,24 @@ class SafeDeleteQueryset(query.QuerySet):
             :py:func:`safedelete.models.SafeDeleteModel.delete`
         """
         assert self.query.can_filter(), "Cannot use 'limit' or 'offset' with delete."
-        deleted_counter = Counter()
-        # TODO: Replace this by bulk update if we can
-        for obj in self.all():
-            _, delete_response = obj.delete(force_policy=force_policy)
-            deleted_counter.update(delete_response)
-        self._result_cache = None
-        return sum(deleted_counter.values()), dict(deleted_counter)
+
+        if force_policy == NO_DELETE:
+            return (0, {})
+        elif force_policy == HARD_DELETE:
+            return self.hard_delete_policy_action()
+        else:
+            deleted_counter = Counter()
+            # TODO: Replace this by bulk update if we can
+            for obj in self.all():
+                _, delete_response = obj.delete(force_policy=force_policy)
+                deleted_counter.update(delete_response)
+            self._result_cache = None
+            return sum(deleted_counter.values()), dict(deleted_counter)
     delete.alters_data = True
+
+    def hard_delete_policy_action(self):
+        # Normally hard-delete the objects.
+        return super().delete()
 
     def undelete(self, force_policy=None):
         """Undelete all soft deleted models.
