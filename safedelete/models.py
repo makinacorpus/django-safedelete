@@ -1,10 +1,13 @@
+from collections import Counter
+from collections import defaultdict
+from itertools import chain
 import warnings
 
 import django
-from collections import Counter
 from django.contrib.admin.utils import NestedObjects
 from django.db import models, router
 from django.db.models import UniqueConstraint
+from django.db.models.deletion import ProtectedError
 from django.utils import timezone
 
 from .config import (
@@ -206,6 +209,23 @@ class SafeDeleteModel(models.Model):
             return self._delete(force_policy=HARD_DELETE, **kwargs)
 
     def soft_delete_cascade_policy_action(self, **kwargs):
+        collector = NestedObjects(using=router.db_for_write(self))
+        collector.collect([self])
+        # Soft-delete-cascade raises an exception when trying to delete a object that related object is PROTECT
+        protected_objects = defaultdict(list)
+        for obj in collector.protected:
+            if getattr(obj, FIELD_NAME) is None:
+                protected_objects[obj.__class__.__name__].append(obj)
+        if protected_objects:
+            raise ProtectedError(
+                'Cannot delete some instances of model %r because they are '
+                'referenced through protected foreign keys: %s.' % (
+                    self.__class__.__name__,
+                    ', '.join(protected_objects),
+                ),
+                set(chain.from_iterable(protected_objects.values())),
+            )
+
         # Soft-delete on related objects before
         deleted_counter = Counter()
         for related in related_objects(self):
@@ -217,8 +237,6 @@ class SafeDeleteModel(models.Model):
         _, delete_response = self._delete(force_policy=SOFT_DELETE, **kwargs)
         deleted_counter.update(delete_response)
 
-        collector = NestedObjects(using=router.db_for_write(self))
-        collector.collect([self])
         # update fields (SET, SET_DEFAULT or SET_NULL)
         for model, instances_for_fieldvalues in collector.field_updates.items():
             for (field, value), instances in instances_for_fieldvalues.items():
