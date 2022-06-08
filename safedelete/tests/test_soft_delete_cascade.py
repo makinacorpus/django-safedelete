@@ -5,6 +5,7 @@ from django.contrib.contenttypes.fields import (
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldError
 from django.db import models
+from django.db.models import ProtectedError
 from django.test import TestCase
 
 from safedelete import SOFT_DELETE, SOFT_DELETE_CASCADE
@@ -189,6 +190,12 @@ class SimpleTest(TestCase):
         pre_softdelete.disconnect(pre_softdelete_article, Article)
 
         self.assertEqual(PressNormalModel.objects.first().article, self.articles[0])
+
+    def test_soft_delete_cascade_with_protect(self):
+        PressNormalModel.article.field.remote_field.on_delete = models.PROTECT
+        PressNormalModel.objects.create(name='press 0', article=self.articles[2])
+        with self.assertRaises(ProtectedError):
+            self.authors[2].delete(force_policy=SOFT_DELETE_CASCADE)
 
     def test_soft_delete_cascade_with_abstract_model(self):
         ArticleView.objects.create(article=self.articles[2])

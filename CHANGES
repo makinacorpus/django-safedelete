@@ -6,6 +6,7 @@ CHANGELOG
 ==================
 
 - Implement NO_DELETE and HARD_DELETE for queries #209
+- Soft-delete-cascade raises an exception when trying to delete a object that related object is PROTECT #210
 
 1.2.2 (2022-05-03)
 ==================
