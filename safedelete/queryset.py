@@ -46,6 +46,7 @@ class SafeDeleteQueryset(query.QuerySet):
 
     def hard_delete_policy_action(self):
         # Normally hard-delete the objects.
+        self.query._filter_visibility()
         return super().delete()
 
     def undelete(self, force_policy=None):

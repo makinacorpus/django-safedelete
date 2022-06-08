@@ -3,7 +3,7 @@ import random
 from django.db import models
 from django.db.models.expressions import Exists, OuterRef
 
-from ..config import DELETED_VISIBLE_BY_FIELD
+from ..config import DELETED_VISIBLE_BY_FIELD, HARD_DELETE, NO_DELETE
 from ..managers import SafeDeleteManager
 from ..models import SafeDeleteModel
 from .testcase import SafeDeleteTestCase
@@ -327,3 +327,25 @@ class QuerySetTestCase(SafeDeleteTestCase):
         undelete_output = QuerySetModel.deleted_objects.all().undelete()
         # Count for the already created instance
         self.assertEqual(undelete_output, (amount + 1, {QuerySetModel._meta.label: amount + 1}))
+
+    def test_hard_delete(self):
+        instance = QuerySetModel.objects.create(
+            other=self.other
+        )
+        self.assertEqual(QuerySetModel.objects.all_with_deleted().count(), 2)
+        self.assertEqual(
+            QuerySetModel.objects.all().delete(force_policy=HARD_DELETE),
+            (1, {instance._meta.label: 1})
+        )
+        self.assertEqual(QuerySetModel.objects.all_with_deleted().count(), 1)
+
+    def test_no_delete(self):
+        QuerySetModel.objects.create(
+            other=self.other
+        )
+        self.assertEqual(QuerySetModel.objects.all_with_deleted().count(), 2)
+        self.assertEqual(
+            QuerySetModel.objects.all().delete(force_policy=NO_DELETE),
+            (0, {})
+        )
+        self.assertEqual(QuerySetModel.objects.all_with_deleted().count(), 2)
