@@ -19,7 +19,7 @@ from .utils import related_objects
 
 # Django 3.0 compatibility
 try:
-    from django.utils.six import text_type
+    from django.utils.six import text_type  # type: ignore
 except ImportError:
     text_type = str
 
@@ -35,7 +35,7 @@ def highlight_deleted(obj):
         return format_html('<span class="deleted">{0}</span>', obj_str)
 
 
-highlight_deleted.short_description = _("Name")
+highlight_deleted.short_description = _("Name")  # type: ignore
 
 
 class SafeDeleteAdminFilter(admin.SimpleListFilter):
@@ -209,7 +209,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
             return format_html('<span class="deleted">{0}</span>', field_str)
 
     field_to_highlight = None
-    highlight_deleted_field.short_description = _("Override this name (see docs)")
-    highlight_deleted_field.admin_order_field = "_highlighted_field"
+    highlight_deleted_field.short_description = _("Override this name (see docs)")  # type: ignore
+    highlight_deleted_field.admin_order_field = "_highlighted_field"  # type: ignore
 
-    undelete_selected.short_description = _("Undelete selected %(verbose_name_plural)s")
+    undelete_selected.short_description = _("Undelete selected %(verbose_name_plural)s")  # type: ignore
