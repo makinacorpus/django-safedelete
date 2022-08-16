@@ -1,4 +1,5 @@
 from collections import Counter
+
 from django.db.models import query
 
 from .config import HARD_DELETE, NO_DELETE
@@ -42,7 +43,7 @@ class SafeDeleteQueryset(query.QuerySet):
                 deleted_counter.update(delete_response)
             self._result_cache = None
             return sum(deleted_counter.values()), dict(deleted_counter)
-    delete.alters_data = True
+    delete.alters_data = True  # type: ignore
 
     def hard_delete_policy_action(self):
         # Normally hard-delete the objects.
@@ -67,7 +68,7 @@ class SafeDeleteQueryset(query.QuerySet):
             undeleted_counter.update(undelete_response)
         self._result_cache = None
         return sum(undeleted_counter.values()), dict(undeleted_counter)
-    undelete.alters_data = True
+    undelete.alters_data = True  # type: ignore
 
     def all(self, force_visibility=None):
         """Override so related managers can also see the deleted models.

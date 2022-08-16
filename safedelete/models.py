@@ -1,7 +1,6 @@
-from collections import Counter
-from collections import defaultdict
-from itertools import chain
 import warnings
+from collections import Counter, defaultdict
+from itertools import chain
 
 import django
 from django.contrib.admin.utils import NestedObjects
@@ -11,10 +10,10 @@ from django.db.models.deletion import ProtectedError
 from django.utils import timezone
 
 from .config import (
+    DELETED_BY_CASCADE_FIELD_NAME,
     FIELD_NAME,
     HARD_DELETE,
     HARD_DELETE_NOCASCADE,
-    DELETED_BY_CASCADE_FIELD_NAME,
     NO_DELETE,
     SOFT_DELETE,
     SOFT_DELETE_CASCADE,
