@@ -45,11 +45,14 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -e .
-        pip install -U flake8 coveralls argparse
+        pip install -U flake8 coveralls argparse mypy django-stubs types-setuptools
         pip install -U Django~=${{ matrix.django_version }}
     - name: Lint with flake8
       run: |
         flake8 --ignore=E501,W504 safedelete
+    - name: Check typings
+      run: |
+        mypy --config-file mypy.ini safedelete
     - name: Test Django
       if: matrix.django_version != '1.11'
       run: |

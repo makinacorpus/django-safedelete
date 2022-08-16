@@ -1,3 +1,5 @@
+from typing import Optional, Tuple, Type
+
 from django.conf import settings
 from django.db import models
 
@@ -40,11 +42,11 @@ class SafeDeleteManager(models.Manager):
         Custom queryset classes should be inherited from ``SafeDeleteQueryset``.
     """
 
-    _safedelete_visibility = DELETED_INVISIBLE
-    _safedelete_visibility_field = 'pk'
+    _safedelete_visibility: int = DELETED_INVISIBLE
+    _safedelete_visibility_field: str = 'pk'
     _queryset_class = SafeDeleteQueryset
 
-    def __init__(self, queryset_class=None, *args, **kwargs):
+    def __init__(self, queryset_class: Optional[Type[SafeDeleteQueryset]] = None):
         """Hook for setting custom ``_queryset_class``.
 
         Example:
@@ -57,7 +59,7 @@ class SafeDeleteManager(models.Manager):
 
                 objects = SafeDeleteManager(CustomQuerySet)
         """
-        super(SafeDeleteManager, self).__init__(*args, **kwargs)
+        super(SafeDeleteManager, self).__init__()
         if queryset_class:
             self._queryset_class = queryset_class
 
@@ -68,7 +70,7 @@ class SafeDeleteManager(models.Manager):
         queryset.query._safedelete_visibility_field = self._safedelete_visibility_field
         return queryset
 
-    def all_with_deleted(self):
+    def all_with_deleted(self) -> models.QuerySet:
         """Show all models including the soft deleted models.
 
         .. note::
@@ -79,7 +81,7 @@ class SafeDeleteManager(models.Manager):
             force_visibility=DELETED_VISIBLE
         )
 
-    def deleted_only(self):
+    def deleted_only(self) -> models.QuerySet:
         """Only show the soft deleted models.
 
         .. note::
@@ -90,7 +92,7 @@ class SafeDeleteManager(models.Manager):
             force_visibility=DELETED_ONLY_VISIBLE
         )
 
-    def all(self, **kwargs):
+    def all(self, **kwargs) -> models.QuerySet:
         """Pass kwargs to ``SafeDeleteQuerySet.all()``.
 
         Args:
@@ -108,7 +110,7 @@ class SafeDeleteManager(models.Manager):
             qs.query._safedelete_force_visibility = force_visibility
         return qs
 
-    def update_or_create(self, defaults=None, **kwargs):
+    def update_or_create(self, defaults=None, **kwargs) -> Tuple[models.Model, bool]:
         """See :func:`~django.db.models.Query.update_or_create.`.
 
         Change to regular djangoesk function:

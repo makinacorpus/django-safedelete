@@ -1,5 +1,8 @@
+from typing import Optional, TypeVar, cast
+
 from django.db.models import sql
 from django.db.models.query_utils import Q
+from django.db.models.sql.compiler import SQLCompiler
 
 from .config import (
     DELETED_INVISIBLE,
@@ -9,14 +12,19 @@ from .config import (
     FIELD_NAME,
 )
 
+_Q = TypeVar('_Q', bound='SafeDeleteQuery')
+
 
 class SafeDeleteQuery(sql.Query):
     """Default query for the SafeDeleteQueryset.
     """
 
-    _safedelete_filter_applied = False
+    _safedelete_filter_applied: bool = False
+    _safedelete_force_visibility: Optional[int] = None
+    _safedelete_visibility: int
+    _safedelete_visibility_field: str
 
-    def check_field_filter(self, **kwargs):
+    def check_field_filter(self, **kwargs) -> None:
         """Check if the visibility for DELETED_VISIBLE_BY_FIELD needs to be put into effect.
 
         DELETED_VISIBLE_BY_FIELD is a temporary visibility flag that changes
@@ -28,7 +36,7 @@ class SafeDeleteQuery(sql.Query):
                 and self._safedelete_visibility_field in kwargs:
             self._safedelete_force_visibility = DELETED_VISIBLE
 
-    def _filter_visibility(self):
+    def _filter_visibility(self) -> None:
         """Add deleted filters to the current QuerySet.
 
         Unlike QuerySet.filter, this does not return a clone.
@@ -53,8 +61,8 @@ class SafeDeleteQuery(sql.Query):
             )
             self._safedelete_filter_applied = True
 
-    def clone(self):
-        clone = super(SafeDeleteQuery, self).clone()
+    def clone(self: _Q) -> _Q:
+        clone = cast(_Q, super(SafeDeleteQuery, self).clone())
         clone._safedelete_visibility = self._safedelete_visibility
         clone._safedelete_visibility_field = self._safedelete_visibility_field
         clone._safedelete_filter_applied = self._safedelete_filter_applied
@@ -62,12 +70,12 @@ class SafeDeleteQuery(sql.Query):
             clone._safedelete_force_visibility = self._safedelete_force_visibility
         return clone
 
-    def get_compiler(self, *args, **kwargs):
+    def get_compiler(self, *args, **kwargs) -> SQLCompiler:
         # Try to filter visibility at very end of the step
         self._filter_visibility()
         return super(SafeDeleteQuery, self).get_compiler(*args, **kwargs)
 
-    def set_limits(self, low=None, high=None):
+    def set_limits(self, low: Optional[int] = None, high: Optional[int] = None) -> None:
         # Filter visibility before query was sliced
         self._filter_visibility()
         return super(SafeDeleteQuery, self).set_limits(low, high)

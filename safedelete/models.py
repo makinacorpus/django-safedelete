@@ -1,6 +1,7 @@
 import warnings
 from collections import Counter, defaultdict
 from itertools import chain
+from typing import Dict, Optional, Tuple
 
 import django
 from django.contrib.admin.utils import NestedObjects
@@ -91,7 +92,7 @@ class SafeDeleteModel(models.Model):
         The :class:`safedelete.managers.SafeDeleteDeletedManager` returns the soft-deleted models.
     """
 
-    _safedelete_policy = SOFT_DELETE
+    _safedelete_policy: int = SOFT_DELETE
 
     objects = SafeDeleteManager()
     all_objects = SafeDeleteAllManager()
@@ -131,7 +132,7 @@ class SafeDeleteModel(models.Model):
             using = kwargs.get('using') or router.db_for_write(self.__class__, instance=self)
             post_undelete.send(sender=self.__class__, instance=self, using=using)
 
-    def undelete(self, force_policy=None, **kwargs):
+    def undelete(self, force_policy: Optional[int] = None, **kwargs) -> Tuple[int, Dict[str, int]]:
         """Undelete a soft-deleted model.
 
         Args:
@@ -159,7 +160,7 @@ class SafeDeleteModel(models.Model):
         # To know why we need to do that, see https://github.com/makinacorpus/django-safedelete/issues/117
         return self._delete(force_policy, **kwargs)
 
-    def _delete(self, force_policy=None, **kwargs):
+    def _delete(self, force_policy: Optional[int] = None, **kwargs) -> Tuple[int, Dict[str, int]]:
         """Overrides Django's delete behaviour based on the model's delete policy.
 
         Args:
@@ -178,8 +179,9 @@ class SafeDeleteModel(models.Model):
             return self.hard_delete_cascade_policy_action(**kwargs)
         elif current_policy == SOFT_DELETE_CASCADE:
             return self.soft_delete_cascade_policy_action(**kwargs)
+        return (0, {})
 
-    def soft_delete_policy_action(self, **kwargs):
+    def soft_delete_policy_action(self, **kwargs) -> Tuple[int, Dict[str, int]]:
         # Only soft-delete the object, marking it as deleted.
         setattr(self, FIELD_NAME, timezone.now())
 
@@ -196,19 +198,19 @@ class SafeDeleteModel(models.Model):
 
         return (1, {self._meta.label: 1})
 
-    def hard_delete_policy_action(self, **kwargs):
+    def hard_delete_policy_action(self, **kwargs) -> Tuple[int, Dict[str, int]]:
         # Normally hard-delete the object.
         return super(SafeDeleteModel, self).delete()
 
-    def hard_delete_cascade_policy_action(self, **kwargs):
+    def hard_delete_cascade_policy_action(self, **kwargs) -> Tuple[int, Dict[str, int]]:
         # Hard-delete the object only if nothing would be deleted with it
         if not can_hard_delete(self):
             return self._delete(force_policy=SOFT_DELETE, **kwargs)
         else:
             return self._delete(force_policy=HARD_DELETE, **kwargs)
 
-    def soft_delete_cascade_policy_action(self, **kwargs):
-        collector = NestedObjects(using=router.db_for_write(self))
+    def soft_delete_cascade_policy_action(self, **kwargs) -> Tuple[int, Dict[str, int]]:
+        collector = NestedObjects(using=router.db_for_write(type(self)))
         collector.collect([self])
         # Soft-delete-cascade raises an exception when trying to delete a object that related object is PROTECT
         protected_objects = defaultdict(list)
@@ -226,7 +228,7 @@ class SafeDeleteModel(models.Model):
             )
 
         # Soft-delete on related objects before
-        deleted_counter = Counter()
+        deleted_counter: Counter = Counter()
         for related in related_objects(self):
             if is_safedelete_cls(related.__class__) and not getattr(related, FIELD_NAME):
                 _, delete_response = related.delete(force_policy=SOFT_DELETE, is_cascade=True, **kwargs)
@@ -249,7 +251,7 @@ class SafeDeleteModel(models.Model):
         return sum(deleted_counter.values()), dict(deleted_counter)
 
     @classmethod
-    def has_unique_fields(cls):
+    def has_unique_fields(cls) -> bool:
         """Checks if one of the fields of this model has a unique constraint set (unique=True).
 
         It also checks if the model has sets of field names that, taken together, must be unique.
@@ -269,24 +271,24 @@ class SafeDeleteModel(models.Model):
                     return True
 
         for field in cls._meta.fields:
-            if field._unique:
+            if field._unique:  # type: ignore
                 return True
         return False
 
     # We need to overwrite this check to ensure uniqueness is also checked
     # against "deleted" (but still in db) objects.
     # FIXME: Better/cleaner way ?
-    def _perform_unique_checks(self, unique_checks):
-        errors = {}
+    def _perform_unique_checks(self, unique_checks) -> Dict:
+        errors: Dict = {}
 
         for model_class, unique_check in unique_checks:
             lookup_kwargs = {}
             for field_name in unique_check:
                 f = self._meta.get_field(field_name)
-                lookup_value = getattr(self, f.attname)
+                lookup_value = getattr(self, f.attname)  # type: ignore
                 if lookup_value is None:
                     continue
-                if f.primary_key and not self._state.adding:
+                if f.primary_key and not self._state.adding:  # type: ignore
                     continue
                 lookup_kwargs[str(field_name)] = lookup_value
             if len(unique_check) != len(lookup_kwargs):
@@ -298,14 +300,14 @@ class SafeDeleteModel(models.Model):
             else:
                 qs = model_class._default_manager.filter(**lookup_kwargs)
 
-            model_class_pk = self._get_pk_val(model_class._meta)
+            model_class_pk = self._get_pk_val(model_class._meta)  # type: ignore
             if not self._state.adding and model_class_pk is not None:
                 qs = qs.exclude(pk=model_class_pk)
             if qs.exists():
                 if len(unique_check) == 1:
                     key = unique_check[0]
                 else:
-                    key = models.base.NON_FIELD_ERRORS
+                    key = models.base.NON_FIELD_ERRORS  # type: ignore
                 errors.setdefault(key, []).append(
                     self.unique_error_message(model_class, unique_check)
                 )
