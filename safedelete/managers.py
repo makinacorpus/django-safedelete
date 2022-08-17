@@ -11,7 +11,7 @@ from .config import (
     SOFT_DELETE,
     SOFT_DELETE_CASCADE,
 )
-from .queryset import SafeDeleteQueryset
+from .queryset import SafeDeleteQueryset, _QS
 
 
 class SafeDeleteManager(models.Manager):
@@ -44,9 +44,9 @@ class SafeDeleteManager(models.Manager):
 
     _safedelete_visibility: int = DELETED_INVISIBLE
     _safedelete_visibility_field: str = 'pk'
-    _queryset_class = SafeDeleteQueryset
+    _queryset_class: _QS = SafeDeleteQueryset
 
-    def __init__(self, queryset_class: Optional[Type[SafeDeleteQueryset]] = None):
+    def __init__(self, queryset_class: Optional[_QS] = None):
         """Hook for setting custom ``_queryset_class``.
 
         Example:
