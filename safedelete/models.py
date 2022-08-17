@@ -1,10 +1,11 @@
 import warnings
 from collections import Counter, defaultdict
 from itertools import chain
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, List
 
 import django
 from django.contrib.admin.utils import NestedObjects
+from django.core.exceptions import ValidationError
 from django.db import models, router
 from django.db.models import UniqueConstraint
 from django.db.models.deletion import ProtectedError
@@ -278,8 +279,8 @@ class SafeDeleteModel(models.Model):
     # We need to overwrite this check to ensure uniqueness is also checked
     # against "deleted" (but still in db) objects.
     # FIXME: Better/cleaner way ?
-    def _perform_unique_checks(self, unique_checks) -> Dict:
-        errors: Dict = {}
+    def _perform_unique_checks(self, unique_checks) -> Dict[str, List[ValidationError]]:
+        errors: Dict[str, List[ValidationError]] = {}
 
         for model_class, unique_check in unique_checks:
             lookup_kwargs = {}
