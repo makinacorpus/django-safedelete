@@ -2,7 +2,7 @@
 CHANGELOG
 =========
 
-1.2.3 (unreleased)
+1.2.3 (2022-08-17)
 ==================
 
 - Implement NO_DELETE and HARD_DELETE for queries #209
