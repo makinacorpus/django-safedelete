@@ -7,6 +7,7 @@ CHANGELOG
 
 - Add typings #213
 - Drop support for Django < 3.2 and Python 3.6
+- Add an index for deleted field #153
 
 1.2.3 (2022-08-17)
 ==================

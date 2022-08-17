@@ -315,7 +315,7 @@ class SafeDeleteModel(models.Model):
         return errors
 
 
-SafeDeleteModel.add_to_class(FIELD_NAME, models.DateTimeField(editable=False, null=True))
+SafeDeleteModel.add_to_class(FIELD_NAME, models.DateTimeField(editable=False, null=True, db_index=True))
 SafeDeleteModel.add_to_class(DELETED_BY_CASCADE_FIELD_NAME, models.BooleanField(editable=False, default=False))
 
 
