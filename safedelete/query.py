@@ -63,8 +63,10 @@ class SafeDeleteQuery(sql.Query):
 
     def clone(self: _Q) -> _Q:
         clone = cast(_Q, super(SafeDeleteQuery, self).clone())
-        clone._safedelete_visibility = self._safedelete_visibility
-        clone._safedelete_visibility_field = self._safedelete_visibility_field
+        if hasattr(self, '_safedelete_visibility'):
+            clone._safedelete_visibility = self._safedelete_visibility
+        if hasattr(self, '_safedelete_visibility_field'):
+            clone._safedelete_visibility_field = self._safedelete_visibility_field
         clone._safedelete_filter_applied = self._safedelete_filter_applied
         if hasattr(self, '_safedelete_force_visibility'):
             clone._safedelete_force_visibility = self._safedelete_force_visibility
