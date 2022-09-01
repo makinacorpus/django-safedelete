@@ -1,4 +1,5 @@
 import random
+import unittest
 
 from django.db import models
 from django.db.models.expressions import Exists, OuterRef
@@ -9,7 +10,7 @@ from ..models import SafeDeleteModel
 from .testcase import SafeDeleteTestCase
 
 
-class OtherModel(models.Model):
+class OtherModel(SafeDeleteModel):
     pass
 
 
@@ -36,6 +37,17 @@ class QuerySetTestCase(SafeDeleteTestCase):
             other=self.other
         )
         self.instance.delete()
+
+    def test_exclude(self):
+        list(OtherModel.objects.exclude(querysetmodel__isnull=True))
+
+    # This fails because exclude instantiate a query without setting
+    # CF Query.split_exclude()
+    @unittest.expectedFailure
+    def test_exclude_deleted(self):
+        pk = self.instance.pk
+        self.instance.delete()
+        self.assertIsNotNone(OtherModel.objects.exclude(querysetmodel__id=pk).first())
 
     def test_select_related(self):
         with self.assertNumQueries(1):

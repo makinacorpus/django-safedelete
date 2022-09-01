@@ -32,7 +32,7 @@ class SafeDeleteQuery(sql.Query):
         `_safedelete_force_visibility`. When evaluating the queryset, it will
         then filter on all models.
         """
-        if self._safedelete_visibility == DELETED_VISIBLE_BY_FIELD \
+        if hasattr(self, '_safedelete_visibility') and self._safedelete_visibility == DELETED_VISIBLE_BY_FIELD \
                 and self._safedelete_visibility_field in kwargs:
             self._safedelete_force_visibility = DELETED_VISIBLE
 
@@ -42,7 +42,7 @@ class SafeDeleteQuery(sql.Query):
         Unlike QuerySet.filter, this does not return a clone.
         This is because QuerySet._fetch_all cannot work with a clone.
         """
-        if not self.can_filter() or self._safedelete_filter_applied:
+        if not self.can_filter() or self._safedelete_filter_applied or not hasattr(self, '_safedelete_visibility'):
             return
         force_visibility = getattr(self, '_safedelete_force_visibility', None)
         visibility = force_visibility \
@@ -63,8 +63,10 @@ class SafeDeleteQuery(sql.Query):
 
     def clone(self: _Q) -> _Q:
         clone = cast(_Q, super(SafeDeleteQuery, self).clone())
-        clone._safedelete_visibility = self._safedelete_visibility
-        clone._safedelete_visibility_field = self._safedelete_visibility_field
+        if hasattr(self, '_safedelete_visibility'):
+            clone._safedelete_visibility = self._safedelete_visibility
+        if hasattr(self, '_safedelete_visibility_field'):
+            clone._safedelete_visibility_field = self._safedelete_visibility_field
         clone._safedelete_filter_applied = self._safedelete_filter_applied
         if hasattr(self, '_safedelete_force_visibility'):
             clone._safedelete_force_visibility = self._safedelete_force_visibility
