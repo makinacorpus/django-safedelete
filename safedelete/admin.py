@@ -124,7 +124,6 @@ class SafeDeleteAdmin(admin.ModelAdmin):
 
     def undelete_selected(self, request, queryset):
         """ Admin action to undelete objects in bulk with confirmation. """
-        original_queryset = queryset.all()
         if not self.has_delete_permission(request):
             raise PermissionDenied
         assert hasattr(queryset, 'undelete')
@@ -138,8 +137,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
                 for obj in queryset:
                     obj_display = force_str(obj)
                     self.log_undeletion(request, obj, obj_display)
-                queryset.undelete()
-                changed = original_queryset.filter(**{FIELD_NAME + '__isnull': True}).count()
+                changed = queryset.undelete()[0]
                 if changed < requested:
                     self.message_user(
                         request,
