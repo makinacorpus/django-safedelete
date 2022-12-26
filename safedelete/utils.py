@@ -13,7 +13,7 @@ def related_objects(obj, only_deleted_by_cascade=False):
         only_deleted_by_cascade: Include filter in flatten method to bypass elements controling undelete cascading.
     """
 
-    collector = NestedObjects(using=router.db_for_write(obj))
+    collector = NestedObjects(using=router.db_for_write(type(obj)))
     collector.collect([obj])
 
     def flatten(elem):
