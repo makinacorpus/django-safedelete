@@ -1,6 +1,8 @@
 import warnings
 from collections import Counter, defaultdict
+from functools import reduce
 from itertools import chain
+from operator import or_
 from typing import Dict, Optional, Tuple, List
 
 import django
@@ -241,13 +243,34 @@ class SafeDeleteModel(models.Model):
 
         # update fields (SET, SET_DEFAULT or SET_NULL)
         for model, instances_for_fieldvalues in collector.field_updates.items():
-            for (field, value), instances in instances_for_fieldvalues.items():
-                query = models.sql.UpdateQuery(model)
-                query.update_batch(
-                    [obj.pk for obj in instances],
-                    {field.name: value},
-                    collector.using,
-                )
+            if django.VERSION[0] > 4 or (django.VERSION[0] == 4 and django.VERSION[1] >= 2):
+                # as of 4.2 field_updates values is a list rather than a dictionary
+                (field, value) = model
+                instances_list = instances_for_fieldvalues
+                model = instances_list[0].__class__
+                updates = []
+                objs = []
+                for instances in instances_list:
+                    if isinstance(instances, models.QuerySet):
+                        updates.append(instances)
+                    else:
+                        objs.extend(instances)
+                if updates:
+                    combined_updates = reduce(or_, updates)
+                    combined_updates.update(**{field.name: value})
+                if objs:
+                    query = models.sql.UpdateQuery(model)
+                    query.update_batch(
+                        list({obj.pk for obj in instances_list}), {field.name: value}, collector.using
+                    )
+            else:
+                for (field, value), instances in instances_for_fieldvalues.items():
+                    query = models.sql.UpdateQuery(model)
+                    query.update_batch(
+                        [obj.pk for obj in instances],
+                        {field.name: value},
+                        collector.using,
+                    )
 
         return sum(deleted_counter.values()), dict(deleted_counter)
 
