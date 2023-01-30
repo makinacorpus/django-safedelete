@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        django_version: [ '3.2', '4.0', '4.1' ]
+        django_version: [ '3.2', '4.0', '4.1', '4.2a1' ]
         python_version: [ '3.7', '3.8', '3.9', '3.10' ]
         exclude:
 
@@ -19,6 +19,9 @@ jobs:
             python_version: '3.7'
 
           - django_version: '4.1'
+            python_version: '3.7'
+
+          - django_version: '4.2a1'
             python_version: '3.7'
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -40,7 +43,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e .
         pip install -U flake8 coveralls argparse mypy django-stubs types-setuptools
-        pip install -U Django~=${{ matrix.django_version }}
+        pip install -U Django~=${{ matrix.django_version }} --pre
     - name: Lint with flake8
       run: |
         flake8 --ignore=E501,W504 safedelete
