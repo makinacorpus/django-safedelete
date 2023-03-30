@@ -82,6 +82,13 @@ class CustomQuerySetTestCase(SafeDeleteTestCase):
         # and they can be custom filtered
         self.assertEqual(deleted_only.green().count(), 1)
 
+    def test_custom_queryset_as_manager_is_safedelete(self):
+        """Test whether SafeDeleteQueryset as_manager works as intended
+        """
+        manager = CustomQuerySet.as_manager()
+        self.assertIsInstance(manager, SafeDeleteManager)
+        self.assertFalse(hasattr(manager, 'as_manager'))
+
     @staticmethod
     def _create_green_instance():
         """Shortcut for creating instance with ``color == green``

@@ -9,6 +9,7 @@ CHANGELOG
 - Fix de translation
 - Fix argument type passed to db_for_write #222
 - Django 4.2 support #223
+- Fix SafeDeleteQueryset.as_manager() now returns SafeDeleteManager
 
 1.3.1 (2022-10-03)
 ==================

@@ -29,6 +29,18 @@ class SafeDeleteQueryset(query.QuerySet):
         super(SafeDeleteQueryset, self).__init__(model=model, query=query, using=using, hints=hints)
         self.query: SafeDeleteQuery = query or SafeDeleteQuery(self.model)
 
+    @classmethod
+    def as_manager(cls):
+        """Override as_manager behavior to ensure we create a SafeDeleteManager.
+        """
+        # Address the circular dependency between `SafeDeleteQueryset` and `SafeDeleteManager`.
+        from .managers import SafeDeleteManager
+
+        manager = SafeDeleteManager.from_queryset(cls)()
+        manager._built_with_as_manager = True
+        return manager
+    as_manager.queryset_only = True  # type: ignore
+
     def delete(self, force_policy: Optional[int] = None) -> Tuple[int, Dict[str, int]]:
         """Overrides bulk delete behaviour.
 
