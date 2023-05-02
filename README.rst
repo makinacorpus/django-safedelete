@@ -17,11 +17,11 @@ This Django application provides an abstract model, that allows you to transpare
 without having them deleted from your database.
 
 You can choose what happens when you delete an object :
- - it can be masked from your database (soft delete, the default behavior)
- - it can be masked from your database and mask any dependent models. (cascading soft delete)
- - it can be normally deleted (hard delete)
- - it can be hard-deleted, but if its deletion would delete other objects, it will only be masked
- - it can be never deleted or masked from your database (no delete, use with caution)
+ - it can be masked from your database (SOFT_DELETE, the default behavior)
+ - it can be masked from your database and mask any dependent models. (SOFT_DELETE_CASCADE)
+ - it can be normally deleted (HARD_DELETE)
+ - it can be hard-deleted, but if its deletion would delete other objects, it will only be masked (HARD_DELETE_NOCASCADE)
+ - it can be never deleted or masked from your database (NO_DELETE, use with caution)
 
 
 Example
