@@ -158,3 +158,23 @@ class AdminTestCase(TestCase):
             pk=self.categories[1].pk
         )
         self.assertFalse(getattr(category, FIELD_NAME))
+
+    def test_admin_hard_delete_soft_deleted_action(self):
+        """Test objects are hard deleted and action is logged."""
+        resp = self.client.post('/admin/safedelete/category/', data={
+            'index': 0,
+            'action': ['hard_delete_soft_deleted'],
+            '_selected_action': [self.categories[1].pk],
+        })
+        self.assertTemplateUsed(resp, 'safedelete/hard_delete_selected_confirmation.html')
+        self.assertTrue(getattr(self.categories[1], FIELD_NAME))
+
+        resp = self.client.post('/admin/safedelete/category/', data={
+            'index': 0,
+            'action': ['hard_delete_soft_deleted'],
+            'post': True,
+            '_selected_action': [self.categories[1].pk],
+        })
+
+        with self.assertRaises(Category.DoesNotExist):
+            Category.objects.get(pk=self.categories[1].pk)

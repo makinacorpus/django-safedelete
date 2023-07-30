@@ -16,6 +16,7 @@ from pkg_resources import parse_version
 
 from .config import FIELD_NAME
 from .utils import related_objects
+from .models import HARD_DELETE
 
 # Django 3.0 compatibility
 try:
@@ -77,10 +78,12 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         ... ContactAdmin.highlight_deleted_field.short_description = ContactAdmin.field_to_highlight
     """
     undelete_selected_confirmation_template = "safedelete/undelete_selected_confirmation.html"
+    hard_delete_selected_confirmation_template = "safedelete/hard_delete_selected_confirmation.html"
+    
 
     list_display = (FIELD_NAME,)
     list_filter = (FIELD_NAME,)
-    actions = ('undelete_selected',)
+    actions = ('undelete_selected', 'hard_delete_soft_deleted')
 
     class Meta:
         abstract = True
@@ -193,6 +196,78 @@ class SafeDeleteAdmin(admin.ModelAdmin):
                 self.undelete_selected_confirmation_template,
                 context,
             )
+    
+    def hard_delete_soft_deleted(self, request, queryset):
+        """Admin action to hard delete soft deleted records"""
+
+        if not self.has_delete_permission(request):
+            raise PermissionDenied
+
+        # Remove not deleted items from queryset
+        objects_marked_for_deletion = queryset.filter(
+            **{FIELD_NAME + "__isnull": False}
+        )
+
+        # Confirmation of hard deletion of selected items
+        if request.POST.get("post"):
+            requested = objects_marked_for_deletion.count()
+            if requested:
+                changed = objects_marked_for_deletion.delete(force_policy=HARD_DELETE)[
+                    0
+                ]
+                if changed < requested:
+                    self.message_user(
+                        request,
+                        _(
+                            "Successfully hard deleted %(count_changed)d of the "
+                            "%(count_requested)d selected %(items)s."
+                        )
+                        % {
+                            "count_requested": requested,
+                            "count_changed": changed,
+                            "items": model_ngettext(self.opts, requested),
+                        },
+                        messages.WARNING,
+                    )
+                else:
+                    self.message_user(
+                        request,
+                        _("Successfully hard deleted %(count)d %(items)s.")
+                        % {
+                            "count": requested,
+                            "items": model_ngettext(self.opts, requested),
+                        },
+                        messages.SUCCESS,
+                    )
+                # Return None to display the change list page again.
+                return None
+
+        opts = self.model._meta
+        if len(objects_marked_for_deletion) == 1:
+            objects_name = force_str(opts.verbose_name)
+        else:
+            objects_name = force_str(opts.verbose_name_plural)
+        title = _("Are you sure?")
+
+        related_list = [
+            list(related_objects(obj)) for obj in objects_marked_for_deletion
+        ]
+
+        context = {
+            "title": title,
+            "objects_name": objects_name,
+            "queryset": objects_marked_for_deletion,
+            "opts": opts,
+            "app_label": opts.app_label,
+            "action_checkbox_name": helpers.ACTION_CHECKBOX_NAME,
+            "related_list": related_list,
+        }
+
+        return TemplateResponse(
+            request,
+            self.hard_delete_selected_confirmation_template,
+            context,
+        )
 
     def highlight_deleted_field(self, obj):
         try:
@@ -211,3 +286,4 @@ class SafeDeleteAdmin(admin.ModelAdmin):
     highlight_deleted_field.admin_order_field = "_highlighted_field"  # type: ignore
 
     undelete_selected.short_description = _("Undelete selected %(verbose_name_plural)s")  # type: ignore
+    hard_delete_soft_deleted.short_description = _("Hard delete selected soft deleted %(verbose_name_plural)s")
