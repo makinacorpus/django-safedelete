@@ -75,6 +75,17 @@ class ArticleView(CustomAbstractModel):
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
 
 
+class ParentSelf(SafeDeleteModel):
+    _safedelete_policy = SOFT_DELETE_CASCADE
+    parent = models.ForeignKey(
+        'self',
+        related_name="children",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+
 def pre_softdelete_article(sender, instance, *args, **kwargs):
     # Related objects should not be SET before instance was deleted
     assert instance.pressnormalmodel_set.count() == 1
@@ -282,3 +293,13 @@ class SimpleTest(TestCase):
         child.undelete(force_policy=SOFT_DELETE_CASCADE)
         self.assertEqual(ChildGeneric.objects.count(), 1)
         self.assertEqual(ParentGeneric.objects.count(), 1)
+
+    def test_parent_self_cascade(self):
+        parent = ParentSelf.objects.create()
+        ParentSelf.objects.create(parent=parent)
+        ParentSelf.objects.create(parent=parent)
+        ParentSelf.objects.create()
+
+        self.assertEqual(ParentSelf.objects.all().count(), 4)
+        parent.delete()
+        self.assertEqual(ParentSelf.objects.all().count(), 1)
