@@ -79,7 +79,6 @@ class SafeDeleteAdmin(admin.ModelAdmin):
     """
     undelete_selected_confirmation_template = "safedelete/undelete_selected_confirmation.html"
     hard_delete_selected_confirmation_template = "safedelete/hard_delete_selected_confirmation.html"
-    
 
     list_display = (FIELD_NAME,)
     list_filter = (FIELD_NAME,)
@@ -196,7 +195,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
                 self.undelete_selected_confirmation_template,
                 context,
             )
-    
+
     def hard_delete_soft_deleted(self, request, queryset):
         """Admin action to hard delete soft deleted records"""
 
