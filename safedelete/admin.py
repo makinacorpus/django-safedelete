@@ -262,11 +262,19 @@ class SafeDeleteAdmin(admin.ModelAdmin):
             "related_list": related_list,
         }
 
-        return TemplateResponse(
-            request,
-            self.hard_delete_selected_confirmation_template,
-            context,
-        )
+        if parse_version(django.get_version()) < parse_version('1.10'):
+            return TemplateResponse(
+                request,
+                self.hard_delete_selected_confirmation_template,
+                context,
+                current_app=self.admin_site.name,
+            )
+        else:
+            return TemplateResponse(
+                request,
+                self.hard_delete_selected_confirmation_template,
+                context,
+            )
 
     def highlight_deleted_field(self, obj):
         try:
@@ -285,4 +293,4 @@ class SafeDeleteAdmin(admin.ModelAdmin):
     highlight_deleted_field.admin_order_field = "_highlighted_field"  # type: ignore
 
     undelete_selected.short_description = _("Undelete selected %(verbose_name_plural)s")  # type: ignore
-    hard_delete_soft_deleted.short_description = _("Hard delete selected soft deleted %(verbose_name_plural)s")
+    hard_delete_soft_deleted.short_description = _("Hard delete selected soft deleted %(verbose_name_plural)s")  # type: ignore
