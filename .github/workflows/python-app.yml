@@ -7,7 +7,7 @@ on: [push, pull_request]
 
 jobs:
   tests_python:
-    name: Test on Python ${{ matrix.python_version }} and Django ${{ matrix.django_version }}
+    name: Test on Python ${{ matrix.python_version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -38,8 +38,3 @@ jobs:
         python -m pip install --upgrade 'tox>=4.0.0rc3'
     - name: Run tox targets for ${{ matrix.python_version }}
       run: tox run -f py$(echo ${{ matrix.python_version }} | tr -d .)
-
-    - name: Coverage
-      if: ${{ success() }}
-      run: |
-        coveralls --service=github
