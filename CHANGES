@@ -2,7 +2,7 @@
 CHANGELOG
 =========
 
-1.4.0 (unreleased)
+1.4.0 (2024-05-13)
 ==================
 
 - Support Python 3.11 / Django 5.0
