@@ -11,58 +11,34 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        django_version: [ '3.2', '4.0', '4.1', '4.2' ]
-        python_version: [ '3.7', '3.8', '3.9', '3.10', '3.11' ]
-        exclude:
-          - django_version: '3.2'
-            python_version: '3.11'
-
-          - django_version: '4.0'
-            python_version: '3.11'
-
-          - django_version: '4.1'
-            python_version: '3.11'
-
-          - django_version: '4.0'
-            python_version: '3.7'
-
-          - django_version: '4.1'
-            python_version: '3.7'
-
-          - django_version: '4.2'
-            python_version: '3.7'
+        python_version:
+          - '3.8'
+          - '3.9'
+          - '3.10'
+          - '3.11'
+          - '3.12'
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python_version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python_version }}
     - name: Cache pip
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         # This path is specific to Ubuntu
         path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ matrix.django_version }}
+        key: ${{ runner.os }}-pip-${{ matrix.python-version }}
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e .
-        pip install -U flake8 coveralls argparse mypy django-stubs types-setuptools
-        pip install -U Django~=${{ matrix.django_version }}
-    - name: Lint with flake8
-      run: |
-        flake8 --ignore=E501,W504 safedelete
-    - name: Check typings
-      run: |
-        mypy --config-file mypy.ini safedelete
-    - name: Test Django
-      if: matrix.django_version != '1.11'
-      run: |
-        python -W error::DeprecationWarning -W error::PendingDeprecationWarning \
-          -m coverage run `which django-admin` test --settings=safedelete.tests.settings
+        python -m pip install --upgrade 'tox>=4.0.0rc3'
+    - name: Run tox targets for ${{ matrix.python_version }}
+      run: tox run -f py$(echo ${{ matrix.python_version }} | tr -d .)
+
     - name: Coverage
       if: ${{ success() }}
       run: |

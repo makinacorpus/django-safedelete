@@ -12,7 +12,7 @@ from django.template.response import TemplateResponse
 from django.utils.encoding import force_str
 from django.utils.html import conditional_escape, format_html
 from django.utils.translation import gettext_lazy as _
-from pkg_resources import parse_version
+from packaging.version import parse as parse_version
 
 from .config import FIELD_NAME
 from .utils import related_objects
