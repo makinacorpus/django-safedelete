@@ -61,8 +61,10 @@ class SafeDeleteQueryset(query.QuerySet):
             deleted_counter: Counter = Counter()
             # TODO: Replace this by bulk update if we can
             for obj in self.all():
-                _, delete_response = obj.delete(force_policy=force_policy)
-                deleted_counter.update(delete_response)
+                res = obj.delete(force_policy=force_policy)
+                if res is not None:
+                    _, delete_response = res
+                    deleted_counter.update(delete_response)                
             self._result_cache = None
             return sum(deleted_counter.values()), dict(deleted_counter)
     delete.alters_data = True  # type: ignore
