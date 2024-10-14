@@ -234,8 +234,10 @@ class SafeDeleteModel(models.Model):
         deleted_counter: Counter = Counter()
         for related in related_objects(self):
             if is_safedelete_cls(related.__class__) and not getattr(related, FIELD_NAME):
-                _, delete_response = related.delete(force_policy=SOFT_DELETE, is_cascade=True, **kwargs)
-                deleted_counter.update(delete_response)
+                res = related.delete(force_policy=SOFT_DELETE, is_cascade=True, **kwargs)
+                if res is not None:
+                    _, delete_response = res
+                    deleted_counter.update(delete_response)
 
         # soft-delete the object
         _, delete_response = self._delete(force_policy=SOFT_DELETE, **kwargs)
