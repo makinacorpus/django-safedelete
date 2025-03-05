@@ -2,7 +2,7 @@
 CHANGELOG
 =========
 
-1.4.1 (unreleased)
+1.4.1 (2025-03-05)
 ==================
 
 - Adding check for nullity in related models delete #243
