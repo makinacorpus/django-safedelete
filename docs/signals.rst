@@ -8,7 +8,7 @@ Signals
 Signals
 -------
 
-There are two signals available. Please refer to the `Django signals <https://docs.djangoproject.com/en/dev/topics/signals/>`_ documentation on how to use them.
+There are three signals available. Please refer to the `Django signals <https://docs.djangoproject.com/en/dev/topics/signals/>`_ documentation on how to use them.
 
 .. py:data:: safedelete.signals.pre_softdelete
 
