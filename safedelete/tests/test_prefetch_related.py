@@ -36,8 +36,15 @@ class PrefetchTestCase(SafeDeleteTestCase):
         brothers = PrefetchBrother.objects.all().prefetch_related(
             'sisters'
         )
-        # assertQuerysetEqual will be removed in Django 5.1
-        assertQuerySetEqual = getattr(self, 'assertQuerySetEqual', self.assertQuerysetEqual)
+        # Django 5.1 removed the lowercase ``assertQuerysetEqual``
+        # alias (case-corrected to ``assertQuerySetEqual``). Supporting both
+        # names via getattr() is safe because only one of them exists on any
+        # given Django release.
+        assertQuerySetEqual = getattr(
+            self,
+            'assertQuerySetEqual',
+            getattr(self, 'assertQuerysetEqual', None),
+        )
 
         for brother in brothers:
             assertQuerySetEqual(

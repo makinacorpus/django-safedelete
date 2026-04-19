@@ -2,10 +2,32 @@
 CHANGELOG
 =========
 
+1.5.0dev (unreleased)
+=====================
+
+- Fix #242 - ``SafeDeleteQueryset.update()`` now applies the soft-delete
+  visibility filter before delegating to ``super().update()``. Upstream's
+  bulk-update path silently wrote to soft-deleted rows.
+- Fix #247 - ``SafeDeleteAdmin.log_undeletion`` dispatches by Django
+  version. Django 6 removed the single-object ``LogEntry.log_action`` API
+  in favour of ``log_actions(..., queryset, single_object=True)``.
+- ``is_safedelete_cls`` now compares ``base.__module__`` against this
+  module's own ``__name__`` rather than the hard-coded literal
+  ``'safedelete.models'``. The literal check silently disabled
+  ``SOFT_DELETE_CASCADE`` whenever the package was imported under a
+  non-default dotted path; the new check is location-agnostic.
+- ``test_prefetch_related`` now resolves ``assertQuerySetEqual`` with a
+  nested ``getattr()`` so Django 5.1+ (which removed the lowercase
+  ``assertQuerysetEqual`` alias) does not trip over the fallback arg.
+- New test module ``safedelete/tests/test_update_bypass.py`` pinning the
+  #242 regression.
+- New test module ``safedelete/tests/test_admin_django6.py`` pinning the
+  #247 regression across Django 5.x and 6.x.
+
 1.4.2 (unreleased)
 ==================
 
-- 
+-
 
 1.4.1 (2025-03-05)
 ==================

@@ -116,13 +116,27 @@ class SafeDeleteAdmin(admin.ModelAdmin):
 
         The default implementation creates an admin LogEntry object.
         """
-        LogEntry.objects.log_action(
-            user_id=request.user.pk,
-            content_type_id=ContentType.objects.get_for_model(self.model).pk,
-            object_id=obj.pk,
-            object_repr=object_repr,
-            action_flag=CHANGE
-        )
+        # Django 6 removed the single-object
+        # ``LogEntry.objects.log_action(...)`` helper in favour of
+        # ``log_actions(user_id, queryset, action_flag, change_message="",
+        # *, single_object=False)``. Dispatch by Django version so the
+        # fork stays compatible with both Django <= 5.x (upstream API)
+        # and Django >= 6.x (new API). See upstream issue #247.
+        if django.VERSION[0] >= 6:
+            LogEntry.objects.log_actions(
+                user_id=request.user.pk,
+                queryset=[obj],
+                action_flag=CHANGE,
+                single_object=True,
+            )
+        else:
+            LogEntry.objects.log_action(
+                user_id=request.user.pk,
+                content_type_id=ContentType.objects.get_for_model(self.model).pk,
+                object_id=obj.pk,
+                object_repr=object_repr,
+                action_flag=CHANGE,
+            )
 
     def undelete_selected(self, request, queryset):
         """ Admin action to undelete objects in bulk with confirmation. """

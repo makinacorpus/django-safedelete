@@ -32,11 +32,15 @@ from .utils import can_hard_delete, related_objects
 
 
 def is_safedelete_cls(cls):
+    # compare against this module's ``__name__`` instead of
+    # the hard-coded literal ``'safedelete.models'``. The upstream check
+    # silently returns ``False`` as soon as the package is imported under
+    # a different dotted path (e.g. when vendored or when the app label is
+    # rewired), which disables ``SOFT_DELETE_CASCADE`` entirely. Comparing
+    # against ``__name__`` makes the check location-agnostic while
+    # remaining byte-for-byte compatible for the default import path.
     for base in cls.__bases__:
-        # This used to check if it startswith 'safedelete', but that masks
-        # the issue inside of a test. Other clients create models that are
-        # outside of the safedelete package.
-        if base.__module__.startswith('safedelete.models'):
+        if base.__module__ == __name__:
             return True
         if is_safedelete_cls(base):
             return True
