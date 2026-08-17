@@ -2,7 +2,7 @@
 CHANGELOG
 =========
 
-1.5.0dev (unreleased)
+1.5.0 (unreleased)
 =====================
 
 - Fix #242 - ``SafeDeleteQueryset.update()`` now applies the soft-delete
@@ -23,11 +23,6 @@ CHANGELOG
   #242 regression.
 - New test module ``safedelete/tests/test_admin_django6.py`` pinning the
   #247 regression across Django 5.x and 6.x.
-
-1.4.2 (unreleased)
-==================
-
--
 
 1.4.1 (2025-03-05)
 ==================
