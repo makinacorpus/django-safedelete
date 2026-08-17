@@ -122,7 +122,7 @@ class SafeDeleteAdmin(admin.ModelAdmin):
         # *, single_object=False)``. Dispatch by Django version so the
         # fork stays compatible with both Django <= 5.x (upstream API)
         # and Django >= 6.x (new API). See upstream issue #247.
-        if django.VERSION[0] >= 6:
+        if (django.VERSION[0] == 5 and django.VERSION[1] >= 1) or django.VERSION[0] >= 6:
             LogEntry.objects.log_actions(
                 user_id=request.user.pk,
                 queryset=[obj],
