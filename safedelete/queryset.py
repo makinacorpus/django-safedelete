@@ -4,7 +4,13 @@ from typing import Dict, Optional, Tuple, Type, TypeVar
 from django.db import models
 from django.db.models import query
 
-from .config import HARD_DELETE, NO_DELETE
+from .config import (
+    DELETED_ONLY_VISIBLE,
+    DELETED_VISIBLE,
+    FIELD_NAME,
+    HARD_DELETE,
+    NO_DELETE,
+)
 from .query import SafeDeleteQuery
 
 _QS = TypeVar('_QS', bound='SafeDeleteQueryset')
@@ -114,3 +120,44 @@ class SafeDeleteQueryset(query.QuerySet):
         queryset = self._clone()
         queryset.query.check_field_filter(**kwargs)
         return super(SafeDeleteQueryset, queryset).filter(*args, **kwargs)
+
+    # plug the ``.update()`` bypass described in upstream
+    # issue #242. The default Django ``update()`` path never touches
+    # ``SafeDeleteQuery._filter_visibility()``, so ``Model.objects.update(...)``
+    # silently writes to soft-deleted rows. We re-apply the same visibility
+    # filter the SELECT path uses before delegating to ``super().update()``.
+    def update(self, **kwargs):
+        """Respect the soft-delete visibility on bulk ``UPDATE``.
+
+        Compliance-relevant fix for issue #242. Callers that legitimately
+        want to update soft-deleted rows must opt in explicitly via
+        ``.all(force_visibility=DELETED_VISIBLE).update(...)`` or by
+        targeting ``deleted_objects``/``all_objects`` **together with**
+        ``force_visibility``.
+        """
+        queryset = self._clone()
+        force_visibility = getattr(
+            queryset.query, "_safedelete_force_visibility", None
+        )
+
+        # Only apply the soft-delete guard when the visibility setting
+        # actually hides soft-deleted rows for SELECTs. Explicitly-visible
+        # querysets (``all_objects`` *with* ``force_visibility=DELETED_VISIBLE``
+        # or ``deleted_only``) keep their existing semantics so admin
+        # tooling that intentionally edits soft-deleted rows is not broken.
+        if force_visibility in (DELETED_VISIBLE, DELETED_ONLY_VISIBLE):
+            return super(SafeDeleteQueryset, queryset).update(**kwargs)
+
+        visibility = getattr(queryset.query, "_safedelete_visibility", None)
+        if visibility == DELETED_VISIBLE:
+            # ``all_objects``-style manager without an explicit override:
+            # restrict the bulk update to alive rows, matching the
+            # default-manager behaviour a caller would get via a SELECT.
+            queryset = queryset.filter(**{f"{FIELD_NAME}__isnull": True})
+        # For the default ``objects`` manager the QuerySet already carries
+        # the hidden-row filter via ``SafeDeleteQuery.get_compiler()``, but
+        # that hook is only reached for SELECT. Force it here too.
+        queryset.query._filter_visibility()
+        return super(SafeDeleteQueryset, queryset).update(**kwargs)
+
+    update.alters_data = True  # type: ignore[attr-defined]
